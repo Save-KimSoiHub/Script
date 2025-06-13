@@ -1,4 +1,4 @@
---Main Updated !!
+--Main Updated !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1054,12 +1054,44 @@ end)
     end
 })
 --Teleport NPC
-local selectedNPCName = "Soru Quest"
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local placeId = game.PlaceId
 
--- Dropdown Chọn NPC
+-- Danh sách các NPC và tọa độ theo từng PlaceId
+local npcLocations = {
+    [9224601490] = {
+        ["Aweken DarkxQuake"] = Vector3.new(517.14, 733.25, -725.53),
+        ["Soru Book"] = Vector3.new(1513.09, 712.39, 665.57),
+        ["Soru Quest"] = Vector3.new(-773.96, 835.93, 696.97),
+        ["Kuma"] = Vector3.new(1132.50, 733.25, 1010.52),
+        ["Tourament"] = Vector3.new(808.96, 733.25, 735.02)
+    },
+    [12413901502] = {
+        ["Rebirth Fruits"] = Vector3.new(-4411.97, 632.62, 672.42),
+        ["Aweken Fruits"] = Vector3.new(-5180.68, 701.52, 373.88),
+        ["Kuma"] = Vector3.new(-2709.88, 164.13, 411.97)
+    },
+    [16190471004] = {
+        ["Kuma"] = Vector3.new(365.77, 148.15, -2498.21),
+        ["Aweken Dough V2"] = Vector3.new(-214.06, -846.87, -2578.20)
+    }
+}
+
+-- Lấy danh sách NPC hợp lệ cho map hiện tại
+local currentNPCs = npcLocations[placeId] or {}
+local npcNames = {}
+for name in pairs(currentNPCs) do
+    table.insert(npcNames, name)
+end
+
+-- NPC mặc định đầu tiên nếu có
+local selectedNPCName = npcNames[1]
+
+-- Dropdown chọn NPC
 Tabs.Sever:AddDropdown("NPCSelector", {
     Title = "Chọn NPC",
-    Values = { "Soru Book", "Soru Quest" },
+    Values = npcNames,
     Multi = false,
     Default = selectedNPCName,
     Callback = function(value)
@@ -1070,46 +1102,24 @@ Tabs.Sever:AddDropdown("NPCSelector", {
 -- Nút Teleport
 Tabs.Sever:AddButton({
     Title = "Teleport Đến NPC",
-    Description = "Dịch chuyển đến NPC đã chọn",
+    Description = "Dịch chuyển đến tọa độ NPC đã chọn",
     Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:FindFirstChild("HumanoidRootPart")
-
         if not hrp then
-            warn("Không tìm thấy HumanoidRootPart của người chơi.")
+            warn("Không tìm thấy HumanoidRootPart.")
             return
         end
 
-        if selectedNPCName == "Soru Quest" then
-            -- Dịch chuyển đến tọa độ cố định của Soru Quest
-            local function fastTeleport()
-                local hrpCheck
-                repeat
-                    hrpCheck = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                    task.wait()
-                until hrpCheck and player.Character.Parent ~= nil
-
-                hrpCheck.CFrame = CFrame.new(-773.96, 835.93, 696.97)
-            end
-            fastTeleport()
-
-        elseif selectedNPCName == "Soru Book" then
-            -- Dịch chuyển đến NPC "Soru Book"
-            local npcFolder = workspace:FindFirstChild("NPCs")
-            local target = npcFolder and npcFolder:FindFirstChild("Soru Book")
-
-            if target and target:FindFirstChild("HumanoidRootPart") then
-                hrp.CFrame = target.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0)
-            else
-                warn("Không tìm thấy NPC 'Soru Book' hoặc thiếu HumanoidRootPart.")
-            end
-
+        local targetPos = currentNPCs[selectedNPCName]
+        if targetPos then
+            hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
         else
-            warn("Chưa chọn NPC hoặc NPC không hợp lệ.")
+            warn("Không tìm thấy tọa độ cho NPC đã chọn.")
         end
     end
 })
+
 --Sever Hop
 Tabs.Sever:AddButton({
     Title = "Sever Hop",
