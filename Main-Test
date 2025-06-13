@@ -1,4 +1,4 @@
---Main!!
+--Main!!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -768,11 +768,11 @@ Tabs.Misc:AddToggle("BoostFPSToggle", {
             terrain.WaterReflectance = 0
             terrain.WaterTransparency = 0
 
-            -- Tạo White Screen GUI không che UI chính
+            -- Tạo White Screen GUI
             whiteScreenGui = Instance.new("ScreenGui")
             whiteScreenGui.Name = "WhiteScreenFPSBoost"
             whiteScreenGui.ResetOnSpawn = false
-            whiteScreenGui.IgnoreGuiInset = false -- giữ nguyên khoảng cách UI trên cùng
+            whiteScreenGui.IgnoreGuiInset = true -- ✅ che toàn bộ màn hình
             whiteScreenGui.DisplayOrder = 0
 
             local frame = Instance.new("Frame")
@@ -780,10 +780,10 @@ Tabs.Misc:AddToggle("BoostFPSToggle", {
             frame.Position = UDim2.new(0, 0, 0, 0)
             frame.BackgroundColor3 = Color3.new(1, 1, 1)
             frame.BorderSizePixel = 0
-            frame.ZIndex = 0 -- đảm bảo thấp hơn UI script
+            frame.ZIndex = 0 -- ✅ nằm dưới UI chính
             frame.Parent = whiteScreenGui
 
-            -- Gán vào PlayerGui thay vì CoreGui để không đè UI hệ thống
+            -- Gán vào PlayerGui
             whiteScreenGui.Parent = player:WaitForChild("PlayerGui")
         else
             -- Khôi phục lại mặc định
