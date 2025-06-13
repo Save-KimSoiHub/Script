@@ -1,3 +1,4 @@
+--KimSoi
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local GuiService = game:GetService("GuiService")
@@ -32,29 +33,32 @@ local function findPlayButton()
     return nil
 end
 
--- Kiểm tra nút đứng yên đủ lâu
-local function waitUntilStable(button, stableTime, maxWait)
-    local startTime = tick()
-    local stableStart = tick()
+-- Kiểm tra nút đứng yên tuyệt đối trong vài frame
+local function waitUntilStable(button, frameCount, timeout)
     local lastPos = button.AbsolutePosition
+    local stableFrames = 0
+    local startTime = tick()
 
-    while tick() - startTime < maxWait do
+    while tick() - startTime < timeout do
         if not button:IsDescendantOf(game) or not button.Visible then
-            stableStart = tick()
+            stableFrames = 0
             lastPos = button.AbsolutePosition
-            task.wait(0.1)
+            task.wait()
             continue
         end
 
         local nowPos = button.AbsolutePosition
-        if (nowPos - lastPos).magnitude > 1 then
-            stableStart = tick()
-        elseif tick() - stableStart >= stableTime then
-            return true
+        if (nowPos - lastPos).magnitude == 0 then
+            stableFrames += 1
+            if stableFrames >= frameCount then
+                return true
+            end
+        else
+            stableFrames = 0
         end
 
         lastPos = nowPos
-        task.wait(0.1)
+        task.wait() -- Mỗi frame
     end
 
     return false
@@ -64,7 +68,7 @@ end
 local function pressPlay(playBtn)
     if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
         GuiService.SelectedObject = playBtn
-        task.wait(0.1)
+        task.wait(0.05)
         VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
         task.wait(0.05)
         VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
@@ -78,7 +82,7 @@ end
 task.spawn(function()
     while true do
         if not shared.autoFarm then
-            task.wait(2)
+            task.wait(1)
             continue
         end
 
@@ -87,28 +91,27 @@ task.spawn(function()
             local playBtn = findPlayButton()
 
             if ranked and playBtn then
-                print("[AutoPlay] Tìm thấy nút Ranked. Đợi ổn định...")
-                if waitUntilStable(ranked, 1.5, 10) then
-                    print("[AutoPlay] Ranked đã ổn định. Đang nhấn nút Play...")
+                print("[AutoPlay] Đã thấy Ranked. Đợi ổn định 3 frame...")
+                if waitUntilStable(ranked, 3, 5) then
+                    print("[AutoPlay] Ranked đã ổn định. Nhấn Play...")
                     if pressPlay(playBtn) then
-                        -- Đợi tới khi Character xuất hiện hoặc nút Play biến mất
                         local confirmStart = tick()
                         while tick() - confirmStart < 10 do
                             if player.Character or not playBtn.Visible then
-                                print("[AutoPlay] Đã vào game thành công.")
+                                print("[AutoPlay] Vào game OK.")
                                 break
                             end
                             task.wait(0.2)
                         end
                     end
                 else
-                    print("[AutoPlay] Ranked không ổn định kịp thời gian.")
+                    print("[AutoPlay] Không ổn định kịp.")
                 end
             else
-                print("[AutoPlay] Không tìm thấy Ranked hoặc Play.")
+                print("[AutoPlay] Chưa tìm thấy nút cần.")
             end
         end
 
-        task.wait(1)
+        task.wait(0.5)
     end
 end)
