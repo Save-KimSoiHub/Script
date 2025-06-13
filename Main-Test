@@ -629,7 +629,7 @@ end)
 -- Chọn Slot
 local selectedSlot = 1
 Tabs.Misc:AddDropdown("SlotSelector", {
-    Title = "Chọn Slot Trái Ác Quỷ",
+    Title = "Select Slot To Switch",
     Values = { "1", "2", "3", "4", "5", "6", "7", "8" },
     Multi = false,
     Default = "1",
@@ -641,8 +641,8 @@ Tabs.Misc:AddDropdown("SlotSelector", {
 
 -- Gửi lệnh SwitchSlot
 Tabs.Misc:AddButton({
-    Title = "Chuyển Đến Slot Đã Chọn",
-    Description = "Gửi lệnh SwitchSlot với slot đã chọn",
+    Title = "Switch To Slot Selected",
+    Description = "Switch To Slot Selected",
     Callback = function()
         local args = {
             "FruitsHandler",
@@ -722,7 +722,7 @@ Tabs.Misc:AddToggle("BoostFPSToggle", {
 
 Tabs.Misc:AddButton({
     Title = "Boost FPS",
-    Description = "Giảm Đồ Họa",
+    Description = "Reduce Quality For Boost FPS",
     Callback = function()
         local decalsyeeted = true
 local g = game
@@ -890,7 +890,7 @@ local selectedMapName = "Dressrosa"
 
 -- Dropdown chọn map
 Tabs.Sever:AddDropdown("MapSelector", {
-    Title = "Chọn Map",
+    Title = "Select Map",
     Values = { "Dressrosa", "Wano", "Whole Cake", "Ranked Map" },
     Multi = false,
     Default = selectedMapName,
@@ -901,7 +901,7 @@ Tabs.Sever:AddDropdown("MapSelector", {
 
 -- Nút Teleport
 Tabs.Sever:AddButton({
-    Title = "Teleport Đến Map",
+    Title = "Teleport To Selected Map",
     Description = "Dịch chuyển đến map đã chọn",
     Callback = function()
         local TeleportService = game:GetService("TeleportService")
@@ -925,9 +925,9 @@ local minuteInput = 0
 local secondInput = 0
 
 Tabs.Rejoin:AddInput("HourInput", {
-    Title = "Giờ",
+    Title = "Hours",
     Default = "0",
-    Placeholder = "Nhập số giờ",
+    Placeholder = "Enter An Hours To Rejoin",
     Numeric = true,
     Callback = function(value)
         hourInput = tonumber(value) or 0
@@ -935,9 +935,9 @@ Tabs.Rejoin:AddInput("HourInput", {
 })
 
 Tabs.Rejoin:AddInput("MinuteInput", {
-    Title = "Phút",
+    Title = "Minutes",
     Default = "0",
-    Placeholder = "Nhập số phút",
+    Placeholder = "Enter A Minutes To Rejoin",
     Numeric = true,
     Callback = function(value)
         minuteInput = tonumber(value) or 0
@@ -945,9 +945,9 @@ Tabs.Rejoin:AddInput("MinuteInput", {
 })
 
 Tabs.Rejoin:AddInput("SecondInput", {
-    Title = "Giây",
+    Title = "Second",
     Default = "0",
-    Placeholder = "Nhập số giây",
+    Placeholder = "Enter A Second To Rejoin",
     Numeric = true,
     Callback = function(value)
         secondInput = tonumber(value) or 0
@@ -955,14 +955,14 @@ Tabs.Rejoin:AddInput("SecondInput", {
 })
 
 Tabs.Rejoin:AddButton({
-    Title = "Nhấn Để Auto Rejoin",
-    Description = "Rejoin Sau Khoảng Thời Gian Đã Cài(Mặc Định Là: 0 Giây)",
+    Title = "Click To Auto Rejoin",
+    Description = "Rejoin After Set Time (Default: 0 Seconds)",
     Callback = function()
         rejoinDelay = (hourInput * 3600) + (minuteInput * 60) + secondInput
 
         game.StarterGui:SetCore("SendNotification", {
             Title = "Auto Rejoin",
-            Text = "Sẽ tự rejoin sau " .. rejoinDelay .. " giây",
+            Text = "Auto Rejoin In" .. rejoinDelay .. " Second",
             Duration = 8,
             Icon = "rbxassetid://138706932256796"
         })
@@ -1104,7 +1104,7 @@ local selectedNPCName = npcNames[1]
 
 -- Dropdown chọn NPC
 Tabs.Sever:AddDropdown("NPCSelector", {
-    Title = "Chọn NPC",
+    Title = "Select NPC",
     Values = npcNames,
     Multi = false,
     Default = selectedNPCName,
@@ -1115,7 +1115,7 @@ Tabs.Sever:AddDropdown("NPCSelector", {
 
 -- Nút Teleport
 Tabs.Sever:AddButton({
-    Title = "Teleport Đến NPC",
+    Title = "Teleport To Selected NPC",
     Description = "Dịch chuyển đến tọa độ NPC đã chọn",
     Callback = function()
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -1166,7 +1166,7 @@ local selectedArenaName = arenaNames[1]
 
 -- Dropdown chọn Arena
 Tabs.Sever:AddDropdown("ArenaSelector", {
-    Title = "Chọn Arena",
+    Title = "Select Arena",
     Values = arenaNames,
     Multi = false,
     Default = selectedArenaName,
@@ -1177,7 +1177,7 @@ Tabs.Sever:AddDropdown("ArenaSelector", {
 
 -- Nút Teleport đến Arena
 Tabs.Sever:AddButton({
-    Title = "Teleport Đến Arena",
+    Title = "Teleport To Selected Arena",
     Description = "Dịch chuyển đến vị trí Arena đã chọn",
     Callback = function()
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -1321,7 +1321,7 @@ end
 --Nhập Time
 shared.timeToWait = 20
 Tabs.Main:AddInput("TimeToWaitInput", {
-    Title = "Time To Wait Boss (phút)",
+    Title = "Time To Wait Boss (Minute)",
     Default = "20",
     Placeholder = "20",
     Numeric = true,
@@ -1627,8 +1627,8 @@ end
 
 -- Toggle UI
 Tabs.Player:AddToggle("FollowLowestHP", {
-    Title = "Theo sau người máu thấp nhất",
-    Description = "Tự động bám theo player có máu thấp nhất",
+    Title = "Auto Farm Player Lowest HP",
+    Description = "Auto Farm Player Lowest HP [Need To Update]",
     Default = false,
     Callback = function(state)
         followLowestHP = state
