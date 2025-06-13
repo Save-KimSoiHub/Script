@@ -1,4 +1,4 @@
---Main Updated !!!
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -16,7 +16,7 @@ end
 
 game.StarterGui:SetCore("SendNotification", {
     Title = "KimSoi Hub",
-    Text = "Đã Tải Xong",
+    Text = "Success !",
     Duration = 10,
     Icon = "rbxassetid://138706932256796"
 })
@@ -114,7 +114,7 @@ shared.autoFarmToggleRef = Tabs.Main:AddToggle("AutoFarmToggle", {
         autoFarmEnabled = value
         shared.autoFarm = value
         if value then
-            --Auto Farm !!!
+	--Auto Farm 
 shared.autoFarm = shared.autoFarm or false
 shared.forceUnlock = shared.forceUnlock or false
 local Players = game:GetService("Players")
@@ -132,6 +132,83 @@ local lockConnection = nil
 local lockedPosition = nil
 isTeleported = false
 local connection = nil
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+-- Tìm nút Ranked
+local function findRankedButton()
+    for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
+        if guiObj:IsA("ScreenGui") then
+            for _, obj in ipairs(guiObj:GetDescendants()) do
+                if obj:IsA("GuiButton") and obj.Visible and obj.Name == "Ranked" then
+                    return obj
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- Tìm nút Play
+local function findPlayButton()
+    for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
+        if guiObj:IsA("ScreenGui") then
+            local btn = guiObj:FindFirstChild("Play", true)
+            if btn and btn:IsA("GuiButton") and btn.Visible then
+                return btn
+            end
+        end
+    end
+    return nil
+end
+
+-- Kiểm tra nút đứng yên tuyệt đối trong vài frame
+local function waitUntilStable(button, frameCount, timeout)
+    local lastPos = button.AbsolutePosition
+    local stableFrames = 0
+    local startTime = tick()
+
+    while tick() - startTime < timeout do
+        if not button:IsDescendantOf(game) or not button.Visible then
+            stableFrames = 0
+            lastPos = button.AbsolutePosition
+            task.wait()
+            continue
+        end
+
+        local nowPos = button.AbsolutePosition
+        if (nowPos - lastPos).magnitude == 0 then
+            stableFrames += 1
+            if stableFrames >= frameCount then
+                return true
+            end
+        else
+            stableFrames = 0
+        end
+
+        lastPos = nowPos
+        task.wait() -- Mỗi frame
+    end
+
+    return false
+end
+
+-- Nhấn nút Play
+local function pressPlay(playBtn)
+    if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
+        GuiService.SelectedObject = playBtn
+        task.wait(0.05)
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+        task.wait(0.05)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+        print("[AutoPlay] Đã nhấn nút Play.")
+        return true
+    end
+    return false
+end
 
 local skills = {
     Barrier = {"Barrier", "Bubble", "Crash", "Spikes"},
@@ -374,30 +451,38 @@ local player = Players.LocalPlayer
 
 task.spawn(function()
     while true do
-        -- Nếu autoFarm tắt, dừng hẳn hoạt động
         if not shared.autoFarm then
-            task.wait(2)
+            task.wait(1)
             continue
         end
 
-        -- Nếu autoFarm bật và chưa có nhân vật, thử auto-play
-        if shared.autoFarm and not player.Character then
-            local guiList = gui:GetChildren()
-            for _, guiObj in ipairs(guiList) do
-                if guiObj:IsA("ScreenGui") then
-                    local playButton = guiObj:FindFirstChild("Play", true)
-                    if playButton and playButton:IsA("GuiButton") then
-                        GuiService.SelectedObject = playButton
-                        task.wait(2)
-                        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                        task.wait(0.05)
-                        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+        if not player.Character then
+            local ranked = findRankedButton()
+            local playBtn = findPlayButton()
+
+            if ranked and playBtn then
+                print("[AutoPlay] Đã thấy Ranked. Đợi ổn định 3 frame...")
+                if waitUntilStable(ranked, 3, 5) then
+                    print("[AutoPlay] Ranked đã ổn định. Nhấn Play...")
+                    if pressPlay(playBtn) then
+                        local confirmStart = tick()
+                        while tick() - confirmStart < 10 do
+                            if player.Character or not playBtn.Visible then
+                                print("[AutoPlay] Vào game OK.")
+                                break
+                            end
+                            task.wait(0.2)
+                        end
                     end
+                else
+                    print("[AutoPlay] Không ổn định kịp.")
                 end
+            else
+                print("[AutoPlay] Chưa tìm thấy nút cần.")
             end
         end
 
-        task.wait(5)
+        task.wait(0.5)
     end
 end)
 
