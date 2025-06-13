@@ -1,4 +1,4 @@
---Main Updated !
+--Main Updated !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1319,7 +1319,7 @@ end
     end
 })
 --Nhập Time
-local shared.timeToWait = 20
+shared.timeToWait = 20
 Tabs.Main:AddInput("TimeToWaitInput", {
     Title = "Time To Wait Boss (phút)",
     Default = "20",
