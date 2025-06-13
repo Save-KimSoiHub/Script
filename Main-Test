@@ -1,4 +1,4 @@
---Main Updated !!!
+--Main Updated !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -92,6 +92,12 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
+
+Tabs.Main:AddParagraph({
+    Title = "Tutorial !",
+    Content = "You Can Turn On Auto Boss With Auto Farm At The Same Time !"
+})
+
 local teleportLockPriority = 0
 local autoFarmEnabled = false
 local autoFarmToggleRef = nil
@@ -2045,8 +2051,15 @@ loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\
 })
 
 Tabs.Discord:AddParagraph({
-    Title = "Test",
-    Content = "Test"
+    Title = "Join My Discord For More",
+    Content = "You Can Suggest Improvements To The Script"
+})
+
+Tabs.Discord:AddButton({
+    Title = "Click To Copy Link Discord !",
+    Callback = function()
+       setclipboard("https://discord.gg/yTXMVrNs")
+    end
 })
 
 SaveManager:LoadAutoloadConfig()
