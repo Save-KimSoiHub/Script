@@ -1930,7 +1930,7 @@ end
 
 -- Thêm Dropdown chọn player
 dropdownRef = Tabs.Player:AddDropdown("PlayerDropdownTeleport", {
-    Title = "Chọn người chơi để teleport",
+    Title = "Select Player To Teleport",
     Values = getPlayerList(),
     Multi = false,
     Default = nil,
@@ -1942,7 +1942,7 @@ dropdownRef = Tabs.Player:AddDropdown("PlayerDropdownTeleport", {
 
 -- Thêm nút làm mới danh sách dropdown
 Tabs.Player:AddButton({
-    Title = "🔄 Làm mới danh sách",
+    Title = "Refresh Player List",
     Callback = function()
         if dropdownRef then
             dropdownRef:SetValues(getPlayerList())
@@ -1953,7 +1953,7 @@ Tabs.Player:AddButton({
 
 -- Thêm nút teleport
 Tabs.Player:AddButton({
-    Title = "🚀 Teleport đến người chơi đã chọn",
+    Title = "Teleport To Selected Player",
     Callback = function()
         if selectedPlayerUsername then
             teleportToPlayer(selectedPlayerUsername)
