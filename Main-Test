@@ -1,4 +1,4 @@
---Main Updated !
+--Main Updated !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -40,7 +40,6 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
-    Boss = Window:AddTab({ Title = "Boss Hop",Icon = ""}),
     Sever = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin-Sever", Icon = "" }),
     Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
@@ -1314,7 +1313,7 @@ end
 })
 shared.timeToWait = 0
 --Time To Wait
-Tabs.Boss:AddInput({
+Tabs.Main:AddInput({
     Title = "Enter Time To Wait Boss",
     Default = "20",
     Placeholder = "Recommend 20 Min",
@@ -1324,7 +1323,7 @@ Tabs.Boss:AddInput({
     end
 })
 --Auto Find Boss
-Tabs.Boss:AddToggle("Auto Find Boss", {
+Tabs.Main:AddToggle("Auto Find Boss", {
     Title = "Auto Find Boss(Macro,Big Mon, Kaido)",
     Default = false,
     Callback = function(value)
@@ -1412,7 +1411,7 @@ end
     end
 })
 --Auto Find Katakuri
-Tabs.Boss:AddToggle("Auto Find Boss Katakuri", {
+Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
     Title = "Auto Find Boss(Katakuri)",
     Default = false,
     Callback = function(value)
