@@ -1,4 +1,4 @@
---Main Updated 
+--Main Updated !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1311,24 +1311,6 @@ else
 end
     end
 })
-shared.timeToWait = shared.timeToWait or 20
---Time To Wait
-Tabs.Main:AddInput({
-    Title = "Enter Time To Wait Boss",
-    Default = "20",
-    Placeholder = "Recommend 20 Min",
-    Numeric = true,
-    Callback = function(value)
-        local num = tonumber(value)
-        if num then
-            shared.timeToWait = num
-            print("✅ Time to wait set to:", num)
-        else
-            shared.timeToWait = 20
-            warn("⛔ Không hợp lệ. Đặt lại về 20.")
-        end
-    end
-})
 --Auto Find Boss
 Tabs.Main:AddToggle("Auto Find Boss", {
     Title = "Auto Find Boss(Macro,Big Mon, Kaido)",
@@ -1403,7 +1385,7 @@ end
 
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
-if minute and minute < (60 - shared.timeToWait) then
+if minute and minute < 40 then
     print("✅ Phút máy chủ:", minute, " < 40 → Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
@@ -1491,7 +1473,7 @@ end
 
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
-if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
+if minute and (minute < 10 or minute > 35) then
     print("✅ Phút máy chủ:", minute, " → Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
