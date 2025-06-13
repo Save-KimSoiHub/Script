@@ -1,4 +1,4 @@
---Main Updated !!!
+--Main Updated !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -2036,7 +2036,7 @@ Tabs.Player:AddButton({
     end
 })
 
-Tabs.Main:AddLabel("Premium Key Just 1 Dollar")
+Tabs.Discord:AddParagraph("📌 Thông báo", "🔐 Premium Key chỉ 1$ - Liên hệ Discord để mua key.")
 
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
