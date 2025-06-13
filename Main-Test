@@ -1,4 +1,4 @@
---Main Updated !
+--Main Updated !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1128,7 +1128,7 @@ local placeId = game.PlaceId
 -- Danh sách Arena theo từng PlaceId
 local arenaLocations = {
     [9224601490] = {
-        ["Arena"] = Vector3.new(498, 742.67, 815),
+        ["Arena"] = Vector3.new(498.00, 742.67, 815.00),
         ["Macro Spawn Location"] = Vector3.new(-776, 960.18, 622)
     },
     [12413901502] = {
