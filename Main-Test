@@ -1889,6 +1889,65 @@ end
         end
     end
 })
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Hàm lấy danh sách người chơi (trừ bản thân)
+local function getPlayerList()
+    local list = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            table.insert(list, plr.Name)
+        end
+    end
+    return list
+end
+
+-- Biến lưu người chơi được chọn
+local selectedPlayer = nil
+
+-- Dropdown chọn người chơi
+local playerDropdown = Tabs.Player:AddDropdown("PlayerDropdown", {
+    Title = "Chọn người chơi",
+    Values = getPlayerList(),
+    Multi = false,
+    Default = nil,
+})
+
+-- Khi chọn 1 người chơi từ dropdown
+playerDropdown:OnChanged(function(value)
+    selectedPlayer = value
+    print("Đã chọn người chơi:", selectedPlayer)
+end)
+
+-- Nút làm mới dropdown
+Tabs.Player:AddButton("🔄 Làm mới danh sách", function()
+    local newList = getPlayerList()
+    playerDropdown:SetValues(newList)
+    print("Đã làm mới danh sách người chơi.")
+end)
+
+-- Nút teleport đến người chơi đã chọn
+Tabs.Player:AddButton("📍 Teleport đến người chơi đã chọn", function()
+    if not selectedPlayer then
+        warn("Chưa chọn người chơi để teleport.")
+        return
+    end
+
+    local target = Players:FindFirstChild(selectedPlayer)
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPos = target.Character.HumanoidRootPart.Position
+        local myChar = LocalPlayer.Character
+        if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+            myChar.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0, 3, 0)) -- Tránh kẹt
+            print("Đã teleport đến", selectedPlayer)
+        else
+            warn("Không tìm thấy nhân vật của bạn.")
+        end
+    else
+        warn("Không tìm thấy nhân vật người chơi kia.")
+    end
+end)
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
 
