@@ -1135,7 +1135,7 @@ local arenaLocations = {
         ["Kaido Spawn Location"] = Vector3.new(-4076, 1599.55, 319)
     },
     [16190471004] = {
-        ["Arena"] = Vector3.new(1849.24, 229.28, -2615.56),
+        ["Arena"] = Vector3.new(1849.24, 221.65, -2615.56),
         ["Katakuri Spawn Location"] = Vector3.new(842, -1025.05, -2352),
         ["Bigmon Spawn Location"] = Vector3.new(576.14, 149.15, -1583.40)
     }
