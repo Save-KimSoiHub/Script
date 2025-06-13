@@ -1,4 +1,4 @@
---KimSoi
+--KimSoi!
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local GuiService = game:GetService("GuiService")
@@ -33,32 +33,32 @@ local function findPlayButton()
     return nil
 end
 
--- Kiểm tra nút đứng yên tuyệt đối trong vài frame
-local function waitUntilStable(button, frameCount, timeout)
+-- Chờ nút ổn định trong 2 frame
+local function waitUntilStable(button, stableFrames, timeout)
     local lastPos = button.AbsolutePosition
-    local stableFrames = 0
+    local stableCount = 0
     local startTime = tick()
 
     while tick() - startTime < timeout do
         if not button:IsDescendantOf(game) or not button.Visible then
-            stableFrames = 0
+            stableCount = 0
             lastPos = button.AbsolutePosition
-            task.wait()
+            task.wait(0.03)
             continue
         end
 
         local nowPos = button.AbsolutePosition
         if (nowPos - lastPos).magnitude == 0 then
-            stableFrames += 1
-            if stableFrames >= frameCount then
+            stableCount += 1
+            if stableCount >= stableFrames then
                 return true
             end
         else
-            stableFrames = 0
+            stableCount = 0
         end
 
         lastPos = nowPos
-        task.wait() -- Mỗi frame
+        task.wait(0.03)
     end
 
     return false
@@ -91,9 +91,9 @@ task.spawn(function()
             local playBtn = findPlayButton()
 
             if ranked and playBtn then
-                print("[AutoPlay] Đã thấy Ranked. Đợi ổn định 3 frame...")
-                if waitUntilStable(ranked, 3, 5) then
-                    print("[AutoPlay] Ranked đã ổn định. Nhấn Play...")
+                print("[AutoPlay] Tìm thấy Ranked. Kiểm tra nhanh vị trí...")
+                if waitUntilStable(ranked, 2, 2.5) then -- chỉ 2 frame liên tiếp, timeout 2.5s
+                    print("[AutoPlay] Ranked đã ổn định nhanh. Nhấn Play...")
                     if pressPlay(playBtn) then
                         local confirmStart = tick()
                         while tick() - confirmStart < 10 do
@@ -105,10 +105,10 @@ task.spawn(function()
                         end
                     end
                 else
-                    print("[AutoPlay] Không ổn định kịp.")
+                    print("[AutoPlay] Ranked không ổn định kịp.")
                 end
             else
-                print("[AutoPlay] Chưa tìm thấy nút cần.")
+                print("[AutoPlay] Chưa thấy nút Ranked/Play.")
             end
         end
 
