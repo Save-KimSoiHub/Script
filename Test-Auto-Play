@@ -1,5 +1,5 @@
 --Auto Farm 
-shared.autoFarm = shared.autoFarm or true
+shared.autoFarm = shared.autoFarm or false
 shared.forceUnlock = shared.forceUnlock or false
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
