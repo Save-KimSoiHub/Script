@@ -1,4 +1,4 @@
---Main Updated !!!
+--Main Updated !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1892,10 +1892,10 @@ end
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Biến lưu tên người chơi đã chọn
 local selectedPlayerUsername = nil
+local dropdownRef = nil
 
--- Hàm tạo danh sách player dạng: DisplayName (Username)
+-- Hàm tạo danh sách player: DisplayName (Username)
 local function getPlayerList()
     local list = {}
     for _, player in ipairs(Players:GetPlayers()) do
@@ -1904,9 +1904,9 @@ local function getPlayerList()
     return list
 end
 
--- Hàm extract username từ lựa chọn Dropdown
+-- Tách username từ chuỗi: DisplayName (Username)
 local function extractUsername(comboText)
-    return comboText:match("%((.-)%)") -- lấy phần trong dấu ()
+    return comboText:match("%((.-)%)")
 end
 
 -- Hàm teleport
@@ -1928,35 +1928,40 @@ local function teleportToPlayer(playerName)
     end
 end
 
--- Dropdown chọn player
-local dropdownRef
-dropdownRef = Tabs.Player:AddDropdown("TeleportPlayerDropdown", {
+-- Thêm Dropdown
+dropdownRef = Tabs.Player:AddDropdown("PlayerDropdown", {
     Title = "Chọn người chơi",
     Values = getPlayerList(),
     Multi = false,
     Default = nil,
     Callback = function(value)
         selectedPlayerUsername = extractUsername(value)
-        print("Đã chọn: ", selectedPlayerUsername)
+        print("Đã chọn: " .. selectedPlayerUsername)
     end
 })
 
--- Nút làm mới danh sách player
-Tabs.Player:AddButton("🔄 Làm mới danh sách", function()
-    if dropdownRef then
-        dropdownRef:SetValues(getPlayerList())
-        print("Đã làm mới danh sách người chơi.")
+-- ✅ Thêm nút: Làm mới dropdown
+Tabs.Player:AddButton({
+    Title = "🔄 Làm mới danh sách",
+    Callback = function()
+        if dropdownRef then
+            dropdownRef:SetValues(getPlayerList())
+            print("Danh sách người chơi đã được làm mới.")
+        end
     end
-end)
+})
 
--- Nút teleport
-Tabs.Player:AddButton("🚀 Teleport đến người chơi", function()
-    if selectedPlayerUsername then
-        teleportToPlayer(selectedPlayerUsername)
-    else
-        warn("Chưa chọn người chơi để teleport.")
+-- ✅ Thêm nút: Teleport
+Tabs.Player:AddButton({
+    Title = "🚀 Teleport đến người chơi",
+    Callback = function()
+        if selectedPlayerUsername then
+            teleportToPlayer(selectedPlayerUsername)
+        else
+            warn("Bạn chưa chọn người chơi.")
+        end
     end
-end)
+})
 
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
