@@ -1318,6 +1318,17 @@ else
 end
     end
 })
+--Nhập Time
+local shared.timeToWait = 20
+Tabs.Main:AddInput("TimeToWaitInput", {
+    Title = "Time To Wait Boss (phút)",
+    Default = "20",
+    Placeholder = "20",
+    Numeric = true,
+    Callback = function(value)
+        shared.timeToWait = tonumber(value) or 20
+    end
+})
 --Auto Find Boss
 Tabs.Main:AddToggle("Auto Find Boss", {
     Title = "Auto Find Boss(Macro,Big Mon, Kaido)",
@@ -1392,7 +1403,7 @@ end
 
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
-if minute and minute < 40 then
+if minute and minute < (60 - shared.timeToWait) then
     print("✅ Phút máy chủ:", minute, " < 40 → Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
@@ -1480,7 +1491,7 @@ end
 
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
-if minute and (minute < 10 or minute > 35) then
+if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
     print("✅ Phút máy chủ:", minute, " → Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
