@@ -1,0 +1,75 @@
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+shared.autoFarm = true
+
+-- Kiểm tra xem nút đứng yên ít nhất stableTime giây
+local function waitUntilButtonStable(button, minVisibleTime, stableTime, timeout)
+    local startVisible = nil
+    local lastPos = nil
+    local stableStart = nil
+    local startTime = tick()
+
+    while tick() - startTime < (timeout or 10) do
+        if not button or not button:IsDescendantOf(game) or not button.Visible then
+            startVisible = nil
+            stableStart = nil
+            task.wait(0.1)
+            continue
+        end
+
+        if not startVisible then
+            startVisible = tick()
+        end
+
+        local pos = button.AbsolutePosition
+        if lastPos and (pos - lastPos).magnitude < 2 then
+            if not stableStart then
+                stableStart = tick()
+            elseif tick() - stableStart >= stableTime and tick() - startVisible >= minVisibleTime then
+                return true
+            end
+        else
+            stableStart = nil
+        end
+        lastPos = pos
+        task.wait(0.1)
+    end
+
+    return false
+end
+
+task.spawn(function()
+    while true do
+        if not shared.autoFarm then
+            task.wait(2)
+            continue
+        end
+
+        if shared.autoFarm and not player.Character then
+            for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
+                if guiObj:IsA("ScreenGui") then
+                    local playButton = guiObj:FindFirstChild("Play", true)
+                    if playButton and playButton:IsA("GuiButton") and playButton.Visible then
+                        print("[AutoPlay] Tìm thấy nút Play, đợi đủ điều kiện...")
+                        local ready = waitUntilButtonStable(playButton, 1.5, 1.0, 10)
+                        if ready then
+                            GuiService.SelectedObject = playButton
+                            task.wait(0.2)
+                            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+                            task.wait(0.05)
+                            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+                            print("[AutoPlay] Đã nhấn nút Play.")
+                        else
+                            print("[AutoPlay] Nút Play không ổn định trong giới hạn thời gian.")
+                        end
+                    end
+                end
+            end
+        end
+
+        task.wait(1)
+    end
+end)
