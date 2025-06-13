@@ -1892,62 +1892,65 @@ end
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Hàm lấy danh sách người chơi (trừ bản thân)
+-- Hàm lấy danh sách người chơi trong server (trừ chính mình)
 local function getPlayerList()
-    local list = {}
+    local names = {}
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
-            table.insert(list, plr.Name)
+            table.insert(names, plr.Name)
         end
     end
-    return list
+    return names
 end
 
 -- Biến lưu người chơi được chọn
-local selectedPlayer = nil
+_G.selectedPlayerName = nil
 
 -- Dropdown chọn người chơi
-local playerDropdown = Tabs.Player:AddDropdown("PlayerDropdown", {
+Tabs.Player:AddDropdown("SelectPlayerDropdown", {
     Title = "Chọn người chơi",
     Values = getPlayerList(),
     Multi = false,
     Default = nil,
+    Callback = function(value)
+        _G.selectedPlayerName = value
+        print("Đã chọn người chơi:", value)
+    end
 })
 
--- Khi chọn 1 người chơi từ dropdown
-playerDropdown:OnChanged(function(value)
-    selectedPlayer = value
-    print("Đã chọn người chơi:", selectedPlayer)
-end)
-
 -- Nút làm mới dropdown
-Tabs.Player:AddButton("🔄 Làm mới danh sách", function()
-    local newList = getPlayerList()
-    playerDropdown:SetValues(newList)
-    print("Đã làm mới danh sách người chơi.")
+Tabs.Player:AddButton("RefreshPlayerDropdown", function()
+    local dropdown = Options["SelectPlayerDropdown"]
+    if dropdown then
+        dropdown:SetValues(getPlayerList())
+        print("Đã làm mới danh sách người chơi.")
+    else
+        warn("Không tìm thấy dropdown SelectPlayerDropdown")
+    end
 end)
 
--- Nút teleport đến người chơi đã chọn
-Tabs.Player:AddButton("📍 Teleport đến người chơi đã chọn", function()
-    if not selectedPlayer then
-        warn("Chưa chọn người chơi để teleport.")
+-- Nút Teleport đến người chơi đã chọn
+Tabs.Player:AddButton("TeleportToSelectedPlayer", function()
+    local targetName = _G.selectedPlayerName
+    if not targetName then
+        warn("Bạn chưa chọn người chơi để dịch chuyển đến.")
         return
     end
 
-    local target = Players:FindFirstChild(selectedPlayer)
+    local target = Players:FindFirstChild(targetName)
     if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPos = target.Character.HumanoidRootPart.Position
         local myChar = LocalPlayer.Character
         if myChar and myChar:FindFirstChild("HumanoidRootPart") then
-            myChar.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0, 3, 0)) -- Tránh kẹt
-            print("Đã teleport đến", selectedPlayer)
+            myChar.HumanoidRootPart.CFrame = CFrame.new(target.Character.HumanoidRootPart.Position + Vector3.new(0, 3, 0))
+            print("Đã teleport đến:", targetName)
         else
             warn("Không tìm thấy nhân vật của bạn.")
         end
     else
-        warn("Không tìm thấy nhân vật người chơi kia.")
+        warn("Người chơi mục tiêu không tồn tại hoặc chưa load xong.")
     end
 end)
+
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
 
