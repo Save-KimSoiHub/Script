@@ -1,4 +1,4 @@
---Main Updated !!!
+--Main Updated !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1119,9 +1119,71 @@ Tabs.Sever:AddButton({
         end
     end
 })
+--Arena
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local placeId = game.PlaceId
+
+-- Danh sách Arena theo từng PlaceId
+local arenaLocations = {
+    [9224601490] = {
+        ["Arena"] = Vector3.new(498, 742.67, 815),
+        ["Macro Spawn Location"] = Vector3.new(-776, 960.18, 622)
+    },
+    [12413901502] = {
+        ["Kaido Spawn Location"] = Vector3.new(-4076, 1599.55, 319)
+    },
+    [16190471004] = {
+        ["Arena"] = Vector3.new(1849.24, 229.28, -2615.56),
+        ["Katakuri Spawn Location"] = Vector3.new(842, -1025.05, -2352),
+        ["Bigmon Spawn Location"] = Vector3.new(576.14, 149.15, -1583.40)
+    }
+}
+
+-- Lấy danh sách Arena hợp lệ cho map hiện tại
+local currentArenas = arenaLocations[placeId] or {}
+local arenaNames = {}
+for name in pairs(currentArenas) do
+    table.insert(arenaNames, name)
+end
+
+-- Arena mặc định đầu tiên nếu có
+local selectedArenaName = arenaNames[1]
+
+-- Dropdown chọn Arena
+Tabs.Sever:AddDropdown("ArenaSelector", {
+    Title = "Chọn Arena",
+    Values = arenaNames,
+    Multi = false,
+    Default = selectedArenaName,
+    Callback = function(value)
+        selectedArenaName = value
+    end
+})
+
+-- Nút Teleport đến Arena
+Tabs.Sever:AddButton({
+    Title = "Teleport Đến Arena",
+    Description = "Dịch chuyển đến vị trí Arena đã chọn",
+    Callback = function()
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp then
+            warn("Không tìm thấy HumanoidRootPart.")
+            return
+        end
+
+        local targetPos = currentArenas[selectedArenaName]
+        if targetPos then
+            hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
+        else
+            warn("Không tìm thấy tọa độ cho Arena đã chọn.")
+        end
+    end
+})
 
 --Sever Hop
-Tabs.Sever:AddButton({
+Tabs.Rejoin:AddButton({
     Title = "Sever Hop",
     Description = "Join Another Sever",
     Callback = function()
@@ -1182,7 +1244,7 @@ end
     end
 })
 --Sever Hop Less Player
-Tabs.Sever:AddButton({
+Tabs.Rejoin:AddButton({
     Title = "Sever Hop Less Player",
     Description = "Join Another Sever Less Player",
     Callback = function()
