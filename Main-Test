@@ -1,4 +1,4 @@
---Main Updated !!!
+--Main Updated 
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1311,15 +1311,22 @@ else
 end
     end
 })
-shared.timeToWait = 0
+shared.timeToWait = shared.timeToWait or 20
 --Time To Wait
 Tabs.Main:AddInput({
     Title = "Enter Time To Wait Boss",
     Default = "20",
     Placeholder = "Recommend 20 Min",
-    Numeric = true, 
+    Numeric = true,
     Callback = function(value)
-        shared.timeToWait = tonumber(value)
+        local num = tonumber(value)
+        if num then
+            shared.timeToWait = num
+            print("✅ Time to wait set to:", num)
+        else
+            shared.timeToWait = 20
+            warn("⛔ Không hợp lệ. Đặt lại về 20.")
+        end
     end
 })
 --Auto Find Boss
