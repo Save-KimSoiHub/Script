@@ -1,4 +1,4 @@
---Main Updated !
+--Main Updated !!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1895,7 +1895,7 @@ local LocalPlayer = Players.LocalPlayer
 local selectedPlayerUsername = nil
 local dropdownRef = nil
 
--- Hàm tạo danh sách player: DisplayName (Username)
+-- Lấy danh sách player dạng: DisplayName (Username)
 local function getPlayerList()
     local list = {}
     for _, player in ipairs(Players:GetPlayers()) do
@@ -1904,7 +1904,7 @@ local function getPlayerList()
     return list
 end
 
--- Tách username từ chuỗi: DisplayName (Username)
+-- Tách username từ chuỗi "DisplayName (Username)"
 local function extractUsername(comboText)
     return comboText:match("%((.-)%)")
 end
@@ -1928,9 +1928,9 @@ local function teleportToPlayer(playerName)
     end
 end
 
--- Thêm Dropdown
-dropdownRef = Tabs.Player:AddDropdown("PlayerDropdown", {
-    Title = "Chọn người chơi",
+-- Thêm Dropdown chọn player
+dropdownRef = Tabs.Player:AddDropdown("PlayerDropdownTeleport", {
+    Title = "Chọn người chơi để teleport",
     Values = getPlayerList(),
     Multi = false,
     Default = nil,
@@ -1940,7 +1940,7 @@ dropdownRef = Tabs.Player:AddDropdown("PlayerDropdown", {
     end
 })
 
--- ✅ Thêm nút: Làm mới dropdown
+-- Thêm nút làm mới danh sách dropdown
 Tabs.Player:AddButton({
     Title = "🔄 Làm mới danh sách",
     Callback = function()
@@ -1951,14 +1951,14 @@ Tabs.Player:AddButton({
     end
 })
 
--- ✅ Thêm nút: Teleport
+-- Thêm nút teleport
 Tabs.Player:AddButton({
-    Title = "🚀 Teleport đến người chơi",
+    Title = "🚀 Teleport đến người chơi đã chọn",
     Callback = function()
         if selectedPlayerUsername then
             teleportToPlayer(selectedPlayerUsername)
         else
-            warn("Bạn chưa chọn người chơi.")
+            warn("Bạn chưa chọn người chơi để teleport.")
         end
     end
 })
