@@ -2036,6 +2036,8 @@ Tabs.Player:AddButton({
     end
 })
 
+Tabs.Main:AddLabel("Premium Key Just 1 Dollar")
+
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
 
