@@ -1,0 +1,76 @@
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Cấu hình PandaAuth
+local serviceIdentifier = "asdasdasda" -- Identifier Name
+local vanguardKey = "Njb6LEi6Fn3JQOxgKPQeJ9ux2Mhb4f3R" -- Vanguard API Token
+local scriptURL = "https://pandadevelopment.net/virtual/file/7e535feb82359d7f"
+
+-- GUI nhập key
+local function createKeyGUI(callback)
+    local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    local Frame = Instance.new("Frame", ScreenGui)
+    Frame.Size = UDim2.new(0, 300, 0, 150)
+    Frame.Position = UDim2.new(0.5, -150, 0.5, -75)
+    Frame.BackgroundColor3 = Color3.new(0.15, 0.15, 0.15)
+
+    local TextBox = Instance.new("TextBox", Frame)
+    TextBox.Size = UDim2.new(1, -20, 0, 30)
+    TextBox.Position = UDim2.new(0, 10, 0, 20)
+    TextBox.PlaceholderText = "Nhập key tại đây"
+    TextBox.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    TextBox.TextColor3 = Color3.new(1, 1, 1)
+    TextBox.Text = ""
+
+    local Submit = Instance.new("TextButton", Frame)
+    Submit.Size = UDim2.new(1, -20, 0, 30)
+    Submit.Position = UDim2.new(0, 10, 0, 70)
+    Submit.Text = "Xác nhận"
+    Submit.BackgroundColor3 = Color3.fromRGB(60, 120, 255)
+    Submit.TextColor3 = Color3.new(1, 1, 1)
+
+    Submit.MouseButton1Click:Connect(function()
+        local key = TextBox.Text
+        ScreenGui:Destroy()
+        callback(key)
+    end)
+end
+
+-- Gửi key lên server check
+local function verifyKey(userKey)
+    local url = "https://api.pandadevelopment.net/v2/verify"
+    local body = {
+        identifier = serviceIdentifier,
+        key = userKey
+    }
+
+    local success, response = pcall(function()
+        return HttpService:RequestAsync({
+            Url = url,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["Authorization"] = vanguardKey,
+            },
+            Body = HttpService:JSONEncode(body),
+        })
+    end)
+
+    if not success or not response.Success then
+        warn("Lỗi xác thực key")
+        return false
+    end
+
+    local data = HttpService:JSONDecode(response.Body)
+    return data.success == true
+end
+
+-- Bắt đầu quá trình
+createKeyGUI(function(enteredKey)
+    if verifyKey(enteredKey) then
+        print("✅ Key hợp lệ. Đang tải script...")
+        loadstring(game:HttpGet("https://pandadevelopment.net/virtual/file/7e535feb82359d7f"))()
+    else
+        warn("❌ Key không hợp lệ. Vui lòng thử lại.")
+    end
+end)
