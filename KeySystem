@@ -1,6 +1,6 @@
 local HttpService = game:GetService("HttpService")
 local hwid = game:GetService("RbxAnalyticsService"):GetClientId()
-local userKey = getgenv().Key or ""
+local userKey = getgenv().Key or "0f5bf14d51b1f13bd5128d704"
 
 local apiResponse = syn and syn.request or http_request or request
 
