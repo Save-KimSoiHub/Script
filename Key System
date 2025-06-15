@@ -1,3 +1,4 @@
+local HttpService = game:GetService("HttpService")
 local __xT9L = "https://keysystem.trongkim1905.workers.dev"
 local __sK1w = game:GetService("RbxAnalyticsService"):GetClientId()
 local __A9hK = "KEY-ABC123"
@@ -23,19 +24,19 @@ local function __VxT9(input)
         return false
     end
 
-if res:find("✅ Đăng nhập thành công") then
-    __nFy("✅ Thành công", "Key hợp lệ!")
-    return true
-elseif res:lower():find("ký") then
-    __nFy("✅ Thành công", "Đăng ký lần đầu!")
-    return true
-else
+    if res:find("✅ Đăng nhập thành công") then
+        __nFy("✅ Thành công", "Key hợp lệ!")
+        return true
+    end
+
     __nFy("❌ Key sai", res)
-    return false
-end
+
+    if res:lower():find("ký") then
+        return true
+    else
         return false
     end
-end
+end  -- ✅ ĐÃ đóng đúng function __VxT9
 
 local function __pKw()
     if __VxT9(__A9hK) then
