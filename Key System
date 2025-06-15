@@ -1,0 +1,48 @@
+local __xT9L = "https://keysystem.trongkim1905.workers.dev"
+local __sK1w = game:GetService("RbxAnalyticsService"):GetClientId()
+local __A9hK = "KEY-ABC123"
+
+local function __nFy(title, text)
+    pcall(function()
+        game.StarterGui:SetCore("SendNotification", {
+            Title = title,
+            Text = text,
+            Duration = 5
+        })
+    end)
+end
+
+local function __VxT9(input)
+    local __url = string.format("%s/?key=%s&hwid=%s", __xT9L, input, __sK1w)
+    local ok, res = pcall(function()
+        return game:HttpGet(__url)
+    end)
+
+    if not ok then
+        __nFy("Lỗi", "Không thể kết nối máy chủ")
+        return false
+    end
+
+if res:find("✅ Đăng nhập thành công") then
+    __nFy("✅ Thành công", "Key hợp lệ!")
+    return true
+elseif res:lower():find("ký") then
+    __nFy("✅ Thành công", "Đăng ký lần đầu!")
+    return true
+else
+    __nFy("❌ Key sai", res)
+    return false
+end
+        return false
+    end
+end
+
+local function __pKw()
+    if __VxT9(__A9hK) then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/KimSoiHub/For-Tester/refs/heads/main/Main"))()
+    else
+        warn("Key không hợp lệ")
+    end
+end
+
+__pKw()
