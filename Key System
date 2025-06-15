@@ -34,6 +34,7 @@ local function __VxT9(input)
     if res:lower():find("ký") then
         return true
     else
+        game.Players.LocalPlayerr:Kick("Sai HWID,Cút Đi Mày")
         return false
     end
 end  -- ✅ ĐÃ đóng đúng function __VxT9
