@@ -1,17 +1,8 @@
 local HttpService = game:GetService("HttpService")
 local __xT9L = "https://keysystem.trongkim1905.workers.dev"
 local __sK1w = game:GetService("RbxAnalyticsService"):GetClientId()
-local __A9hK = "KEY-ABC123"
-
-local function __nFy(title, text)
-    pcall(function()
-        game.StarterGui:SetCore("SendNotification", {
-            Title = title,
-            Text = text,
-            Duration = 5
-        })
-    end)
-end
+local __A9hK = getgenv().Key
+local player = game.Players.LocalPlayer
 
 local function __VxT9(input)
     local __url = string.format("%s/?key=%s&hwid=%s", __xT9L, input, __sK1w)
@@ -20,25 +11,22 @@ local function __VxT9(input)
     end)
 
     if not ok then
-        __nFy("Lỗi", "Không thể kết nối máy chủ")
+        print("Sever Không Ổn")
         return false
     end
 
     if res:find("✅ Đăng nhập thành công") then
-        __nFy("✅ Thành công", "Key hợp lệ!")
         return true
     end
-
-    __nFy("❌ Key sai", res)
-
     if res:lower():find("ký") then
         return true
-    else
-        local player = game.Players.LocalPlayer
-        player:Kick("Sai HWID,Cút Đi Mày")
+    elseif res:lower():find("tồn") then
+        player:Kick("Key Sai,Hết Cứu !")
         return false
+    else
+        player:Kick("Sai HWID,Cút !")
     end
-end  -- ✅ ĐÃ đóng đúng function __VxT9
+end
 
 local function __pKw()
     if __VxT9(__A9hK) then
