@@ -19,7 +19,7 @@ local function __VxT9(input)
     if res:find("✅ Đăng nhập thành công") then
         return true
     end
-    if res:lower():find("ký") then
+    if res:lower():find("Đúng") then
         return true
     elseif res:lower():find("tồn") then
         print("Sai Key")
