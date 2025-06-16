@@ -14,6 +14,7 @@ local function __VxT9(input)
         print("Sever Không Ổn")
         return false
     end
+    print(res)
 
     if res:find("✅ Đăng nhập thành công") then
         return true
@@ -21,10 +22,10 @@ local function __VxT9(input)
     if res:lower():find("ký") then
         return true
     elseif res:lower():find("tồn") then
-        player:Kick("Key Sai,Hết Cứu !")
+        print("Sai Key")
         return false
     else
-        player:Kick("Sai HWID,Cút !")
+        print("Sai HWiD")
     end
 end
 
