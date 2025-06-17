@@ -991,11 +991,10 @@ Tabs.Sever:AddDropdown("MapSelector", {
 -- Nút Teleport
 Tabs.Sever:AddButton({
     Title = "Teleport To Selected Map",
-    Description = "Dịch chuyển đến map đã chọn",
+    Description = "Teleport To Selected Map",
     Callback = function()
-        local TeleportService = game:GetService("TeleportService")
-        local Players = game:GetService("Players")
-        local player = Players.LocalPlayer
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local replicator = ReplicatedStorage:WaitForChild("Replicator")
 
         local placeId = mapIds[selectedMapName]
         if not placeId then
@@ -1003,8 +1002,9 @@ Tabs.Sever:AddButton({
             return
         end
 
-        print("🔹 Đang dịch chuyển đến:", selectedMapName, " (PlaceId:", placeId, ")")
-        TeleportService:Teleport(placeId, player)
+        local args = { "Core", "Teleport", { PlaceId = placeId } }
+        print("🔹 Gửi yêu cầu dịch chuyển đến:", selectedMapName, "(PlaceId:", placeId, ")")
+        replicator:InvokeServer(unpack(args))
     end
 })
 -- Auto Rejoin Setup
@@ -1205,7 +1205,7 @@ Tabs.Sever:AddDropdown("NPCSelector", {
 -- Nút Teleport
 Tabs.Sever:AddButton({
     Title = "Teleport To Selected NPC",
-    Description = "Dịch chuyển đến tọa độ NPC đã chọn",
+    Description = "Teleport To Selected NPC",
     Callback = function()
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:FindFirstChild("HumanoidRootPart")
@@ -1267,7 +1267,7 @@ Tabs.Sever:AddDropdown("ArenaSelector", {
 -- Nút Teleport đến Arena
 Tabs.Sever:AddButton({
     Title = "Teleport To Selected Arena",
-    Description = "Dịch chuyển đến vị trí Arena đã chọn",
+    Description = "Teleport To Selected Arena",
     Callback = function()
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:FindFirstChild("HumanoidRootPart")
