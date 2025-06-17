@@ -14,7 +14,6 @@ local function __VxT9(input)
         print("Sever Không Ổn")
         return false
     end
-    print(res)
 
     if res:find("✅ Đăng nhập thành công") then
         return true
