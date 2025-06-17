@@ -28,7 +28,7 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "KimSoi Hub",
+    Title = "KimSoi Hub [Premium]",
     SubTitle = "By KimSoi",
     TabWidth = 160,
     Size = UDim2.fromOffset(540, 450),
@@ -936,7 +936,8 @@ Tabs.Misc:AddButton({
     "OMG9HUNDRED!",
     "WOWZER910",
     "HYPEE920K!",
-    "930KINS4NITY"
+    "930KINS4NITY",
+    "LOL960K!"
 }
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1770,7 +1771,7 @@ Tabs.Fruit:AddToggle("Kaitun Mythical", {
 local codes = {
     "WOW850", "860KHYPEE", "870OMG!", "LOLX880K!", "IAMLEOPARD",
     "BIGUPDATE20", "ANTICIPATION", "BIGDAY", "MAGNIFICENT890K!!",
-    "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY", "940KHAPPYDAYZ", "950KOMGGG!"
+    "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY", "940KHAPPYDAYZ", "950KOMGGG!", "LOL960K!"
 }
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1927,7 +1928,7 @@ Tabs.Fruit:AddToggle("Kaitun Legend", {
 local codes = {
     "WOW850", "860KHYPEE", "870OMG!", "LOLX880K!", "IAMLEOPARD",
     "BIGUPDATE20", "ANTICIPATION", "BIGDAY", "MAGNIFICENT890K!!",
-    "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY", "940KHAPPYDAYZ", "950KOMGGG!"
+    "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY", "940KHAPPYDAYZ", "950KOMGGG!", "LOL960K!"
 }
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
