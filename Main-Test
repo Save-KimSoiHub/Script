@@ -1603,12 +1603,11 @@ _G.selectedSpinType = "Normal"  -- Mặc định spin Normal
 Tabs.Fruit:AddDropdown("FruitSelector", {
     Title = "Select Fruit For Stop Spin",
     Values = {
-        "Barrier", "Chop", "Sand", "Smoke", "Rubber", "Falcon", "Gas", "Bomb", "Ice", "Darkness",
-        "Ash", "Light", "Flame", "Magma", "Paw", "String", "Love", "Snow", "Quake", "Gravity",
-        "Phoenix", "Dragon", "TSRubber", "Magnet", "IceV2", "MagmaV2", "LightV2", "FlameV2",
-        "Venom", "Dough", "Leopard", "DoughV2", "Ope", "LeopardV2", "Lightning", "Nika", "DragonV2",
-        "Soul", "DarkXQuake", "Okuchi"
-    },
+    "Okuchi", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
+    "Venom", "FlameV2", "LightV2", "MagmaV2", "IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix",
+    "Gravity", "Quake", "Snow", "Love", "String", "Paw", "Magma", "Flame", "Light", "Ash", 
+    "Darkness", "Ice", "Bomb", "Gas", "Falcon", "Rubber", "Smoke", "Sand", "Chop", "Barrier"
+},
     Multi = true,
     Default = {},
     Callback = function(value)
