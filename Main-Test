@@ -1,4 +1,4 @@
---Main
+--Main!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -2080,32 +2080,27 @@ end
     end
 })
 --ESP Player
-Tabs.Main:AddToggle("ESPPlayerToggle", {
-    Title = "Show ESP Player",
-    Default = false,
-Callback = function(value)
-    shared.enableESP = value
-    if value then
-        local Players = game:GetService("Players")
+-- 📦 Dịch vụ Roblox
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
-shared.enableESP = shared.enableESP or false
-
+-- 🌐 Biến điều khiển
+shared.enableESP = false
 local espList = {}
 
+-- 🎯 Tạo hoặc cập nhật ESP cho 1 người chơi
 local function createESP(player)
 	if player == LocalPlayer then return end
 	if espList[player] then return end
 
-	local function updateESP()
+	local function setupESP()
 		local character = player.Character
-		if not character or not character:FindFirstChild("Head") then return end
-
-		local head = character:WaitForChild("Head")
+		if not character then return end
+		local head = character:FindFirstChild("Head")
 		local humanoid = character:FindFirstChildOfClass("Humanoid")
-		if not humanoid then return end
+		if not head or not humanoid then return end
 
 		local billboard = Instance.new("BillboardGui")
 		billboard.Name = "PlayerESP"
@@ -2113,6 +2108,7 @@ local function createESP(player)
 		billboard.Size = UDim2.new(0, 200, 0, 50)
 		billboard.StudsOffset = Vector3.new(0, 3, 0)
 		billboard.AlwaysOnTop = true
+		billboard.Enabled = shared.enableESP
 
 		local textLabel = Instance.new("TextLabel")
 		textLabel.Size = UDim2.new(1, 0, 1, 0)
@@ -2124,50 +2120,60 @@ local function createESP(player)
 		textLabel.Parent = billboard
 
 		billboard.Parent = head
-		espList[player] = {gui = billboard, label = textLabel}
 
-		-- Cập nhật thông tin mỗi frame
+		espList[player] = { gui = billboard, label = textLabel }
+
 		RunService.RenderStepped:Connect(function()
-			if not shared.enableESP or not player.Character or not player.Character:FindFirstChild("Head") then
-				if billboard then billboard.Enabled = false end
-				return
-			end
+			if not player.Character or not player.Character:FindFirstChild("Head") then return end
 
 			local head = player.Character:FindFirstChild("Head")
 			local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
 			if not head or not humanoid then return end
 
-			local distance = math.floor((Camera.CFrame.Position - head.Position).Magnitude)
-			local hp = math.floor(humanoid.Health)
-			local maxHp = math.floor(humanoid.MaxHealth)
-			textLabel.Text = string.format("%s\n❤️ %d / %d\nDistance: %d m", player.Name, hp, maxHp, distance)
-			billboard.Enabled = true
+			if shared.enableESP then
+				local distance = math.floor((Camera.CFrame.Position - head.Position).Magnitude)
+				local hp = math.floor(humanoid.Health)
+				local maxHp = math.floor(humanoid.MaxHealth)
+				textLabel.Text = string.format("%s\n❤️ %d / %d\n📏 %d m", player.Name, hp, maxHp, distance)
+				billboard.Enabled = true
+			else
+				billboard.Enabled = false
+			end
 		end)
 	end
 
-	-- Nếu nhân vật đã có
 	if player.Character then
-		updateESP()
+		setupESP()
 	end
 
-	-- Khi character mới được load
 	player.CharacterAdded:Connect(function()
 		wait(1)
-		updateESP()
+		setupESP()
 	end)
 end
 
--- Tạo ESP cho tất cả người chơi
+-- 🧍 Tạo ESP cho tất cả người chơi
 for _, player in pairs(Players:GetPlayers()) do
 	createESP(player)
 end
 
--- Tạo ESP cho người chơi mới
 Players.PlayerAdded:Connect(function(player)
 	createESP(player)
 end)
+
+-- 🟢 Toggle bật tắt bằng UI
+Tabs.Main:AddToggle("ESPPlayerToggle", {
+    Title = "Show ESP Player",
+    Default = false,
+    Callback = function(value)
+        shared.enableESP = value
+        for _, data in pairs(espList) do
+            if data.gui then
+                data.gui.Enabled = value
+            end
+        end
     end
-end
+})
 
 -- Lấy danh sách player dạng: DisplayName (Username)
 local function getPlayerList()
