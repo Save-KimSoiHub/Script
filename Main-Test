@@ -2162,7 +2162,7 @@ Players.PlayerAdded:Connect(function(player)
 end)
 
 -- 🟢 Toggle bật tắt bằng UI
-Tabs.Main:AddToggle("ESPPlayerToggle", {
+Tabs.Player:AddToggle("ESPPlayerToggle", {
     Title = "Show ESP Player",
     Default = false,
     Callback = function(value)
