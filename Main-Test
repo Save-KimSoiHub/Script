@@ -1,4 +1,4 @@
---Main!!!
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -2083,10 +2083,10 @@ end
 Tabs.Main:AddToggle("ESPPlayerToggle", {
     Title = "Show ESP Player",
     Default = false,
-    Callback = function(value)
-        shared.enableESP = value
-        if value then
-local Players = game:GetService("Players")
+Callback = function(value)
+    shared.enableESP = value
+    if value then
+        local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
@@ -2166,6 +2166,7 @@ end
 Players.PlayerAdded:Connect(function(player)
 	createESP(player)
 end)
+    end
 end
 
 -- Lấy danh sách player dạng: DisplayName (Username)
