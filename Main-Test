@@ -2259,7 +2259,7 @@ Tabs.Discord:AddParagraph({
 Tabs.Discord:AddButton({
     Title = "Click To Copy Link Discord !",
     Callback = function()
-       setclipboard("https://discord.gg/yTXMVrNs")
+       setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
 
