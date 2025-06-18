@@ -2079,11 +2079,94 @@ end
         end
     end
 })
+--ESP Player
+Tabs.Main:AddToggle("ESPPlayerToggle", {
+    Title = "Show ESP Player",
+    Default = false,
+    Callback = function(value)
+        shared.enableESP = value
+        if value then
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
-local selectedPlayerUsername = nil
-local dropdownRef = nil
+shared.enableESP = shared.enableESP or false
+
+local espList = {}
+
+local function createESP(player)
+	if player == LocalPlayer then return end
+	if espList[player] then return end
+
+	local function updateESP()
+		local character = player.Character
+		if not character or not character:FindFirstChild("Head") then return end
+
+		local head = character:WaitForChild("Head")
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if not humanoid then return end
+
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "PlayerESP"
+		billboard.Adornee = head
+		billboard.Size = UDim2.new(0, 200, 0, 50)
+		billboard.StudsOffset = Vector3.new(0, 3, 0)
+		billboard.AlwaysOnTop = true
+
+		local textLabel = Instance.new("TextLabel")
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.BackgroundTransparency = 1
+		textLabel.TextColor3 = Color3.new(1, 1, 1)
+		textLabel.TextStrokeTransparency = 0.5
+		textLabel.TextScaled = true
+		textLabel.Font = Enum.Font.SourceSansBold
+		textLabel.Parent = billboard
+
+		billboard.Parent = head
+		espList[player] = {gui = billboard, label = textLabel}
+
+		-- Cập nhật thông tin mỗi frame
+		RunService.RenderStepped:Connect(function()
+			if not shared.enableESP or not player.Character or not player.Character:FindFirstChild("Head") then
+				if billboard then billboard.Enabled = false end
+				return
+			end
+
+			local head = player.Character:FindFirstChild("Head")
+			local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+			if not head or not humanoid then return end
+
+			local distance = math.floor((Camera.CFrame.Position - head.Position).Magnitude)
+			local hp = math.floor(humanoid.Health)
+			local maxHp = math.floor(humanoid.MaxHealth)
+			textLabel.Text = string.format("%s\n❤️ %d / %d\nDistance: %d m", player.Name, hp, maxHp, distance)
+			billboard.Enabled = true
+		end)
+	end
+
+	-- Nếu nhân vật đã có
+	if player.Character then
+		updateESP()
+	end
+
+	-- Khi character mới được load
+	player.CharacterAdded:Connect(function()
+		wait(1)
+		updateESP()
+	end)
+end
+
+-- Tạo ESP cho tất cả người chơi
+for _, player in pairs(Players:GetPlayers()) do
+	createESP(player)
+end
+
+-- Tạo ESP cho người chơi mới
+Players.PlayerAdded:Connect(function(player)
+	createESP(player)
+end)
+end
 
 -- Lấy danh sách player dạng: DisplayName (Username)
 local function getPlayerList()
