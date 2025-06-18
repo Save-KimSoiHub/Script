@@ -11,7 +11,7 @@ local function __VxT9(input)
     end)
 
     if not ok then
-        print("Sever Không Ổn")
+        player:Kick("KimSoiHub Is Down !,Please Report It In Discord ")
         return false
     end
 
@@ -21,10 +21,10 @@ local function __VxT9(input)
     if res:lower():find("Đúng") then
         return true
     elseif res:lower():find("tồn") then
-        player:Kick("Key Sai,Hết Cứu !")
+        player:Kick("Invalid Key !")
         return false
     else
-        player:Kick("Sai HWID,Cút !")
+        player:Kick("Invalid HWID !,Please Reset HWID")
     end
 end
 
