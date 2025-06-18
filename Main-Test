@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -641,7 +641,7 @@ Tabs.Main:AddToggle("AutoCheckManaToggle", {
             local RunService = game:GetService("RunService")
 
             local player = Players.LocalPlayer
-            local manaThreshold = 50 -- 🧪 NGƯỠNG MANA
+            local manaThreshold = 200 -- 🧪 NGƯỠNG MANA
 
             local currentHumanoid = nil
             local manaLabel = nil
