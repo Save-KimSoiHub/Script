@@ -626,85 +626,74 @@ Tabs.Player:AddButton({
 loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\40\40\39\104\116\116\112\115\58\47\47\103\105\115\116\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\109\101\111\122\111\110\101\89\84\47\98\102\48\51\55\100\102\102\57\102\48\97\55\48\48\49\55\51\48\52\100\100\100\54\55\102\100\99\100\51\55\48\47\114\97\119\47\101\49\52\101\55\52\102\52\50\53\98\48\54\48\100\102\53\50\51\51\52\51\99\102\51\48\98\55\56\55\48\55\52\101\98\51\99\53\100\50\47\97\114\99\101\117\115\37\50\53\50\48\120\37\50\53\50\48\102\108\121\37\50\53\50\48\50\37\50\53\50\48\111\98\102\108\117\99\97\116\111\114\39\41\44\116\114\117\101\41\41\40\41\10\10")()
     end
 })
--- Auto Check Mana
+-- Auto Check Mana (Stable Version)
 local manaConnection
 
 Tabs.Main:AddToggle("AutoCheckManaToggle", {
     Title = "Auto Reset If Mana Is Low",
     Default = false,
     Callback = function(value)
-        autoCheckManaEnabled = value
         shared.autoCheckMana = value
 
-        if value then
-            local Players = game:GetService("Players")
-            local RunService = game:GetService("RunService")
-
-            local player = Players.LocalPlayer
-            local manaThreshold = 250 -- 🧪 NGƯỠNG MANA
-
-            local currentHumanoid = nil
-            local manaLabel = nil
-            local canAct = false
-            local initialDelay = 15
-
-            local function resetCharacter()
-                if currentHumanoid then
-                    currentHumanoid.Health = 0
-                    print("⚠️ Reset vì Mana thấp")
-                end
-            end
-
-            local function setupCharacter(character)
-                currentHumanoid = character:WaitForChild("Humanoid")
-                local gui = player:WaitForChild("PlayerGui")
-                manaLabel = gui:WaitForChild("UI"):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("Mana"):WaitForChild("TextLabel")
-            end
-
-            if player.Character then
-                setupCharacter(player.Character)
-            end
-
-            player.CharacterAdded:Connect(setupCharacter)
-
-            task.delay(initialDelay, function()
-                canAct = true
-            end)
-
-            manaConnection = RunService.RenderStepped:Connect(function()
-                if shared.autoCheckMana and canAct and currentHumanoid and manaLabel then
-                    local manaText = manaLabel.Text:gsub("[^%d]", "")
-                    local currentMana = tonumber(manaText) or 100
-
-                    if currentMana < manaThreshold and currentHumanoid.Health > 0 then
-                        resetCharacter()
-                        canAct = false
-                        task.delay(15, function()
-                            canAct = true
-                        end)
-                    end
-                end
-            end)
-        else
-            -- Ngắt kết nối nếu toggle OFF
+        -- Ngắt nếu toggle off
+        if not value then
             if manaConnection then
                 manaConnection:Disconnect()
                 manaConnection = nil
             end
+            return
         end
-    end
-})
 
--- Chọn Slot
-local selectedSlot = 1
-Tabs.Misc:AddDropdown("SlotSelector", {
-    Title = "Select Slot To Switch",
-    Values = { "1", "2", "3", "4", "5", "6", "7", "8" },
-    Multi = false,
-    Default = "1",
-    Callback = function(value)
-        selectedSlot = tonumber(value)
-        print("Đã chọn slot: " .. selectedSlot)
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+
+        local player = Players.LocalPlayer
+        local manaThreshold = 250
+
+        local currentHumanoid = nil
+        local manaLabel = nil
+        local canAct = false
+        local initialDelay = 15
+
+        local function resetCharacter()
+            if currentHumanoid then
+                currentHumanoid.Health = 0
+                print("⚠️ Reset vì Mana thấp")
+            end
+        end
+
+        local function setupCharacter(character)
+            currentHumanoid = character:WaitForChild("Humanoid")
+            local gui = player:WaitForChild("PlayerGui")
+            manaLabel = gui:WaitForChild("UI"):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("Mana"):WaitForChild("TextLabel")
+        end
+
+        if player.Character then
+            setupCharacter(player.Character)
+        end
+
+        player.CharacterAdded:Connect(function(char)
+            setupCharacter(char)
+        end)
+
+        task.delay(initialDelay, function()
+            canAct = true
+        end)
+
+        manaConnection = RunService.RenderStepped:Connect(function()
+            if shared.autoCheckMana and canAct and currentHumanoid and manaLabel and manaLabel.Text then
+                local manaText = manaLabel.Text:gsub("[^%d]", "")
+                local currentMana = tonumber(manaText) or 100
+
+                if currentMana < manaThreshold and currentHumanoid.Health > 0 then
+                    resetCharacter()
+                    canAct = false
+                    task.delay(15, function()
+                        canAct = true
+                    end)
+                end
+            end
+        end)
     end
 })
 
