@@ -630,25 +630,48 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local THRESHOLD = 280 -- Ngưỡng mana tối thiểu để reset
+local THRESHOLD = 300 -- Số mana thấp nhất để reset
 local currentHumanoid = nil
-local manaLabel = nil
+local manaTextLabel = nil
 local canAct = false
 local initialDelay = 15
 
 shared.autoCheckMana = shared.autoCheckMana or false
 
+-- Auto Check Mana
+Tabs.Main:AddToggle("AutoCheckManaToggle", {
+    Title = "Auto Reset If Mana Is Low",
+    Default = shared.autoCheckMana,
+    Callback = function(value)
+        shared.autoCheckMana = value
+        print("[Toggle] AutoCheckMana set to", value)
+    end
+})
+
+-- 🌀 Hàm reset nhân vật
 local function resetCharacter()
     if currentHumanoid then
         currentHumanoid.Health = 0
     end
 end
 
+-- ✅ Tìm TextLabel có chứa Mana
+local function findManaTextLabel(parent)
+    for _, child in ipairs(parent:GetDescendants()) do
+        if child:IsA("TextLabel") and child.Text:match("^%d+/%d+$") then
+            return child
+        end
+    end
+    return nil
+end
+
+-- 🔁 Gán nhân vật và tìm label Mana
 local function setupCharacter(character)
     currentHumanoid = character:WaitForChild("Humanoid")
-    -- Gán manaLabel tại đây
+
     local gui = player:WaitForChild("PlayerGui")
-    manaLabel = gui:WaitForChild("UI"):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
+    local progressStamina = gui:WaitForChild("UI"):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
+    manaTextLabel = findManaTextLabel(progressStamina)
 end
 
 if player.Character then
@@ -657,22 +680,22 @@ end
 
 player.CharacterAdded:Connect(setupCharacter)
 
+-- ⏳ Delay ban đầu
 task.wait(initialDelay)
 canAct = true
 
+-- 🔁 Theo dõi mana
 RunService.RenderStepped:Connect(function()
-    if shared.autoCheckMana and currentHumanoid and manaLabel then
-        -- Lấy TextLabel chứa mana
-        local textLabel = manaLabel:FindFirstChildWhichIsA("TextLabel")
-        if textLabel and textLabel.Text then
-            local currentMana = tonumber(textLabel.Text:match("(%d+)/%d+"))
+    if shared.autoCheckMana and currentHumanoid and manaTextLabel then
+        local text = manaTextLabel.Text
+        local currentMana = tonumber(text:match("^(%d+)/%d+$"))
 
-            if currentMana and currentMana < THRESHOLD and currentHumanoid.Health > 0 and canAct then
-                resetCharacter()
-                canAct = false
-                task.wait(15)
-                canAct = true
-            end
+        if currentMana and currentMana < THRESHOLD and currentHumanoid.Health > 0 and canAct then
+            print("[AutoCheckMana] Mana thấp (" .. currentMana .. "), reset...")
+            resetCharacter()
+            canAct = false
+            task.wait(15)
+            canAct = true
         end
     end
 end)
