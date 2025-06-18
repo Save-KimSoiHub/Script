@@ -1,4 +1,4 @@
---Main!
+--Main!!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -92,6 +92,28 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
+-- ⚙ Dịch vụ Roblox
+local Players = game:GetService("Players")
+
+-- 🌐 Lấy danh sách player dạng: DisplayName (Username), sắp xếp A-Z không phân biệt hoa thường
+function getPlayerList()
+    local list = {}
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(list, player.DisplayName .. " (" .. player.Name .. ")")
+    end
+
+    table.sort(list, function(a, b)
+        return a:lower() < b:lower()
+    end)
+
+    return list
+end
+
+-- 🔍 Tách username từ chuỗi "DisplayName (Username)"
+function extractUsername(comboText)
+    return comboText:match("%((.-)%)")
+end
 
 Tabs.Main:AddParagraph({
     Title = "Tutorial !",
@@ -2174,20 +2196,6 @@ Tabs.Player:AddToggle("ESPPlayerToggle", {
         end
     end
 })
-
--- Lấy danh sách player dạng: DisplayName (Username)
-local function getPlayerList()
-    local list = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        table.insert(list, player.DisplayName .. " (" .. player.Name .. ")")
-    end
-    return list
-end
-
--- Tách username từ chuỗi "DisplayName (Username)"
-local function extractUsername(comboText)
-    return comboText:match("%((.-)%)")
-end
 
 -- Hàm teleport
 local function teleportToPlayer(playerName)
