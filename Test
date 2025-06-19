@@ -1,4 +1,4 @@
---Main!!!
+--Main!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -350,10 +350,6 @@ local function fastTeleport()
     isTeleported = true
 end
 
-local skillType1 = {
-    "KimSoi"
-}
-
 local skillType2 = {
     "PiercingShine"
 }
@@ -377,24 +373,6 @@ local function castSkill(fruit, skill)
         Material = Enum.Material.Grass,
         Position = target
     }
-
-    -- Nếu là skill dạng 1 (dùng FireServer đơn giản)
-    if table.find(skillType1, skill) then
-        local args = {
-            fruit,
-            skill,
-            {}
-        }
-
-        local success, err = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer(unpack(args))
-        end)
-
-        if not success then
-            warn("[castSkill - dạng 1] Lỗi:", err)
-        end
-        return
-    end
 
     -- Nếu là skill dạng 2 (dùng InvokeServer với Raycast đơn giản)
     if table.find(skillType2, skill) then
@@ -441,6 +419,7 @@ local function castSkill(fruit, skill)
         warn("[castSkill - mặc định] Lỗi:", err)
     end
 end
+
 
 local skillLoopRunning = false
 local function startSkillLoop()
