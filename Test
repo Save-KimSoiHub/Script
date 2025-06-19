@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1919,6 +1919,53 @@ local function getLowestHealthPlayer()
     return lowestPlayer
 end
 
+-- Toggle UI
+Tabs.Player:AddToggle("FollowLowestHP", {
+    Title = "Auto Farm Player Lowest HP",
+    Description = "Auto Farm Player Lowest HP [Need To Update]",
+    Default = false,
+    Callback = function(state)
+        followLowestHP = state
+
+        -- Bật
+        if state then
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local RunService = game:GetService("RunService")
+
+            local currentTarget = nil
+
+            -- Task chọn mục tiêu
+            followTargetTask = task.spawn(function()
+                while followLowestHP do
+                    currentTarget = getLowestHealthPlayer()
+                    task.wait(2)
+                end
+            end)
+
+            -- Kết nối RenderStepped để di chuyển
+            followConnection = RunService.RenderStepped:Connect(function()
+                local char = LocalPlayer.Character
+                if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+                if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
+                    local targetHRP = currentTarget.Character.HumanoidRootPart
+                    local myHRP = char.HumanoidRootPart
+                    myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -1)
+                end
+            end)
+        else
+            -- Tắt
+            if followConnection then
+                followConnection:Disconnect()
+                followConnection = nil
+            end
+            if followTargetTask then
+                task.cancel(followTargetTask)
+                followTargetTask = nil
+            end
+        end
+    end
+})
 --Kích Hoạt Kaitun Auto Spin
 Tabs.Fruit:AddToggle("Kaitun Mythical", {
     Title = "Kaitun Auto Find Fruit Mythical",
@@ -2259,7 +2306,7 @@ local function createESP(player)
 		local billboard = Instance.new("BillboardGui")
 		billboard.Name = "PlayerESP"
 		billboard.Adornee = head
-		billboard.Size = UDim2.new(0, 200, 0, 50)
+		billboard.Size = UDim2.new(0, 200, 0, 60)
 		billboard.StudsOffset = Vector3.new(0, 3, 0)
 		billboard.AlwaysOnTop = true
 		billboard.Enabled = shared.enableESP
@@ -2288,7 +2335,16 @@ local function createESP(player)
 				local distance = math.floor((Camera.CFrame.Position - head.Position).Magnitude)
 				local hp = math.floor(humanoid.Health)
 				local maxHp = math.floor(humanoid.MaxHealth)
-				textLabel.Text = string.format("%s\n❤️ %d / %d\n📏 %d m", player.Name, hp, maxHp, distance)
+
+				local fruit = "???"
+				pcall(function()
+					local fruitValue = player:FindFirstChild("Data") and player.Data:FindFirstChild("Fruit")
+					if fruitValue and fruitValue.Value ~= "" then
+						fruit = fruitValue.Value
+					end
+				end)
+
+				textLabel.Text = string.format("%s\n❤️ %d / %d\nDistance: %d m\nFruit: %s", player.Name, hp, maxHp, distance, fruit)
 				billboard.Enabled = true
 			else
 				billboard.Enabled = false
