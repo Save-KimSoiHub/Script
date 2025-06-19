@@ -1,4 +1,4 @@
---Main!
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -112,7 +112,7 @@ local PositionData = {
         Vector3.new(-4765.79, 1125.53, 398.81), Vector3.new(-5475.12, 1138.52, 694.03),
         Vector3.new(-5372.89, 809.52, 330.33), Vector3.new(-5336.56, 1175.52, -248.54),
         Vector3.new(-5054.07, 1275.02, -366.31), Vector3.new(-4656.35, 1275.02, -366.83),
-        Vector3.new(-4590.36, 1514.52, -186.97), Vector3.new(-4260.62, 1514.52, -190.89),
+        Vector3.new(-4494.37, 1514.52, -200.73), Vector3.new(-4260.62, 1514.52, -190.89),
         Vector3.new(-3629.31, 1488.51, 0.77), Vector3.new(-3638.80, 1562.21, 372.09),
         Vector3.new(-3587.73, 1532.35, 614.15), Vector3.new(-4037.96, 1461.62, 792.76),
         Vector3.new(-4271.91, 1312.59, 901.19), Vector3.new(-3859.99, 1359.75, 945.52),
@@ -200,6 +200,7 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local gui = player:WaitForChild("PlayerGui")
+local deathScreenVisible = false
 local _isInGame = false
 local currentFruit = nil
 local currentHumanoid = nil
@@ -213,6 +214,52 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local GuiService = game:GetService("GuiService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local function handleDeathScreen(gui)
+	print("🟥 DeathScreen mới được thêm:", gui:GetFullName())
+	deathScreenVisible = true
+
+	local disconnected = false
+	gui.AncestryChanged:Connect(function(_, parent)
+		if not disconnected and (not parent or not gui:IsDescendantOf(gui.Parent)) then
+			disconnected = true
+			deathScreenVisible = false
+			print("✅ DeathScreen đã biến mất.")
+		end
+	end)
+
+	gui.Destroying:Connect(function()
+		if not disconnected then
+			disconnected = true
+			deathScreenVisible = false
+			print("✅ DeathScreen bị Destroy.")
+		end
+	end)
+end
+
+-- Theo dõi DeathScreen khi được thêm vào GUI
+local function listenForDeathScreen()
+	print("👁️ Bắt đầu theo dõi DeathScreen...")
+
+	local gui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+	for _, g in ipairs(gui:GetChildren()) do
+		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
+			handleDeathScreen(g)
+		end
+	end
+
+	gui.ChildAdded:Connect(function(g)
+		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
+			handleDeathScreen(g)
+		end
+	end)
+end
+
+-- Kích hoạt theo dõi mỗi khi nhân vật xuất hiện (gồm hồi sinh)
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+	print("👤 Nhân vật đã xuất hiện. Bắt đầu kiểm tra DeathScreen...")
+	listenForDeathScreen()
+end)
 
 -- Tìm nút Ranked
 local function findRankedButton()
@@ -274,16 +321,28 @@ end
 
 -- Nhấn nút Play
 local function pressPlay(playBtn)
-    if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
-        GuiService.SelectedObject = playBtn
-        task.wait(0.05)
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-        task.wait(0.05)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-        print("[AutoPlay] Đã nhấn nút Play.")
-        return true
-    end
-    return false
+	if deathScreenVisible then
+		print("[AutoPlay] ⚠️ DeathScreen đang hiển thị, không nhấn Play.")
+		return false
+	end
+
+	if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
+		GuiService.SelectedObject = playBtn
+		task.wait(0.1)
+
+		-- Gửi 2 lần Enter để đảm bảo Play được kích hoạt
+		for i = 1, 2 do
+			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+			task.wait(0.05)
+			VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+			task.wait(0.05)
+		end
+
+		print("[AutoPlay] ✅ Đã gửi Enter để nhấn Play.")
+		return true
+	end
+
+	return false
 end
 
 local skills = {
@@ -523,6 +582,23 @@ local function setupCharacter(character)
     end)
 end
 
+-- Thêm hàm chờ khi nhân vật đã vào game và có thể lấy được vị trí
+local function waitUntilPositionReady()
+    while shared.autoFarm do
+        local success, pos = pcall(function()
+            local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            return hrp and hrp.Position
+        end)
+        if success and pos then
+            print(("CFrame.new(%.2f, %.2f, %.2f)"):format(pos.X, pos.Y, pos.Z))
+            return true
+        end
+        task.wait(0.2)
+    end
+    return false
+end
+
+-- Bắt sự kiện khi nhân vật được tạo lại
 player.CharacterAdded:Connect(function(char)
     if not shared.autoFarm then return end
 
@@ -531,19 +607,24 @@ player.CharacterAdded:Connect(function(char)
     isTeleported = false
     setupCharacter(char)
 
-    task.delay(4, function()
-        if shared.autoFarm then
+    -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
+    task.spawn(function()
+        if waitUntilPositionReady() and shared.autoFarm then
             fastTeleport()
             lockPosition()
         end
     end)
 end)
+
+-- Nếu nhân vật đã tồn tại sẵn khi bật Auto Farm
 if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
     if shared.autoFarm then
         _isInGame = true
         setupCharacter(player.Character)
-        task.delay(4, function()
-            if shared.autoFarm then
+
+        -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
+        task.spawn(function()
+            if waitUntilPositionReady() and shared.autoFarm then
                 fastTeleport()
                 lockPosition()
             end
@@ -551,49 +632,77 @@ if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
     end
 end
 
+-- Các khai báo dịch vụ (nếu chưa có trong phần trên)
 local Players = game:GetService("Players")
 local GuiService = game:GetService("GuiService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local player = Players.LocalPlayer
 
+-- Auto nhấn Play khi chưa vào game
 task.spawn(function()
-    while true do
-        if not shared.autoFarm then
-            task.wait(1)
-            continue
-        end
+	while true do
+		if not shared.autoFarm then
+			task.wait(1)
+			continue
+		end
 
-        if not player.Character then
-            local ranked = findRankedButton()
-            local playBtn = findPlayButton()
+		if not player.Character then
+			local ranked = findRankedButton()
+			local playBtn = findPlayButton()
 
-            if ranked and playBtn then
-                print("[AutoPlay] Đã thấy Ranked. Đợi ổn định 3 frame...")
-                if waitUntilStable(ranked, 3, 5) then
-                    print("[AutoPlay] Ranked đã ổn định. Nhấn Play...")
-                    if pressPlay(playBtn) then
-                        local confirmStart = tick()
-                        while tick() - confirmStart < 10 do
-                            if player.Character or not playBtn.Visible then
-                                print("[AutoPlay] Vào game OK.")
-                                break
-                            end
-                            task.wait(0.2)
-                        end
-                    end
-                else
-                    print("[AutoPlay] Không ổn định kịp.")
-                end
-            else
-                print("[AutoPlay] Chưa tìm thấy nút cần.")
-            end
-        end
+			if ranked and playBtn then
+				print("[AutoPlay] 🔍 Đã thấy Ranked. Đợi ổn định 3 frame...")
+				if waitUntilStable(ranked, 3, 5) then
+					print("[AutoPlay] 🟨 Ranked ổn định. Đợi DeathScreen biến mất...")
 
-        task.wait(0.5)
-    end
+					-- Chờ đến khi DeathScreen thực sự biến mất
+					while deathScreenVisible do
+						task.wait(0.2)
+						print("[AutoPlay] ⏳ Vẫn thấy DeathScreen, chờ tiếp...")
+					end
+
+					print("[AutoPlay] ✅ DeathScreen đã biến mất!")
+
+					-- Đợi thêm 0.5 giây để đảm bảo GUI ổn định
+					task.wait(0.5)
+
+					-- Kiểm tra lại nút Play vẫn còn trước khi nhấn
+					playBtn = findPlayButton()
+					if playBtn and playBtn.Visible then
+						print("[AutoPlay] ▶️ Nhấn nút Play...")
+						if pressPlay(playBtn) then
+							local confirmStart = tick()
+							while tick() - confirmStart < 10 do
+								if player.Character or not playBtn.Visible then
+									print("[AutoPlay] 🟩 Vào game OK.")
+									break
+								end
+								task.wait(0.2)
+							end
+						else
+							warn("[AutoPlay] ❌ Nhấn Play thất bại.")
+						end
+					else
+						warn("[AutoPlay] 🔄 Play button biến mất, thử lại sau.")
+					end
+				else
+					print("[AutoPlay] ❌ Không ổn định kịp.")
+				end
+			else
+				print("[AutoPlay] ⛔ Không tìm thấy nút cần thiết.")
+			end
+		else
+			if deathScreenVisible then
+				print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
+			end
+		end
+
+		task.wait(0.5)
+	end
 end)
 
+-- Bắt đầu theo dõi slot trái và auto dùng skill
 watchSlotChanges()
 startSkillLoop()
         else
@@ -1164,7 +1273,7 @@ Tabs.Rejoin:AddButton({
 
         game.StarterGui:SetCore("SendNotification", {
             Title = "Auto Rejoin",
-            Text = "Auto Rejoin In" .. rejoinDelay .. " Second",
+            Text = "Auto Rejoin In " .. rejoinDelay .. " Second",
             Duration = 8,
             Icon = "rbxassetid://93005671600086"
         })
