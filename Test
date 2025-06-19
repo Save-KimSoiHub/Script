@@ -1,4 +1,4 @@
---Main 
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -652,37 +652,45 @@ task.spawn(function()
 			local playBtn = findPlayButton()
 
 			if ranked and playBtn then
-				print("[AutoPlay] Đã thấy Ranked. Đợi ổn định 3 frame...")
-
+				print("[AutoPlay] 🔍 Đã thấy Ranked. Đợi ổn định 3 frame...")
 				if waitUntilStable(ranked, 3, 5) then
-					print("[AutoPlay] Ranked ổn định. Kiểm tra DeathScreen...")
+					print("[AutoPlay] 🟨 Ranked ổn định. Đợi DeathScreen biến mất...")
 
-					-- Đợi tối đa 1 giây nếu deathScreenVisible còn true (do chưa cập nhật)
-					local waitStart = tick()
-					while deathScreenVisible and tick() - waitStart < 1 do
-						task.wait(0.1)
+					-- Chờ đến khi DeathScreen thực sự biến mất
+					while deathScreenVisible do
+						task.wait(0.2)
+						print("[AutoPlay] ⏳ Vẫn thấy DeathScreen, chờ tiếp...")
 					end
 
-					if not deathScreenVisible then
-						print("[AutoPlay] Không còn DeathScreen. Nhấn Play...")
+					print("[AutoPlay] ✅ DeathScreen đã biến mất!")
+
+					-- Đợi thêm 0.5 giây để đảm bảo GUI ổn định
+					task.wait(0.5)
+
+					-- Kiểm tra lại nút Play vẫn còn trước khi nhấn
+					playBtn = findPlayButton()
+					if playBtn and playBtn.Visible then
+						print("[AutoPlay] ▶️ Nhấn nút Play...")
 						if pressPlay(playBtn) then
 							local confirmStart = tick()
 							while tick() - confirmStart < 10 do
 								if player.Character or not playBtn.Visible then
-									print("[AutoPlay] ✅ Vào game OK.")
+									print("[AutoPlay] 🟩 Vào game OK.")
 									break
 								end
 								task.wait(0.2)
 							end
+						else
+							warn("[AutoPlay] ❌ Nhấn Play thất bại.")
 						end
 					else
-						print("[AutoPlay] ⏳ DeathScreen vẫn còn, chờ lần sau...")
+						warn("[AutoPlay] 🔄 Play button biến mất, thử lại sau.")
 					end
 				else
-					print("[AutoPlay] Không ổn định kịp.")
+					print("[AutoPlay] ❌ Không ổn định kịp.")
 				end
 			else
-				print("[AutoPlay] Chưa tìm thấy nút cần.")
+				print("[AutoPlay] ⛔ Không tìm thấy nút cần thiết.")
 			end
 		else
 			if deathScreenVisible then
