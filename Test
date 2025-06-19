@@ -1,4 +1,4 @@
---Main!
+--Main!!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -523,6 +523,23 @@ local function setupCharacter(character)
     end)
 end
 
+-- Thêm hàm chờ khi nhân vật đã vào game và có thể lấy được vị trí
+local function waitUntilPositionReady()
+    while shared.autoFarm do
+        local success, pos = pcall(function()
+            local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            return hrp and hrp.Position
+        end)
+        if success and pos then
+            print(("CFrame.new(%.2f, %.2f, %.2f)"):format(pos.X, pos.Y, pos.Z))
+            return true
+        end
+        task.wait(0.2)
+    end
+    return false
+end
+
+-- Bắt sự kiện khi nhân vật được tạo lại
 player.CharacterAdded:Connect(function(char)
     if not shared.autoFarm then return end
 
@@ -531,19 +548,24 @@ player.CharacterAdded:Connect(function(char)
     isTeleported = false
     setupCharacter(char)
 
-    task.delay(4, function()
-        if shared.autoFarm then
+    -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
+    task.spawn(function()
+        if waitUntilPositionReady() and shared.autoFarm then
             fastTeleport()
             lockPosition()
         end
     end)
 end)
+
+-- Nếu nhân vật đã tồn tại sẵn khi bật Auto Farm
 if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
     if shared.autoFarm then
         _isInGame = true
         setupCharacter(player.Character)
-        task.delay(4, function()
-            if shared.autoFarm then
+
+        -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
+        task.spawn(function()
+            if waitUntilPositionReady() and shared.autoFarm then
                 fastTeleport()
                 lockPosition()
             end
@@ -551,12 +573,14 @@ if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
     end
 end
 
+-- Các khai báo dịch vụ (nếu chưa có trong phần trên)
 local Players = game:GetService("Players")
 local GuiService = game:GetService("GuiService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local player = Players.LocalPlayer
 
+-- Auto nhấn Play khi chưa vào game
 task.spawn(function()
     while true do
         if not shared.autoFarm then
@@ -594,6 +618,7 @@ task.spawn(function()
     end
 end)
 
+-- Bắt đầu theo dõi slot trái và auto dùng skill
 watchSlotChanges()
 startSkillLoop()
         else
