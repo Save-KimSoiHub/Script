@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -2336,11 +2336,19 @@ local function createESP(player)
 				local hp = math.floor(humanoid.Health)
 				local maxHp = math.floor(humanoid.MaxHealth)
 
+				-- 🔍 Lấy tên trái ác quỷ từ MAIN_DATA.Slots
 				local fruit = "???"
 				pcall(function()
-					local fruitValue = player:FindFirstChild("Data") and player.Data:FindFirstChild("Fruit")
-					if fruitValue and fruitValue.Value ~= "" then
-						fruit = fruitValue.Value
+					local mainData = player:FindFirstChild("MAIN_DATA")
+					if not mainData then return end
+
+					local currentSlot = mainData:FindFirstChild("Slot")
+					local slotsFolder = mainData:FindFirstChild("Slots")
+					if not currentSlot or not slotsFolder then return end
+
+					local slot = slotsFolder:FindFirstChild(tostring(currentSlot.Value))
+					if slot and slot:IsA("StringValue") and slot.Value ~= "" then
+						fruit = slot.Value
 					end
 				end)
 
@@ -2357,7 +2365,7 @@ local function createESP(player)
 	end
 
 	player.CharacterAdded:Connect(function()
-		wait(1)
+		task.wait(1)
 		setupESP()
 	end)
 end
