@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -322,19 +322,26 @@ end
 -- Nhấn nút Play
 local function pressPlay(playBtn)
 	if deathScreenVisible then
-		print("[AutoPlay] ⚠️ DeathScreen đang hiện. Chờ biến mất...")
+		print("[AutoPlay] ⚠️ DeathScreen đang hiển thị, không nhấn Play.")
 		return false
 	end
 
 	if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
 		GuiService.SelectedObject = playBtn
-		task.wait(0.05)
-		VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-		task.wait(0.05)
-		VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-		print("[AutoPlay] ✅ Đã nhấn nút Play.")
+		task.wait(0.1)
+
+		-- Gửi 2 lần Enter để đảm bảo Play được kích hoạt
+		for i = 1, 2 do
+			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+			task.wait(0.05)
+			VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+			task.wait(0.05)
+		end
+
+		print("[AutoPlay] ✅ Đã gửi Enter để nhấn Play.")
 		return true
 	end
+
 	return false
 end
 
