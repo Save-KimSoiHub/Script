@@ -1244,7 +1244,7 @@ Tabs.Rejoin:AddButton({
 
         game.StarterGui:SetCore("SendNotification", {
             Title = "Auto Rejoin",
-            Text = "Auto Rejoin In" .. rejoinDelay .. " Second",
+            Text = "Auto Rejoin In " .. rejoinDelay .. " Second",
             Duration = 8,
             Icon = "rbxassetid://93005671600086"
         })
