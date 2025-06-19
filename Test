@@ -1,4 +1,4 @@
---Main
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -632,13 +632,6 @@ if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
     end
 end
 
--- Các khai báo dịch vụ (nếu chưa có trong phần trên)
-local Players = game:GetService("Players")
-local GuiService = game:GetService("GuiService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-
-local player = Players.LocalPlayer
-
 -- Auto nhấn Play khi chưa vào game
 task.spawn(function()
 	while true do
@@ -648,38 +641,36 @@ task.spawn(function()
 		end
 
 		if not player.Character and not deathScreenVisible then
-			local ranked, playBtn = waitUntilAllButtonsExist(10)
+			local ranked = findRankedButton()
+			local playBtn = findPlayButton()
 
 			if ranked and playBtn then
-				print("[AutoPlay] Ranked/Play đã xuất hiện. Chờ ổn định...")
+				print("[AutoPlay] Đã thấy Ranked. Đợi 2 giây cho UI load...")
+				task.wait(2) -- Chờ UI ổn định đơn giản
+				print("[AutoPlay] Thử nhấn Play...")
 
-				if waitUntilFullyStable(ranked, 5, 5) and waitUntilFullyStable(playBtn, 5, 5) then
-					print("[AutoPlay] UI ổn định. Nhấn Play...")
-
-					if pressPlay(playBtn) then
-						local confirmStart = tick()
-						while tick() - confirmStart < 10 do
-							if player.Character or not playBtn.Visible then
-								print("[AutoPlay] Vào game OK.")
-								break
-							end
-							task.wait(0.2)
+				if pressPlay(playBtn) then
+					local confirmStart = tick()
+					while tick() - confirmStart < 10 do
+						if player.Character or not playBtn.Visible then
+							print("[AutoPlay] ✅ Vào game OK.")
+							break
 						end
+						task.wait(0.2)
 					end
 				else
-					warn("[AutoPlay] UI không ổn định.")
+					print("[AutoPlay] ❌ Nhấn Play thất bại.")
 				end
 			else
-				print("[AutoPlay] Không tìm thấy Ranked/Play.")
+				print("[AutoPlay] Chưa tìm thấy nút Ranked hoặc Play.")
 			end
 		elseif deathScreenVisible then
-			print("[AutoPlay] ⏳ Chờ DeathScreen biến mất...")
+			print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
 		end
 
 		task.wait(0.5)
 	end
 end)
-
 
 -- Bắt đầu theo dõi slot trái và auto dùng skill
 watchSlotChanges()
