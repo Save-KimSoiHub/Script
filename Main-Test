@@ -1,4 +1,4 @@
---Main
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -632,13 +632,6 @@ if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
     end
 end
 
--- Các khai báo dịch vụ (nếu chưa có trong phần trên)
-local Players = game:GetService("Players")
-local GuiService = game:GetService("GuiService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-
-local player = Players.LocalPlayer
-
 -- Auto nhấn Play khi chưa vào game
 task.spawn(function()
 	while true do
@@ -647,55 +640,32 @@ task.spawn(function()
 			continue
 		end
 
-		if not player.Character then
+		if not player.Character and not deathScreenVisible then
 			local ranked = findRankedButton()
 			local playBtn = findPlayButton()
 
 			if ranked and playBtn then
-				print("[AutoPlay] 🔍 Đã thấy Ranked. Đợi ổn định 3 frame...")
-				if waitUntilStable(ranked, 3, 5) then
-					print("[AutoPlay] 🟨 Ranked ổn định. Đợi DeathScreen biến mất...")
+				print("[AutoPlay] Đã thấy Ranked. Đợi 2 giây cho UI load...")
+				task.wait(2) -- Chờ UI ổn định đơn giản
+				print("[AutoPlay] Thử nhấn Play...")
 
-					-- Chờ đến khi DeathScreen thực sự biến mất
-					while deathScreenVisible do
-						task.wait(0.2)
-						print("[AutoPlay] ⏳ Vẫn thấy DeathScreen, chờ tiếp...")
-					end
-
-					print("[AutoPlay] ✅ DeathScreen đã biến mất!")
-
-					-- Đợi thêm 0.5 giây để đảm bảo GUI ổn định
-					task.wait(0.5)
-
-					-- Kiểm tra lại nút Play vẫn còn trước khi nhấn
-					playBtn = findPlayButton()
-					if playBtn and playBtn.Visible then
-						print("[AutoPlay] ▶️ Nhấn nút Play...")
-						if pressPlay(playBtn) then
-							local confirmStart = tick()
-							while tick() - confirmStart < 10 do
-								if player.Character or not playBtn.Visible then
-									print("[AutoPlay] 🟩 Vào game OK.")
-									break
-								end
-								task.wait(0.2)
-							end
-						else
-							warn("[AutoPlay] ❌ Nhấn Play thất bại.")
+				if pressPlay(playBtn) then
+					local confirmStart = tick()
+					while tick() - confirmStart < 10 do
+						if player.Character or not playBtn.Visible then
+							print("[AutoPlay] ✅ Vào game OK.")
+							break
 						end
-					else
-						warn("[AutoPlay] 🔄 Play button biến mất, thử lại sau.")
+						task.wait(0.2)
 					end
 				else
-					print("[AutoPlay] ❌ Không ổn định kịp.")
+					print("[AutoPlay] ❌ Nhấn Play thất bại.")
 				end
 			else
-				print("[AutoPlay] ⛔ Không tìm thấy nút cần thiết.")
+				print("[AutoPlay] Chưa tìm thấy nút Ranked hoặc Play.")
 			end
-		else
-			if deathScreenVisible then
-				print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
-			end
+		elseif deathScreenVisible then
+			print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
 		end
 
 		task.wait(0.5)
