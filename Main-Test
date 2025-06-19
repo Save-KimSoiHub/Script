@@ -1,4 +1,4 @@
---Main !!!
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -531,29 +531,43 @@ local skillLoopRunning = false
 local function startSkillLoop()
     if skillLoopRunning then return end
     skillLoopRunning = true
+
     task.spawn(function()
         while true do
             if not shared.autoFarm then
                 unlockPosition()
                 isTeleported = false
-                task.wait(0.5)
+                task.wait(0.3)
                 continue
             end
 
-            -- Nếu autoFarm bật và forceUnlock thì chỉ unlock vị trí (vẫn spam skill nếu đủ điều kiện)
             if shared.forceUnlock then
                 unlockPosition()
             end
 
             if _isInGame and characterReady and currentFruit and skills[currentFruit] and (bienCaoCap or isTeleported) then
-                for _, skill in ipairs(skills[currentFruit]) do
-                    -- Kiểm tra lại trong vòng for để đảm bảo vẫn đúng điều kiện
-                    if not (shared.autoFarm and _isInGame and characterReady and (bienCaoCap or isTeleported)) then break end
-                    castSkill(currentFruit, skill)
-                    task.wait(0.15)
+                local fruitSkills = skills[currentFruit]
+                local readySkills = {}
+
+                -- Ưu tiên chiêu đã hồi
+                for _, skill in ipairs(fruitSkills) do
+                    if isSkillReady(skill) then
+                        table.insert(readySkills, skill)
+                    end
                 end
+
+                -- Cast tất cả chiêu đã hồi song song
+                for _, skill in ipairs(readySkills) do
+                    if not (shared.autoFarm and _isInGame and characterReady and (bienCaoCap or isTeleported)) then break end
+                    task.spawn(function()
+                        castSkill(currentFruit, skill)
+                    end)
+                    task.wait(0.03) -- delay nhẹ tránh overload server
+                end
+
+                task.wait(0.1) -- nghỉ 1 chút giữa các lượt
             else
-                task.wait(0.5)
+                task.wait(0.3)
             end
         end
     end)
