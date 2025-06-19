@@ -1,4 +1,4 @@
---Main!!!
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -200,6 +200,7 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local gui = player:WaitForChild("PlayerGui")
+local deathScreenVisible = false
 local _isInGame = false
 local currentFruit = nil
 local currentHumanoid = nil
@@ -213,6 +214,52 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local GuiService = game:GetService("GuiService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local function handleDeathScreen(gui)
+	print("🟥 DeathScreen mới được thêm:", gui:GetFullName())
+	deathScreenVisible = true
+
+	local disconnected = false
+
+	gui.AncestryChanged:Connect(function(_, parent)
+		if not disconnected and (not parent or not gui:IsDescendantOf(playerGui)) then
+			disconnected = true
+			deathScreenVisible = false
+			print("✅ DeathScreen đã biến mất.")
+		end
+	end)
+
+	gui.Destroying:Connect(function()
+		if not disconnected then
+			disconnected = true
+			deathScreenVisible = false
+			print("✅ DeathScreen bị Destroy.")
+		end
+	end)
+end
+
+local function listenForDeathScreen()
+	print("👁️ Bắt đầu theo dõi DeathScreen...")
+
+	for _, gui in ipairs(playerGui:GetChildren()) do
+		if gui.Name == "DeathScreen" and gui:IsA("ScreenGui") then
+			handleDeathScreen(gui)
+			break
+		end
+	end
+
+	playerGui.ChildAdded:Connect(function(child)
+		if child.Name == "DeathScreen" and child:IsA("ScreenGui") then
+			handleDeathScreen(child)
+		end
+	end)
+end
+
+-- Gọi theo dõi DeathScreen khi nhân vật xuất hiện
+player.CharacterAdded:Connect(function()
+	print("👤 Nhân vật xuất hiện. Kiểm tra DeathScreen...")
+	listenForDeathScreen()
+end)
 
 -- Tìm nút Ranked
 local function findRankedButton()
@@ -274,16 +321,21 @@ end
 
 -- Nhấn nút Play
 local function pressPlay(playBtn)
-    if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
-        GuiService.SelectedObject = playBtn
-        task.wait(0.05)
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-        task.wait(0.05)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-        print("[AutoPlay] Đã nhấn nút Play.")
-        return true
-    end
-    return false
+	if deathScreenVisible then
+		warn("[AutoFarm] ⚠️ DeathScreen đang hiển thị, không nhấn Play.")
+		return false
+	end
+
+	if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
+		GuiService.SelectedObject = playBtn
+		task.wait(0.05)
+		VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+		task.wait(0.05)
+		VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+		print("[AutoPlay] ✅ Đã nhấn nút Play.")
+		return true
+	end
+	return false
 end
 
 local skills = {
