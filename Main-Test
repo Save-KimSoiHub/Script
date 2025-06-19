@@ -117,7 +117,7 @@ end
 
 Tabs.Main:AddParagraph({
     Title = "Tutorial !",
-    Content = "You Can Turn On Auto Boss With Auto Farm At The Same Time !"
+    Content = "If You Need Auto Farm Boss:Pls Turn On Auto Boss With Auto Farm"
 })
 
 local teleportLockPriority = 0
