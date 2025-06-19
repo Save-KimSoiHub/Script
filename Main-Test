@@ -1,4 +1,4 @@
---Main!!!
+--Main!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -262,7 +262,7 @@ local skills = {
     LightV2 = {"PiercingShine", "PhotonStorm", "XFlash", "HeavenlyDescent", "SolarGrenade", "MirrorFlight"},
     FlameV2 = {"ScorchingFist", "TwistingClaw", "BlazingMeteor", "CrimsonBody", "Supernova"},
     Venom = {"ChloroFrenzy", "VenomRoad", "ToxicHydra", "PoisonStorm", "HydraCyclone", "Transform", "PoisonGeyser", "ToxicGeyser"},
-    Dough = {"GrilledDough", "DoughMuddle", "LotusDoughCombo", "Chestnut", "Anemone", "Buzzcut"},
+    Dough = {"GrilledDough", "Muddle", "LotusDoughCombo", "Chestnut", "Anemone", "Buzzcut"},
     Leopard = {"AfterimageCombo", "SpiralKick", "ClawBarrage", "PredatorsProwl", "Transform", "Rokuogan", "RisingClawCombo"},
     DoughV2 = {"GrilledLance", "ElasticLasso", "Oblivion", "PowerDough", "BlazingStorm", "ScorchingBuzzcut"},
     Ope = {"Room", "Takt", "Wreckage", "HurricaneShock", "GammaKnife", "Mes", "Shambles"},
@@ -350,9 +350,14 @@ local function fastTeleport()
     isTeleported = true
 end
 
+local skillType2 = {
+    "PiercingShine"
+}
+
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
+
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
@@ -363,24 +368,58 @@ local function castSkill(fruit, skill)
         Normal = Vector3.yAxis,
         Direction = dir,
         Origin = hrp.Position,
-        Instance = workspace.Map:FindFirstChildWhichIsA("BasePart") or workspace.Terrain,
+        Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChildWhichIsA("BasePart") or workspace.Terrain,
         Distance = (target - hrp.Position).Magnitude,
         Material = Enum.Material.Grass,
         Position = target
     }
 
+    -- Nếu là skill dạng 2 (dùng InvokeServer với Raycast đơn giản)
+    if table.find(skillType2, skill) then
+        local args = {
+            fruit,
+            skill,
+            {
+                Raycast = {
+                    Normal = Vector3.yAxis,
+                    Direction = Vector3.new(0, -1, 0),
+                    Origin = hrp.Position,
+                    Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChildWhichIsA("BasePart") or workspace.Terrain,
+                    Distance = 30,
+                    Material = Enum.Material.Grass,
+                    Position = hrp.Position
+                }
+            }
+        }
+
+        local success, err = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
+        end)
+
+        if not success then
+            warn("[castSkill - dạng 2] Lỗi:", err)
+        end
+        return
+    end
+
+    -- Mặc định: dùng InvokeServer với Ground + MouseRay + ClientData
     local success, err = pcall(function()
-        ReplicatedStorage.Replicator:InvokeServer(fruit, skill, {
+        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
             Ground = {Position = target},
             MouseRay = ray
         })
-        ReplicatedStorage.ReplicatorNoYield:FireServer("ClientData", "UpdateData", {
+
+        game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer("ClientData", "UpdateData", {
             RootCF = hrp.CFrame,
             MouseRay = ray
         })
     end)
-    if not success then warn("[castSkill] Lỗi:", err) end
+
+    if not success then
+        warn("[castSkill - mặc định] Lỗi:", err)
+    end
 end
+
 
 local skillLoopRunning = false
 local function startSkillLoop()
