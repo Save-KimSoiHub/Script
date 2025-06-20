@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -137,9 +137,11 @@ local PositionData = {
 -- 🌐 Toạ độ farm đã gán cho từng player
 GlobalPlayerPositions = {}
 
--- 🔍 Tách username từ chuỗi "DisplayName (Username)"
 local function extractUsername(comboText)
-    return comboText:match("%((.-)%)")
+    if typeof(comboText) == "string" and comboText:find("%(") and comboText:find("%)") then
+        return comboText:match("%((.-)%)")
+    end
+    return "Unknown"
 end
 
 -- 🔠 Lấy danh sách player dạng "DisplayName (Username)", sắp xếp A-Z
@@ -182,7 +184,7 @@ local autoFarmEnabled = false
 local autoFarmToggleRef = nil
 local autoFarmEnabled = false
 local isTeleported = false
-local bienCaoCap = false
+shared.bienCaoCap = false
 shared.autoFarmToggleRef = Tabs.Main:AddToggle("AutoFarmToggle", {
     Title = "Auto Farm",
     Default = false,
@@ -446,7 +448,7 @@ local function unlockPosition()
 end
 
 local function fastTeleport()
-    if bienCaoCap then return end
+    if shared.bienCaoCap then return end
     local character = player.Character or player.CharacterAdded:Wait()
     local hrp = character:WaitForChild("HumanoidRootPart", 5)
     if not hrp then return end
@@ -545,7 +547,7 @@ local function startSkillLoop()
                 unlockPosition()
             end
 
-            if _isInGame and characterReady and currentFruit and skills[currentFruit] and (bienCaoCap or isTeleported) then
+            if _isInGame and characterReady and currentFruit and skills[currentFruit] and (shared.bienCaoCap or isTeleported) then
                 local fruitSkills = skills[currentFruit]
                 local readySkills = {}
 
@@ -558,7 +560,7 @@ local function startSkillLoop()
 
                 -- Cast tất cả chiêu đã hồi song song
                 for _, skill in ipairs(readySkills) do
-                    if not (shared.autoFarm and _isInGame and characterReady and (bienCaoCap or isTeleported)) then break end
+                    if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
                     task.spawn(function()
                         castSkill(currentFruit, skill)
                     end)
@@ -728,7 +730,7 @@ local function followBoss(bossModel)
     if shared.autoFarm then
         shared.forceUnlock = false
         isTeleported = false
-        bienCaoCap = false
+        shared.bienCaoCap = false
         task.wait(1)
 
         shared.autoFarmToggleRef:SetValue(false)
@@ -759,7 +761,7 @@ task.spawn(function()
                 print("[Marco] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(marco)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Marco") or not shared.autoBoss
@@ -773,7 +775,7 @@ task.spawn(function()
                 print("[Cake Queen] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(cakeQueen)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Cake Queen") or not shared.autoBoss
@@ -786,7 +788,7 @@ task.spawn(function()
                 print("[Katakuri] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(katakuri)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Katakuri") or not shared.autoBoss
@@ -800,7 +802,7 @@ task.spawn(function()
                 print("[Kaido] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(kaido)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Kaido") or not shared.autoBoss
