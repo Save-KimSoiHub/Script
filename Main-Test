@@ -192,7 +192,7 @@ shared.autoFarmToggleRef = Tabs.Main:AddToggle("AutoFarmToggle", {
         autoFarmEnabled = value
         shared.autoFarm = value
         if value then
---Auto Farm 
+	--Auto Farm 
 shared.autoFarm = shared.autoFarm or false
 shared.forceUnlock = shared.forceUnlock or false
 local Players = game:GetService("Players")
@@ -212,41 +212,11 @@ local lockedPosition = nil
 isTeleported = false
 local connection = nil
 
-local function monitorDeathScreenAndAutoPlay()
-    task.spawn(function()
-        while true do
-            if not shared.autoFarm then task.wait(1) continue end
-            if shared.forceResetFromMana then
-                local playBtn = nil
-                for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-                    if guiObj:IsA("ScreenGui") then
-                        local btn = guiObj:FindFirstChild("Play", true)
-                        if btn and btn:IsA("GuiButton") and btn.Visible then
-                            playBtn = btn
-                            break
-                        end
-                    end
-                end
-                if playBtn then
-                    print("[AutoPlay-ResetMana] Đã thấy nút Play sau khi reset do mana, thử nhấn...")
-                    GuiService.SelectedObject = playBtn
-                    task.wait(0.1)
-                    for i = 1, 2 do
-                        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-                        task.wait(0.05)
-                        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-                        task.wait(0.05)
-                    end
-                    shared.forceResetFromMana = false
-                    print("[AutoPlay-ResetMana] ✅ Đã gửi Enter để nhấn Play sau reset mana.")
-                end
-            end
-            task.wait(0.5)
-        end
-    end)
-end
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
-monitorDeathScreenAndAutoPlay()
 local function handleDeathScreen(gui)
 	print("🟥 DeathScreen mới được thêm:", gui:GetFullName())
 	deathScreenVisible = true
@@ -859,8 +829,8 @@ Tabs.Player:AddButton({
 loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\40\40\39\104\116\116\112\115\58\47\47\103\105\115\116\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\109\101\111\122\111\110\101\89\84\47\98\102\48\51\55\100\102\102\57\102\48\97\55\48\48\49\55\51\48\52\100\100\100\54\55\102\100\99\100\51\55\48\47\114\97\119\47\101\49\52\101\55\52\102\52\50\53\98\48\54\48\100\102\53\50\51\51\52\51\99\102\51\48\98\55\56\55\48\55\52\101\98\51\99\53\100\50\47\97\114\99\101\117\115\37\50\53\50\48\120\37\50\53\50\48\102\108\121\37\50\53\50\48\50\37\50\53\50\48\111\98\102\108\117\99\97\116\111\114\39\41\44\116\114\117\101\41\41\40\41\10\10")()
     end
 })
---Nhập Số Mana
-shared.THRESHOLD = 0
+-- Nhập Số Mana
+shared.THRESHOLD = 50
 Tabs.Main:AddInput("ManaToReset", {
     Title = "Enter Mana To Reset",
     Default = "50",
@@ -870,101 +840,78 @@ Tabs.Main:AddInput("ManaToReset", {
         shared.THRESHOLD = tonumber(value) or 50
     end
 })
--- ⚡ Auto Check Mana
-Tabs.Main:AddToggle("AutoCheckManaToggle", {
-    Title = "Auto Reset If Mana Is Low",
-    Default = false,
-    Callback = function(value)
-        shared.autoCheckMana = value
 
-        if value then
+-- Auto Check Mana
+do
+    local manaConnection = nil
+    local currentHumanoid = nil
+    local progressStamina = nil
+    local lowManaCount = 0
+    local lastLowManaTime = 0
+    local canAct = false
+
+    Tabs.Main:AddToggle("AutoCheckManaToggle", {
+        Title = "Auto Reset If Mana Is Low",
+        Default = false,
+        Callback = function(enabled)
+            shared.autoCheckMana = enabled
+
+            if manaConnection then
+                manaConnection:Disconnect()
+                manaConnection = nil
+            end
+
+            if not enabled then return end
+
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
-
             local player = Players.LocalPlayer
-            local LOW_MANA_LIMIT = 5 -- Số lần mana thấp trước khi reset
-            local MANA_CHECK_COOLDOWN = 10 -- Giây giữa mỗi lần đếm
-            local initialDelay = 20 -- Delay khi bật lần đầu
 
-            local currentHumanoid = nil
-            local progressStamina = nil
-            local canAct = false
-            local lowManaCount = 0
-            local lastLowManaTime = 0
-
-            -- 🔁 Reset nhân vật (và gửi tín hiệu cho Auto Farm)
-            local function resetCharacter()
-                if currentHumanoid then
-                    print("🧪 Mana thấp, reset nhân vật...")
-                    shared.forceResetFromMana = true
-                    currentHumanoid.Health = 0
-                end
+            local function setupCharacter(char)
+                currentHumanoid = char:WaitForChild("Humanoid", 5)
+                local gui = player:WaitForChild("PlayerGui")
+                progressStamina = gui:WaitForChild("UI"):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
             end
 
-            -- 🔁 Gán lại thông tin nhân vật khi spawn
-            local function setupCharacter(character)
-                currentHumanoid = character:WaitForChild("Humanoid", 5)
-
-                local success, result = pcall(function()
-                    return player:WaitForChild("PlayerGui"):WaitForChild("UI")
-                        :WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
-                end)
-
-                if success then
-                    progressStamina = result
-                    print("✅ Nhân vật mới đã spawn, bắt đầu theo dõi mana lại")
-
-                    canAct = true
-                    shared.forceResetFromMana = false
-                else
-                    print("⚠️ Không tìm thấy thanh mana sau khi spawn")
-                end
-            end
-
-            -- Nếu đã có nhân vật sẵn từ đầu
             if player.Character then
                 setupCharacter(player.Character)
             end
 
-            -- Theo dõi nhân vật mới khi respawn
             player.CharacterAdded:Connect(setupCharacter)
 
-            -- Đợi một khoảng trước khi bắt đầu check mana
-            task.delay(initialDelay, function()
+            task.delay(20, function()
                 canAct = true
             end)
 
-            -- 🔁 Theo dõi mana mỗi khung hình
-            RunService.RenderStepped:Connect(function()
-                if shared.autoCheckMana and canAct and currentHumanoid and progressStamina then
-                    local manaText = progressStamina.Text
-                    local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
+            manaConnection = RunService.RenderStepped:Connect(function()
+                if not shared.autoCheckMana or not canAct then return end
+                if not currentHumanoid or not progressStamina then return end
 
-                    local now = tick()
+                local manaText = progressStamina.Text
+                local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
+                local now = tick()
 
-                    if currentMana and currentMana < shared.THRESHOLD and (now - lastLowManaTime >= MANA_CHECK_COOLDOWN) then
-                        lowManaCount += 1
-                        lastLowManaTime = now
-                        print("⚠️ Mana thấp lần thứ:", lowManaCount)
-                    elseif currentMana and currentMana >= shared.THRESHOLD then
-                        -- Nếu mana đủ, không tăng đếm
-                    end
+                if currentMana and currentMana < shared.THRESHOLD and (now - lastLowManaTime >= 10) then
+                    lowManaCount += 1
+                    lastLowManaTime = now
+                    print("🧪 Mana thấp lần:", lowManaCount)
+                elseif currentMana and currentMana >= shared.THRESHOLD then
+                    lowManaCount = 0 -- reset nếu mana lại đầy
+                end
 
-                    if lowManaCount >= LOW_MANA_LIMIT and currentHumanoid.Health > 0 then
-                        resetCharacter()
-                        canAct = false
-                        lowManaCount = 0
-                        lastLowManaTime = 0
-
-                        task.delay(20, function()
-                            canAct = true
-                        end)
-                    end
+                if lowManaCount >= 5 and currentHumanoid.Health > 0 then
+                    print("🟥 Reset vì mana thấp!")
+                    currentHumanoid.Health = 0
+                    canAct = false
+                    lowManaCount = 0
+                    task.delay(20, function()
+                        canAct = true
+                    end)
                 end
             end)
         end
-    end
-})
+    })
+end
 
 -- Chọn Slot
 local selectedSlot = 1
