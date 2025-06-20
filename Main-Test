@@ -265,30 +265,31 @@ end)
 
 -- Tìm nút Ranked
 local function findRankedButton()
-	for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-		if guiObj:IsA("ScreenGui") then
-			for _, obj in ipairs(guiObj:GetDescendants()) do
-				if obj:IsA("GuiButton") and obj.Visible and obj.Name == "Ranked" then
-					return obj
-				end
-			end
-		end
-	end
-	return nil
+    for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
+        if guiObj:IsA("ScreenGui") then
+            for _, obj in ipairs(guiObj:GetDescendants()) do
+                if obj:IsA("GuiButton") and obj.Visible and obj.Name == "Ranked" then
+                    return obj
+                end
+            end
+        end
+    end
+    return nil
 end
 
 -- Tìm nút Play
 local function findPlayButton()
-	for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-		if guiObj:IsA("ScreenGui") then
-			local btn = guiObj:FindFirstChild("Play", true)
-			if btn and btn:IsA("GuiButton") and btn.Visible then
-				return btn
-			end
-		end
-	end
-	return nil
+    for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
+        if guiObj:IsA("ScreenGui") then
+            local btn = guiObj:FindFirstChild("Play", true)
+            if btn and btn:IsA("GuiButton") and btn.Visible then
+                return btn
+            end
+        end
+    end
+    return nil
 end
+
 -- Kiểm tra nút đứng yên tuyệt đối trong vài frame
 local function waitUntilStable(button, frameCount, timeout)
     local lastPos = button.AbsolutePosition
@@ -331,6 +332,7 @@ local function pressPlay(playBtn)
 		GuiService.SelectedObject = playBtn
 		task.wait(0.1)
 
+		-- Gửi 2 lần Enter để đảm bảo Play được kích hoạt
 		for i = 1, 2 do
 			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
 			task.wait(0.05)
@@ -654,25 +656,29 @@ task.spawn(function()
 			continue
 		end
 
-		local playBtn = findPlayButton()
-		local rankedBtn = findRankedButton()
+		if not player.Character and not deathScreenVisible then
+			local ranked = findRankedButton()
+			local playBtn = findPlayButton()
 
-		if playBtn and rankedBtn and not deathScreenVisible then
-			print("[AutoPlay] 🔁 Phát hiện màn hình chọn Play, thử nhấn...")
-			task.wait(2)
+			if ranked and playBtn then
+				print("[AutoPlay] Đã thấy Ranked. Đợi 2 giây cho UI load...")
+				task.wait(2) -- Chờ UI ổn định đơn giản
+				print("[AutoPlay] Thử nhấn Play...")
 
-			if pressPlay(playBtn) then
-				for attempt = 1, 3 do
-					task.wait(3)
-					if not findPlayButton() then
-						print("[AutoPlay] ✅ Play UI biến mất, đã vào game.")
-						break
+				if pressPlay(playBtn) then
+					local confirmStart = tick()
+					while tick() - confirmStart < 10 do
+						if player.Character or not playBtn.Visible then
+							print("[AutoPlay] ✅ Vào game OK.")
+							break
+						end
+						task.wait(0.2)
 					end
-					print("[AutoPlay] ⏳ Vẫn thấy Play UI, nhấn lại lần", attempt + 1)
-					pressPlay(playBtn)
+				else
+					print("[AutoPlay] ❌ Nhấn Play thất bại.")
 				end
 			else
-				print("[AutoPlay] ❌ Gửi Enter thất bại.")
+				print("[AutoPlay] Chưa tìm thấy nút Ranked hoặc Play.")
 			end
 		elseif deathScreenVisible then
 			print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
