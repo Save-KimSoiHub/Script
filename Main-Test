@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -841,7 +841,7 @@ Tabs.Main:AddInput("ManaToReset", {
     end
 })
 
--- Auto Check Mana
+-- Auto Check Mana (Đã sửa ổn định)
 do
     local manaConnection = nil
     local currentHumanoid = nil
@@ -849,6 +849,7 @@ do
     local lowManaCount = 0
     local lastLowManaTime = 0
     local canAct = false
+    local charAddedConn = nil
 
     Tabs.Main:AddToggle("AutoCheckManaToggle", {
         Title = "Auto Reset If Mana Is Low",
@@ -861,6 +862,11 @@ do
                 manaConnection = nil
             end
 
+            if charAddedConn then
+                charAddedConn:Disconnect()
+                charAddedConn = nil
+            end
+
             if not enabled then return end
 
             local Players = game:GetService("Players")
@@ -868,17 +874,33 @@ do
             local player = Players.LocalPlayer
 
             local function setupCharacter(char)
-                currentHumanoid = char:WaitForChild("Humanoid", 5)
-                local gui = player:WaitForChild("PlayerGui")
-                progressStamina = gui:WaitForChild("UI"):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
+                task.spawn(function()
+                    currentHumanoid = char:WaitForChild("Humanoid", 5)
+                    local gui = player:WaitForChild("PlayerGui")
+
+                    local ok, ui = pcall(function()
+                        return gui:WaitForChild("UI", 5):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
+                    end)
+
+                    if ok then
+                        progressStamina = ui
+                        print("✅ Đã tìm thấy ProgressStamina mới.")
+                    else
+                        progressStamina = nil
+                        warn("⚠️ Không tìm thấy ProgressStamina sau khi hồi sinh.")
+                    end
+                end)
             end
 
+            -- Gọi nếu đang có nhân vật
             if player.Character then
                 setupCharacter(player.Character)
             end
 
-            player.CharacterAdded:Connect(setupCharacter)
+            -- Luôn gắn lại khi bật để tránh lỗi disconnect
+            charAddedConn = player.CharacterAdded:Connect(setupCharacter)
 
+            -- Cho phép kiểm tra sau 20s đầu
             task.delay(20, function()
                 canAct = true
             end)
@@ -887,23 +909,24 @@ do
                 if not shared.autoCheckMana or not canAct then return end
                 if not currentHumanoid or not progressStamina then return end
 
-                local manaText = progressStamina.Text
+                local manaText = progressStamina.Text or ""
                 local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
                 local now = tick()
 
-                if currentMana and currentMana < shared.THRESHOLD and (now - lastLowManaTime >= 10) then
+                if currentMana and currentMana > 0 and currentMana < shared.THRESHOLD and currentHumanoid.Health > 0 and (now - lastLowManaTime >= 10) then
                     lowManaCount += 1
                     lastLowManaTime = now
                     print("🧪 Mana thấp lần:", lowManaCount)
                 elseif currentMana and currentMana >= shared.THRESHOLD then
-                    lowManaCount = 0 -- reset nếu mana lại đầy
+                    lowManaCount = 0
                 end
 
                 if lowManaCount >= 5 and currentHumanoid.Health > 0 then
                     print("🟥 Reset vì mana thấp!")
                     currentHumanoid.Health = 0
-                    canAct = false
                     lowManaCount = 0
+                    canAct = false
+
                     task.delay(20, function()
                         canAct = true
                     end)
