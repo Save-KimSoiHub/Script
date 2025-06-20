@@ -1,4 +1,4 @@
---Main 
+--Main  !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -1897,10 +1897,10 @@ function startAutoSpin()
         end
     end)
 end
--- Auto Farm PlayerPlayer
+-- Auto Farm Player
 local autoFarmPlayerToggleRef = nil
 local autoFarmPlayerEnabled = false
-shared.autoFarmPlayerToggleRef = Tabs.Main:AddToggle("AutoFarmPlayerToggle", {
+shared.autoFarmPlayerToggleRef = Tabs.Player:AddToggle("AutoFarmPlayerToggle", {
     Title = "Auto Farm Player",
     Default = false,
     Callback = function(value)
@@ -1925,11 +1925,6 @@ local connection = nil
 local skyPlatformPosition = Vector3.new(-1390.10, 759.18, -185.84)
 local retreating = false
 local attachedPlayer = nil
-
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local GuiService = game:GetService("GuiService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local function handleDeathScreen(gui)
 	print("🟥 DeathScreen mới được thêm:", gui:GetFullName())
@@ -2284,8 +2279,6 @@ local function setupCharacter(character)
     local hrp = character:WaitForChild("HumanoidRootPart", 5)
     if not hrp or not currentHumanoid then return end
 
-    isTeleported = false
-
     task.spawn(function()
         local maxWait = 5
         local elapsed = 0
@@ -2305,7 +2298,7 @@ end
 
 -- Bắt sự kiện khi nhân vật được tạo lại
 player.CharacterAdded:Connect(function(char)
-    if not shared.autoFarm then return end
+    if not shared.autoFarmPlayer then return end
 
     _isInGame = true
     characterReady = false
@@ -2327,7 +2320,7 @@ if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 
         -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
         task.spawn(function()
-            if shared.autoFarm then
+            if shared.autoFarmPlayer then
             --Dich Chuyen Den Player
             end
         end)
