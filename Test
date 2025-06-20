@@ -1,4 +1,4 @@
---Main  !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -182,7 +182,7 @@ local autoFarmEnabled = false
 local autoFarmToggleRef = nil
 local autoFarmEnabled = false
 local isTeleported = false
-local bienCaoCap = false
+shared.bienCaoCap = false
 shared.autoFarmToggleRef = Tabs.Main:AddToggle("AutoFarmToggle", {
     Title = "Auto Farm",
     Default = false,
@@ -545,7 +545,7 @@ local function startSkillLoop()
                 unlockPosition()
             end
 
-            if _isInGame and characterReady and currentFruit and skills[currentFruit] and (bienCaoCap or isTeleported) then
+            if _isInGame and characterReady and currentFruit and skills[currentFruit] and (shared.bienCaoCap or isTeleported) then
                 local fruitSkills = skills[currentFruit]
                 local readySkills = {}
 
@@ -558,7 +558,7 @@ local function startSkillLoop()
 
                 -- Cast tất cả chiêu đã hồi song song
                 for _, skill in ipairs(readySkills) do
-                    if not (shared.autoFarm and _isInGame and characterReady and (bienCaoCap or isTeleported)) then break end
+                    if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
                     task.spawn(function()
                         castSkill(currentFruit, skill)
                     end)
@@ -728,7 +728,7 @@ local function followBoss(bossModel)
     if shared.autoFarm then
         shared.forceUnlock = false
         isTeleported = false
-        bienCaoCap = false
+        shared.bienCaoCap = false
         task.wait(1)
 
         shared.autoFarmToggleRef:SetValue(false)
@@ -759,7 +759,7 @@ task.spawn(function()
                 print("[Marco] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(marco)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Marco") or not shared.autoBoss
@@ -773,7 +773,7 @@ task.spawn(function()
                 print("[Cake Queen] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(cakeQueen)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Cake Queen") or not shared.autoBoss
@@ -786,7 +786,7 @@ task.spawn(function()
                 print("[Katakuri] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(katakuri)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Katakuri") or not shared.autoBoss
@@ -800,7 +800,7 @@ task.spawn(function()
                 print("[Kaido] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
-                bienCaoCap = true
+                shared.bienCaoCap = true
                 task.wait(1)
                 followBoss(kaido)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Kaido") or not shared.autoBoss
@@ -1897,468 +1897,72 @@ function startAutoSpin()
         end
     end)
 end
--- Auto Farm Player
-local autoFarmPlayerToggleRef = nil
-local autoFarmPlayerEnabled = false
-shared.autoFarmPlayerToggleRef = Tabs.Player:AddToggle("AutoFarmPlayerToggle", {
-    Title = "Auto Farm Player",
-    Default = false,
-    Callback = function(value)
-        autoFarmPlayerEnabled = value
-        shared.autoFarmPlayer = value
-        if value then
-	--Auto Farm 
-shared.autoFarmPlayer = shared.autoFarmPlayer or false
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local GuiService = game:GetService("GuiService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-local gui = player:WaitForChild("PlayerGui")
-local deathScreenVisible = false
-local _isInGame = false
-local currentFruit = nil
-local currentHumanoid = nil
-local characterReady = false
-local connection = nil
-local skyPlatformPosition = Vector3.new(-1390.10, 759.18, -185.84)
-local retreating = false
-local attachedPlayer = nil
+local followLowestHP = false
+local followConnection -- Kết nối RenderStepped
+local followTargetTask -- Task theo dõi target
 
-local function handleDeathScreen(gui)
-	print("🟥 DeathScreen mới được thêm:", gui:GetFullName())
-	deathScreenVisible = true
-
-	local disconnected = false
-	gui.AncestryChanged:Connect(function(_, parent)
-		if not disconnected and (not parent or not gui:IsDescendantOf(gui.Parent)) then
-			disconnected = true
-			deathScreenVisible = false
-			print("✅ DeathScreen đã biến mất.")
-		end
-	end)
-
-	gui.Destroying:Connect(function()
-		if not disconnected then
-			disconnected = true
-			deathScreenVisible = false
-			print("✅ DeathScreen bị Destroy.")
-		end
-	end)
-end
-
--- Theo dõi DeathScreen khi được thêm vào GUI
-local function listenForDeathScreen()
-	print("👁️ Bắt đầu theo dõi DeathScreen...")
-
-	local gui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-	for _, g in ipairs(gui:GetChildren()) do
-		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
-			handleDeathScreen(g)
-		end
-	end
-
-	gui.ChildAdded:Connect(function(g)
-		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
-			handleDeathScreen(g)
-		end
-	end)
-end
-
--- Kích hoạt theo dõi mỗi khi nhân vật xuất hiện (gồm hồi sinh)
-game.Players.LocalPlayer.CharacterAdded:Connect(function()
-	print("👤 Nhân vật đã xuất hiện. Bắt đầu kiểm tra DeathScreen...")
-	listenForDeathScreen()
-end)
-
--- Tìm nút Ranked
-local function findRankedButton()
-    for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-        if guiObj:IsA("ScreenGui") then
-            for _, obj in ipairs(guiObj:GetDescendants()) do
-                if obj:IsA("GuiButton") and obj.Visible and obj.Name == "Ranked" then
-                    return obj
-                end
-            end
-        end
-    end
-    return nil
-end
-
--- Tìm nút Play
-local function findPlayButton()
-    for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-        if guiObj:IsA("ScreenGui") then
-            local btn = guiObj:FindFirstChild("Play", true)
-            if btn and btn:IsA("GuiButton") and btn.Visible then
-                return btn
-            end
-        end
-    end
-    return nil
-end
-
--- Kiểm tra nút đứng yên tuyệt đối trong vài frame
-local function waitUntilStable(button, frameCount, timeout)
-    local lastPos = button.AbsolutePosition
-    local stableFrames = 0
-    local startTime = tick()
-
-    while tick() - startTime < timeout do
-        if not button:IsDescendantOf(game) or not button.Visible then
-            stableFrames = 0
-            lastPos = button.AbsolutePosition
-            task.wait()
-            continue
-        end
-
-        local nowPos = button.AbsolutePosition
-        if (nowPos - lastPos).magnitude == 0 then
-            stableFrames += 1
-            if stableFrames >= frameCount then
-                return true
-            end
-        else
-            stableFrames = 0
-        end
-
-        lastPos = nowPos
-        task.wait() -- Mỗi frame
-    end
-
-    return false
-end
-
--- Nhấn nút Play
-local function pressPlay(playBtn)
-	if deathScreenVisible then
-		print("[AutoPlay] ⚠️ DeathScreen đang hiển thị, không nhấn Play.")
-		return false
-	end
-
-	if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
-		GuiService.SelectedObject = playBtn
-		task.wait(0.1)
-
-		-- Gửi 2 lần Enter để đảm bảo Play được kích hoạt
-		for i = 1, 2 do
-			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-			task.wait(0.05)
-			VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-			task.wait(0.05)
-		end
-
-		print("[AutoPlay] ✅ Đã gửi Enter để nhấn Play.")
-		return true
-	end
-
-	return false
-end
-
+-- Hàm tìm player có máu thấp nhất
 local function getLowestHealthPlayer()
-	local lowest = nil
-	local lowestHP = math.huge
+    local lowestPlayer = nil
+    local lowestHealth = math.huge
 
-	for _, p in ipairs(Players:GetPlayers()) do
-		if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-			if p.Character.Humanoid.Health < lowestHP then
-				lowestHP = p.Character.Humanoid.Health
-				lowest = p
-			end
-		end
-	end
-
-	return lowest
-end
-
-local function getAnyReadySkill()
-	if not currentFruit or not skills[currentFruit] then return nil end
-	for _, skill in ipairs(skills[currentFruit]) do
-		if isSkillReady(skill) then return skill end
-	end
-	return nil
-end
-
-local function teleportTo(cframe)
-	local char = player.Character
-	if not char then return end
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	if not hrp then return end
-	hrp.CFrame = cframe
-end
-
-local skills = {
-    Barrier = {"Barrier", "Bubble", "Crash", "Spikes"},
-    Chop = {"Cannon", "Grab", "Car", "Festival"},
-    Sand = {"DesertSlicer", "Spada", "Swamp", "SablesPesado"},
-    Smoke = {"WhiteBlow", "WhiteOut", "Typhoon", "Firework"},
-    Rubber = {"Pistol", "Bazooka", "Gatling", "Rocket", "Gear2"},
-    Falcon = {"WingSlicer", "FlyingTalon", "WingCyclone", "FalconPunch"},
-    Gas = {"BlueSword", "Suffocation", "CombustiveGas", "RelaxingGas"},
-    Bomb = {"GrenadeBlaster", "Leap", "KickBomb", "HowitzerImpact"},
-    Ice = {"Partisan", "Geyser", "Pheasant", "IceAge", "IceDragon"},
-    Darkness = {"BlackHole", "Liberation", "BlackWorld", "Kurouzu", "DarkHaul", "DarkEnd"},
-    Ash = {"ThousandCrows", "Obelisk", "CrowCascade", "CrowCoffin"},
-    Light = {"LightKick", "MirrorKick", "BlindingCombo", "Guzan", "JewelsOfLight", "Flight"},
-    Flame = {"FireFist", "FireGun", "Pillar", "Beam", "Enkai", "Flight"},
-    Magma = {"MajorEruption", "MeteorVolcano", "Plume", "EruptiveSurge", "HellHound"},
-    Paw = {"PressureCannon", "SonicStomp", "SumoThrustBarrage", "Torture", "UrsusShock"},
-    String = {"Fullbright", "OverheatWhip", "StringKnight", "SixteenBullets", "Skywalk"},
-    Love = {"CupidsArrows", "BouquetOfPain", "Heartthrob", "Heartstrings", "BlossomWind"},
-    Snow = {"SnowAngel", "WinterStorm", "FrostDome", "SnowballCatastrophe", "SnowDrift"},
-    Quake = {"Fist", "Eruption", "Slam", "IslandShake", "SeaQuake"},
-    Gravity = {"Push", "Launch", "Avalanche", "Shoot", "PlanetaryDevastation", "GreatMeteor"},
-    Phoenix = {"Fujiazami", "TalonSlam", "PhoenixInferno", "Bluebird", "Transform", "HawkRush"},
-    Dragon = {"DragonBreath", "DragonClaw", "Screech", "DracoMeteor", "CrimsonBomb", "Transformation", "Tatsumaki"},
-    TSRubber = {"JetPistol", "JetGatling", "RedHawk", "GrizzlyMagnum", "Gear4", "KongGun", "Culverin", "KongGatling", "KingKongGun", "ElasticPropulsion"},
-    Magnet = {"Repel", "MetalArms", "Cyclone", "PunkPrison", "PunkCannon"},
-    IceV2 = {"PiercingGlacier", "BlizzardBlade", "IceHail", "AbsoluteZero", "IceSkate"},
-    MagmaV2 = {"HoundBlaze", "MagmaRain", "MagmaFloor", "Meigo", "CrimsonHowl"},
-    LightV2 = {"PiercingShine", "PhotonStorm", "XFlash", "HeavenlyDescent", "SolarGrenade", "MirrorFlight"},
-    FlameV2 = {"ScorchingFist", "TwistingClaw", "BlazingMeteor", "CrimsonBody", "Supernova"},
-    Venom = {"ChloroFrenzy", "VenomRoad", "ToxicHydra", "PoisonStorm", "HydraCyclone", "Transform", "PoisonGeyser", "ToxicGeyser"},
-    Dough = {"GrilledDough", "Muddle", "LotusDoughCombo", "Chestnut", "Anemone", "Buzzcut"},
-    Leopard = {"AfterimageCombo", "SpiralKick", "ClawBarrage", "PredatorsProwl", "Transform", "Rokuogan", "RisingClawCombo"},
-    DoughV2 = {"GrilledLance", "ElasticLasso", "Oblivion", "PowerDough", "BlazingStorm", "ScorchingBuzzcut"},
-    Ope = {"Room", "Takt", "Wreckage", "HurricaneShock", "GammaKnife", "Mes", "Shambles"},
-    LeopardV2 = {"FingerPistolBarrage", "SonicKick", "InfinityDrive", "UnrelentingAssault", "Transform", "HeavensDemise"},
-    Lightning = {"VoltageUp", "LightningPalm", "CrashingThunder", "ProjectedBurst", "CrushingJudgment", "Raigo"},
-    Nika = {"RocGun", "NeoRedHawk", "RocGatling", "RedRoc", "DrumsOfLiberation", "Gear5", "SpinningTop", "DawnRocket", "MolePistolCombo", "RisingBolt", "GigantStamp", "BajrangGun"},
-    DragonV2 = {"InfernoBreath", "ThunderBagua", "DragonTwister", "BeastsBellow", "Transform", "BoloFrenzy", "FlamingTorch", "Demolition", "Transformation"},
-    Soul = {"EnthralGrasp", "ScorchingSickle", "ZeusMeadow", "CrimsonPillar", "Transform", "MaserCannon"},
-    DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
-    Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
-}
-
-local function isSkillReady(skillName)
-    local cdFolder = player:FindFirstChild("Cooldowns")
-    if not cdFolder then return true end
-    local nested = cdFolder:FindFirstChild("Cooldowns")
-    if not nested then return true end
-    local skillCD = nested:FindFirstChild(skillName)
-    if not skillCD then return true end
-    return skillCD.Value <= 0
-end
-
-local function updateCurrentFruit()
-    local mainData = player:FindFirstChild("MAIN_DATA")
-    if not mainData then return end
-    local currentSlot = mainData:FindFirstChild("Slot")
-    if not currentSlot then return end
-    local slotValue = mainData.Slots:FindFirstChild(tostring(currentSlot.Value))
-    currentFruit = slotValue and slotValue.Value or nil
-end
-
-local function watchSlotChanges()
-    local mainData = player:WaitForChild("MAIN_DATA", 10)
-    if not mainData then return end
-    local slot = mainData:WaitForChild("Slot", 5)
-    if not slot then return end
-    slot:GetPropertyChangedSignal("Value"):Connect(updateCurrentFruit)
-    updateCurrentFruit()
-end
-
-local skillType2 = {
-    "PiercingShine"
-}
-
-local function castSkill(fruit, skill)
-    if not fruit or not skill then return end
-    if not isSkillReady(skill) then return end
-
-    local char = player.Character or player.CharacterAdded:Wait()
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    local target = hrp.Position
-    local dir = Vector3.new(0, -1, 0) * 10
-    local ray = {
-        Normal = Vector3.yAxis,
-        Direction = dir,
-        Origin = hrp.Position,
-        Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChildWhichIsA("BasePart") or workspace.Terrain,
-        Distance = (target - hrp.Position).Magnitude,
-        Material = Enum.Material.Grass,
-        Position = target
-    }
-
-    -- Nếu là skill dạng 2 (dùng InvokeServer với Raycast đơn giản)
-    if table.find(skillType2, skill) then
-        local args = {
-            fruit,
-            skill,
-            {
-                Raycast = {
-                    Normal = Vector3.yAxis,
-                    Direction = Vector3.new(0, -1, 0),
-                    Origin = hrp.Position,
-                    Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChildWhichIsA("BasePart") or workspace.Terrain,
-                    Distance = 30,
-                    Material = Enum.Material.Grass,
-                    Position = hrp.Position
-                }
-            }
-        }
-
-        local success, err = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-        end)
-
-        if not success then
-            warn("[castSkill - dạng 2] Lỗi:", err)
-        end
-        return
-    end
-
-    -- Mặc định: dùng InvokeServer với Ground + MouseRay + ClientData
-    local success, err = pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
-            Ground = {Position = target},
-            MouseRay = ray
-        })
-
-        game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer("ClientData", "UpdateData", {
-            RootCF = hrp.CFrame,
-            MouseRay = ray
-        })
-    end)
-
-    if not success then
-        warn("[castSkill - mặc định] Lỗi:", err)
-    end
-end
-
-
-local skillLoopRunning = false
-local function startSkillLoop()
-	if skillLoopRunning then return end
-	skillLoopRunning = true
-
-	task.spawn(function()
-		while true do
-			if not shared.autoFarmPlayer then
-				task.wait(0.3)
-				continue
-			end
-
-			if retreating then
-				task.wait(0.3)
-				continue -- ❌ Không dùng chiêu khi đang trốn
-			end
-
-			if _isInGame and characterReady and currentFruit and skills[currentFruit] then
-				local fruitSkills = skills[currentFruit]
-				local readySkills = {}
-
-				for _, skill in ipairs(fruitSkills) do
-					if isSkillReady(skill) then
-						table.insert(readySkills, skill)
-					end
-				end
-
-				for _, skill in ipairs(readySkills) do
-					if not (shared.autoFarmPlayer and _isInGame and characterReady) then break end
-					task.spawn(function()
-						castSkill(currentFruit, skill)
-					end)
-					task.wait(0.03)
-				end
-
-				task.wait(0.1)
-			else
-				task.wait(0.3)
-			end
-		end
-	end)
-end
-
-local function setupCharacter(character)
-    characterReady = false
-    currentHumanoid = character:WaitForChild("Humanoid", 5)
-    local hrp = character:WaitForChild("HumanoidRootPart", 5)
-    if not hrp or not currentHumanoid then return end
-
-    task.spawn(function()
-        local maxWait = 5
-        local elapsed = 0
-        while elapsed < maxWait do
-            updateCurrentFruit()
-            if currentFruit and hrp:IsDescendantOf(game) then
-                characterReady = true
-                break
+    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid and humanoid.Health > 0 and humanoid.Health < lowestHealth then
+                lowestHealth = humanoid.Health
+                lowestPlayer = player
             end
-            elapsed += 0.2
-            task.wait(0.2)
         end
-    end)
-end
-
--- Thêm hàm chờ khi nhân vật đã vào game và có thể lấy được vị trí
-
--- Bắt sự kiện khi nhân vật được tạo lại
-player.CharacterAdded:Connect(function(char)
-    if not shared.autoFarmPlayer then return end
-
-    _isInGame = true
-    characterReady = false
-    setupCharacter(char)
-
-    -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
-    task.spawn(function()
-        if shared.autoFarmPlayer then
-            --Dich Chuyen Den Player
-        end
-    end)
-end)
-
--- Nếu nhân vật đã tồn tại sẵn khi bật Auto Farm
-if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-    if shared.autoFarmPlayer then
-        _isInGame = true
-        setupCharacter(player.Character)
-
-        -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
-        task.spawn(function()
-            if shared.autoFarmPlayer then
-            --Dich Chuyen Den Player
-            end
-        end)
     end
+
+    return lowestPlayer
 end
 
--- Auto nhấn Play khi chưa vào game
-task.spawn(function()
-	while true do
-		if shared.autoFarmPlayer and player.Character and characterReady then
-			local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-			local hp = currentHumanoid and currentHumanoid.Health or 9999
-			local readySkill = getAnyReadySkill()
+-- Toggle UI
+Tabs.Player:AddToggle("FollowLowestHP", {
+    Title = "Auto Farm Player Lowest HP",
+    Description = "Auto Farm Player Lowest HP [Need To Update]",
+    Default = false,
+    Callback = function(state)
+        followLowestHP = state
 
-			if hp < 200 and not readySkill then
-				-- 🚨 Trốn lên trời
-				retreating = true
-				attachedPlayer = nil
-				teleportTo(CFrame.new(skyPlatformPosition))
-			else
-				-- 🧲 Theo dõi người máu thấp nhất
-				retreating = false
-				local lowest = getLowestHealthPlayer()
-				if lowest and lowest.Character and lowest.Character:FindFirstChild("HumanoidRootPart") then
-					attachedPlayer = lowest
-					teleportTo(lowest.Character.HumanoidRootPart.CFrame + Vector3.new(0, 2, 0))
-				end
-			end
-		end
-		task.wait(0.5)
-	end
-end)
+        -- Bật
+        if state then
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local RunService = game:GetService("RunService")
 
--- Bắt đầu theo dõi slot trái và auto dùng skill
-watchSlotChanges()
-startSkillLoop()
+            local currentTarget = nil
+
+            -- Task chọn mục tiêu
+            followTargetTask = task.spawn(function()
+                while followLowestHP do
+                    currentTarget = getLowestHealthPlayer()
+                    task.wait(2)
+                end
+            end)
+
+            -- Kết nối RenderStepped để di chuyển
+            followConnection = RunService.RenderStepped:Connect(function()
+                local char = LocalPlayer.Character
+                if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+                if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
+                    local targetHRP = currentTarget.Character.HumanoidRootPart
+                    local myHRP = char.HumanoidRootPart
+                    myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -1)
+                end
+            end)
         else
-            print("Auto Farm  Player đã tắt.")
+            -- Tắt
+            if followConnection then
+                followConnection:Disconnect()
+                followConnection = nil
+            end
+            if followTargetTask then
+                task.cancel(followTargetTask)
+                followTargetTask = nil
+            end
         end
     end
 })
