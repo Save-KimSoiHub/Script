@@ -137,9 +137,11 @@ local PositionData = {
 -- 🌐 Toạ độ farm đã gán cho từng player
 GlobalPlayerPositions = {}
 
--- 🔍 Tách username từ chuỗi "DisplayName (Username)"
 local function extractUsername(comboText)
-    return comboText:match("%((.-)%)")
+    if typeof(comboText) == "string" and comboText:find("%(") and comboText:find("%)") then
+        return comboText:match("%((.-)%)")
+    end
+    return "Unknown"
 end
 
 -- 🔠 Lấy danh sách player dạng "DisplayName (Username)", sắp xếp A-Z
@@ -1897,75 +1899,7 @@ function startAutoSpin()
         end
     end)
 end
-local followLowestHP = false
-local followConnection -- Kết nối RenderStepped
-local followTargetTask -- Task theo dõi target
 
--- Hàm tìm player có máu thấp nhất
-local function getLowestHealthPlayer()
-    local lowestPlayer = nil
-    local lowestHealth = math.huge
-
-    for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-        if player ~= game.Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid and humanoid.Health > 0 and humanoid.Health < lowestHealth then
-                lowestHealth = humanoid.Health
-                lowestPlayer = player
-            end
-        end
-    end
-
-    return lowestPlayer
-end
-
--- Toggle UI
-Tabs.Player:AddToggle("FollowLowestHP", {
-    Title = "Auto Farm Player Lowest HP",
-    Description = "Auto Farm Player Lowest HP [Need To Update]",
-    Default = false,
-    Callback = function(state)
-        followLowestHP = state
-
-        -- Bật
-        if state then
-            local Players = game:GetService("Players")
-            local LocalPlayer = Players.LocalPlayer
-            local RunService = game:GetService("RunService")
-
-            local currentTarget = nil
-
-            -- Task chọn mục tiêu
-            followTargetTask = task.spawn(function()
-                while followLowestHP do
-                    currentTarget = getLowestHealthPlayer()
-                    task.wait(2)
-                end
-            end)
-
-            -- Kết nối RenderStepped để di chuyển
-            followConnection = RunService.RenderStepped:Connect(function()
-                local char = LocalPlayer.Character
-                if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-                if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
-                    local targetHRP = currentTarget.Character.HumanoidRootPart
-                    local myHRP = char.HumanoidRootPart
-                    myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -1)
-                end
-            end)
-        else
-            -- Tắt
-            if followConnection then
-                followConnection:Disconnect()
-                followConnection = nil
-            end
-            if followTargetTask then
-                task.cancel(followTargetTask)
-                followTargetTask = nil
-            end
-        end
-    end
-})
 --Kích Hoạt Kaitun Auto Spin
 Tabs.Fruit:AddToggle("Kaitun Mythical", {
     Title = "Kaitun Auto Find Fruit Mythical",
