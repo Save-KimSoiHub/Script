@@ -840,7 +840,19 @@ Tabs.Main:AddInput("ManaToReset", {
         shared.THRESHOLD = tonumber(value) or 50
     end
 })
---Auto Check Mana
+-- Nhập Số Mana
+shared.THRESHOLD = 0
+Tabs.Main:AddInput("ManaToReset", {
+    Title = "Enter Mana To Reset",
+    Default = "50",
+    Placeholder = "50",
+    Numeric = true,
+    Callback = function(value)
+        shared.THRESHOLD = tonumber(value) or 50
+    end
+})
+
+-- Auto Check Mana
 Tabs.Main:AddToggle("AutoCheckManaToggle", {
     Title = "Auto Reset If Mana Is Low",
     Default = false,
@@ -852,7 +864,7 @@ Tabs.Main:AddToggle("AutoCheckManaToggle", {
             local RunService = game:GetService("RunService")
 
             local player = Players.LocalPlayer
-            local LOW_MANA_LIMIT = 5 -- Số lần mana thấp trước khi reset
+            local LOW_MANA_LIMIT = 5 -- Số lần mana thấp liên tục trước khi reset
             local MANA_CHECK_COOLDOWN = 10 -- Giây giữa mỗi lần đếm
             local initialDelay = 20 -- Delay khi bật lần đầu
 
@@ -864,16 +876,31 @@ Tabs.Main:AddToggle("AutoCheckManaToggle", {
 
             -- 🔁 Reset nhân vật
             local function resetCharacter()
-                if currentHumanoid then
-                    currentHumanoid.Health = 0
+                if currentHumanoid and currentHumanoid.Health > 0 then
+                    print("🔁 Reset nhân vật vì mana thấp")
+                    currentHumanoid.Health = 0 -- ✅ Cách reset chuẩn
                 end
             end
 
-            -- 🔁 Setup nhân vật khi spawn
+            -- 🔁 Setup lại nhân vật khi respawn
             local function setupCharacter(character)
-                currentHumanoid = character:WaitForChild("Humanoid")
-                progressStamina = player:WaitForChild("PlayerGui"):WaitForChild("UI")
-                    :WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
+                task.defer(function()
+                    currentHumanoid = character:WaitForChild("Humanoid", 5)
+                    local gui = player:WaitForChild("PlayerGui", 5)
+                    if gui then
+                        local success, result = pcall(function()
+                            return gui:WaitForChild("UI", 5)
+                                :WaitForChild("HUD", 5)
+                                :WaitForChild("Bars", 5)
+                                :WaitForChild("ProgressStamina", 5)
+                        end)
+                        if success then
+                            progressStamina = result
+                        else
+                            progressStamina = nil
+                        end
+                    end
+                end)
             end
 
             -- Gán ban đầu nếu đã có nhân vật
@@ -887,20 +914,21 @@ Tabs.Main:AddToggle("AutoCheckManaToggle", {
                 canAct = true
             end)
 
-            -- 🔁 Theo dõi mana số
+            -- 🔁 Theo dõi mana theo thời gian thực
             RunService.RenderStepped:Connect(function()
                 if shared.autoCheckMana and canAct and currentHumanoid and progressStamina then
                     local manaText = progressStamina.Text
                     local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
-
                     local now = tick()
 
-                    if currentMana and currentMana < shared.THRESHOLD and (now - lastLowManaTime >= MANA_CHECK_COOLDOWN) then
-                        lowManaCount += 1
-                        lastLowManaTime = now
-                        print("🧪 Mana thấp lần thứ:", lowManaCount)
+                    if currentMana and currentMana < shared.THRESHOLD and currentHumanoid.Health > 0 then
+                        if now - lastLowManaTime >= MANA_CHECK_COOLDOWN then
+                            lowManaCount += 1
+                            lastLowManaTime = now
+                            print("⚠ Mana thấp lần thứ:", lowManaCount)
+                        end
                     elseif currentMana and currentMana >= shared.THRESHOLD then
-                        -- lowManaCount = 0
+                        lowManaCount = 0
                     end
 
                     if lowManaCount >= LOW_MANA_LIMIT and currentHumanoid.Health > 0 then
