@@ -958,6 +958,19 @@ do
     })
 end
 
+-- Chọn Slot
+local selectedSlot = 1
+Tabs.Misc:AddDropdown("SlotSelector", {
+    Title = "Select Slot To Switch",
+    Values = { "1", "2", "3", "4", "5", "6", "7", "8" },
+    Multi = false,
+    Default = "1",
+    Callback = function(value)
+        selectedSlot = tonumber(value)
+        print("Đã chọn slot: " .. selectedSlot)
+    end
+})
+
 -- Gửi lệnh SwitchSlot
 Tabs.Misc:AddButton({
     Title = "Switch To Slot Selected",
