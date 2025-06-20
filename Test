@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -830,7 +830,7 @@ loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\
     end
 })
 -- Nhập Số Mana
-shared.THRESHOLD = 0
+shared.THRESHOLD = 50
 Tabs.Main:AddInput("ManaToReset", {
     Title = "Enter Mana To Reset",
     Default = "50",
@@ -842,99 +842,76 @@ Tabs.Main:AddInput("ManaToReset", {
 })
 
 -- Auto Check Mana
-Tabs.Main:AddToggle("AutoCheckManaToggle", {
-    Title = "Auto Reset If Mana Is Low",
-    Default = false,
-    Callback = function(value)
-        shared.autoCheckMana = value
+do
+    local manaConnection = nil
+    local currentHumanoid = nil
+    local progressStamina = nil
+    local lowManaCount = 0
+    local lastLowManaTime = 0
+    local canAct = false
 
-        if value then
+    Tabs.Main:AddToggle("AutoCheckManaToggle", {
+        Title = "Auto Reset If Mana Is Low",
+        Default = false,
+        Callback = function(enabled)
+            shared.autoCheckMana = enabled
+
+            if manaConnection then
+                manaConnection:Disconnect()
+                manaConnection = nil
+            end
+
+            if not enabled then return end
+
             local Players = game:GetService("Players")
             local RunService = game:GetService("RunService")
-
             local player = Players.LocalPlayer
-            local LOW_MANA_LIMIT = 5 -- Số lần mana thấp liên tục trước khi reset
-            local MANA_CHECK_COOLDOWN = 10 -- Giây giữa mỗi lần đếm
-            local initialDelay = 20 -- Delay khi bật lần đầu
 
-            local currentHumanoid = nil
-            local progressStamina = nil
-            local canAct = false
-            local lowManaCount = 0
-            local lastLowManaTime = 0
-
-            -- 🔁 Reset nhân vật
-            local function resetCharacter()
-                if currentHumanoid and currentHumanoid.Health > 0 then
-                    print("🔁 Reset nhân vật vì mana thấp")
-                    currentHumanoid.Health = 0 -- ✅ Cách reset chuẩn
-                end
+            local function setupCharacter(char)
+                currentHumanoid = char:WaitForChild("Humanoid", 5)
+                local gui = player:WaitForChild("PlayerGui")
+                progressStamina = gui:WaitForChild("UI"):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
             end
 
-            -- 🔁 Setup lại nhân vật khi respawn
-            local function setupCharacter(character)
-                task.defer(function()
-                    currentHumanoid = character:WaitForChild("Humanoid", 5)
-                    local gui = player:WaitForChild("PlayerGui", 5)
-                    if gui then
-                        local success, result = pcall(function()
-                            return gui:WaitForChild("UI", 5)
-                                :WaitForChild("HUD", 5)
-                                :WaitForChild("Bars", 5)
-                                :WaitForChild("ProgressStamina", 5)
-                        end)
-                        if success then
-                            progressStamina = result
-                        else
-                            progressStamina = nil
-                        end
-                    end
-                end)
-            end
-
-            -- Gán ban đầu nếu đã có nhân vật
             if player.Character then
                 setupCharacter(player.Character)
             end
 
             player.CharacterAdded:Connect(setupCharacter)
 
-            task.delay(initialDelay, function()
+            task.delay(20, function()
                 canAct = true
             end)
 
-            -- 🔁 Theo dõi mana theo thời gian thực
-            RunService.RenderStepped:Connect(function()
-                if shared.autoCheckMana and canAct and currentHumanoid and progressStamina then
-                    local manaText = progressStamina.Text
-                    local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
-                    local now = tick()
+            manaConnection = RunService.RenderStepped:Connect(function()
+                if not shared.autoCheckMana or not canAct then return end
+                if not currentHumanoid or not progressStamina then return end
 
-                    if currentMana and currentMana < shared.THRESHOLD and currentHumanoid.Health > 0 then
-                        if now - lastLowManaTime >= MANA_CHECK_COOLDOWN then
-                            lowManaCount += 1
-                            lastLowManaTime = now
-                            print("⚠ Mana thấp lần thứ:", lowManaCount)
-                        end
-                    elseif currentMana and currentMana >= shared.THRESHOLD then
-                        lowManaCount = 0
-                    end
+                local manaText = progressStamina.Text
+                local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
+                local now = tick()
 
-                    if lowManaCount >= LOW_MANA_LIMIT and currentHumanoid.Health > 0 then
-                        resetCharacter()
-                        canAct = false
-                        lowManaCount = 0
-                        lastLowManaTime = 0
+                if currentMana and currentMana < shared.THRESHOLD and (now - lastLowManaTime >= 10) then
+                    lowManaCount += 1
+                    lastLowManaTime = now
+                    print("🧪 Mana thấp lần:", lowManaCount)
+                elseif currentMana and currentMana >= shared.THRESHOLD then
+                    lowManaCount = 0 -- reset nếu mana lại đầy
+                end
 
-                        task.delay(20, function()
-                            canAct = true
-                        end)
-                    end
+                if lowManaCount >= 5 and currentHumanoid.Health > 0 then
+                    print("🟥 Reset vì mana thấp!")
+                    currentHumanoid.Health = 0
+                    canAct = false
+                    lowManaCount = 0
+                    task.delay(20, function()
+                        canAct = true
+                    end)
                 end
             end)
         end
-    end
-})
+    })
+end
 
 -- Chọn Slot
 local selectedSlot = 1
