@@ -446,7 +446,7 @@ local function unlockPosition()
 end
 
 local function fastTeleport()
-    if bienCaoCap then return end
+    if shared.bienCaoCap then return end
     local character = player.Character or player.CharacterAdded:Wait()
     local hrp = character:WaitForChild("HumanoidRootPart", 5)
     if not hrp then return end
