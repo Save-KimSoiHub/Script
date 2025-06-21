@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -465,8 +465,7 @@ local skillType2 = {
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
-    lastSkillCast = skill
-    print("[AutoFarm] Dùng chiêu:", skill)
+
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
@@ -531,7 +530,6 @@ end
 
 
 local skillLoopRunning = false
-local lastSkillCast = nil
 local function startSkillLoop()
     if skillLoopRunning then return end
     skillLoopRunning = true
@@ -625,29 +623,7 @@ player.CharacterAdded:Connect(function(char)
     isTeleported = false
     setupCharacter(char)
 
-    -- 🛑 Theo dõi chết và mất nhân vật đột ngột
-    task.spawn(function()
-        local hum = char:WaitForChild("Humanoid", 3)
-        if hum then
-            hum.Died:Connect(function()
-                warn("🟥 Humanoid Died! Chiêu cuối trước đó:", lastSkillCast)
-            end)
-
-            hum:GetPropertyChangedSignal("Health"):Connect(function()
-                if hum.Health <= 0 then
-                    warn("💀 Health xuống 0! Chiêu cuối:", lastSkillCast)
-                end
-            end)
-        end
-
-        char.AncestryChanged:Connect(function(_, parent)
-            if not parent then
-                warn("🧨 Character biến mất khỏi Workspace! Chiêu cuối:", lastSkillCast)
-            end
-        end)
-    end)
-
-    -- Vẫn giữ phần cũ: chờ sẵn sàng rồi teleport
+    -- Thay thế task.delay bằng kiểm tra HumanoidRootPart sẵn sàng
     task.spawn(function()
         if waitUntilPositionReady() and shared.autoFarm then
             fastTeleport()
