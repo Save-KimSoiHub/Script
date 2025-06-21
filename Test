@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -656,7 +656,7 @@ task.spawn(function()
 			continue
 		end
 
-		if not player.Character and not deathScreenVisible then
+		if not player.Character and findPlayButton() then
 			local ranked = findRankedButton()
 			local playBtn = findPlayButton()
 
