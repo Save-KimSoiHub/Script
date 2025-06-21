@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -680,8 +680,6 @@ task.spawn(function()
 			else
 				print("[AutoPlay] Chưa tìm thấy nút Ranked hoặc Play.")
 			end
-		elseif deathScreenVisible then
-			print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
 		end
 
 		task.wait(0.5)
