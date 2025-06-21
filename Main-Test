@@ -656,13 +656,13 @@ task.spawn(function()
 			continue
 		end
 
-		if not player.Character and not deathScreenVisible then
+		if not player.Character and findPlayButton() then
 			local ranked = findRankedButton()
 			local playBtn = findPlayButton()
 
 			if ranked and playBtn then
 				print("[AutoPlay] Đã thấy Ranked. Đợi 2 giây cho UI load...")
-				task.wait(2) -- Chờ UI ổn định đơn giản
+				task.wait(2.2) -- Chờ UI ổn định đơn giản
 				print("[AutoPlay] Thử nhấn Play...")
 
 				if pressPlay(playBtn) then
@@ -680,8 +680,6 @@ task.spawn(function()
 			else
 				print("[AutoPlay] Chưa tìm thấy nút Ranked hoặc Play.")
 			end
-		elseif deathScreenVisible then
-			print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
 		end
 
 		task.wait(0.5)
