@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -662,7 +662,7 @@ task.spawn(function()
 
 			if ranked and playBtn then
 				print("[AutoPlay] Đã thấy Ranked. Đợi 2 giây cho UI load...")
-				task.wait(2) -- Chờ UI ổn định đơn giản
+				task.wait(2.5) -- Chờ UI ổn định đơn giản
 				print("[AutoPlay] Thử nhấn Play...")
 
 				if pressPlay(playBtn) then
