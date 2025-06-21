@@ -1001,70 +1001,75 @@ Tabs.Misc:AddButton({
     end
 })
 
--- Boost FPS Toggle (White Screen)
-local boostFPSEnabled = false
-local whiteScreenGui = nil
+local lighting = game:GetService("Lighting")
+local terrain = workspace.Terrain
+local player = game:GetService("Players").LocalPlayer
 
-Tabs.Misc:AddToggle("BoostFPSToggle", {
-    Title = "White Screen",
-    Default = false,
-    Callback = function(value)
-        boostFPSEnabled = value
-        local lighting = game:GetService("Lighting")
-        local terrain = workspace.Terrain
-        local player = game:GetService("Players").LocalPlayer
+-- Lưu GUI hiện tại (nếu có) để xóa khi đổi chế độ
+local screenGuiOverlay = nil
 
-        if boostFPSEnabled then
-            -- Tối ưu hiệu năng
-            lighting.GlobalShadows = false
-            lighting.FogEnd = 1e10
-            lighting.Brightness = 1
-            lighting.ClockTime = 14
-            lighting.Ambient = Color3.new(0, 0, 0)
-            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+local function applyScreenMode(mode)
+    -- Xóa GUI cũ nếu có
+    if screenGuiOverlay and screenGuiOverlay.Parent then
+        screenGuiOverlay:Destroy()
+        screenGuiOverlay = nil
+    end
 
-            terrain.WaterWaveSize = 0
-            terrain.WaterWaveSpeed = 0
-            terrain.WaterReflectance = 0
-            terrain.WaterTransparency = 0
+    if mode == "None" then
+        -- Khôi phục mặc định
+        lighting.GlobalShadows = true
+        lighting.FogEnd = 100000
+        lighting.Brightness = 2
+        lighting.ClockTime = 14
+        lighting.Ambient = Color3.fromRGB(128, 128, 128)
+        lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
 
-            -- Tạo White Screen GUI
-            whiteScreenGui = Instance.new("ScreenGui")
-            whiteScreenGui.Name = "WhiteScreenFPSBoost"
-            whiteScreenGui.ResetOnSpawn = false
-            whiteScreenGui.IgnoreGuiInset = true -- ✅ che toàn bộ màn hình
-            whiteScreenGui.DisplayOrder = 0
+        terrain.WaterWaveSize = 1
+        terrain.WaterWaveSpeed = 1
+        terrain.WaterReflectance = 0.5
+        terrain.WaterTransparency = 0.5
 
-            local frame = Instance.new("Frame")
-            frame.Size = UDim2.new(1, 0, 1, 0)
-            frame.Position = UDim2.new(0, 0, 0, 0)
-            frame.BackgroundColor3 = Color3.new(1, 1, 1)
-            frame.BorderSizePixel = 0
-            frame.ZIndex = 0 -- ✅ nằm dưới UI chính
-            frame.Parent = whiteScreenGui
+    elseif mode == "Black" or mode == "White" then
+        -- Tối ưu hiệu năng
+        lighting.GlobalShadows = false
+        lighting.FogEnd = 1e10
+        lighting.Brightness = 1
+        lighting.ClockTime = 14
+        lighting.Ambient = Color3.new(0, 0, 0)
+        lighting.OutdoorAmbient = Color3.new(0, 0, 0)
 
-            -- Gán vào PlayerGui
-            whiteScreenGui.Parent = player:WaitForChild("PlayerGui")
-        else
-            -- Khôi phục lại mặc định
-            lighting.GlobalShadows = true
-            lighting.FogEnd = 100000
-            lighting.Brightness = 2
-            lighting.ClockTime = 14
-            lighting.Ambient = Color3.fromRGB(128, 128, 128)
-            lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+        terrain.WaterWaveSize = 0
+        terrain.WaterWaveSpeed = 0
+        terrain.WaterReflectance = 0
+        terrain.WaterTransparency = 0
 
-            terrain.WaterWaveSize = 1
-            terrain.WaterWaveSpeed = 1
-            terrain.WaterReflectance = 0.5
-            terrain.WaterTransparency = 0.5
+        -- Tạo overlay GUI
+        screenGuiOverlay = Instance.new("ScreenGui")
+        screenGuiOverlay.Name = "FPSOverlay"
+        screenGuiOverlay.ResetOnSpawn = false
+        screenGuiOverlay.IgnoreGuiInset = true
+        screenGuiOverlay.DisplayOrder = 0
 
-            -- Xóa White Screen GUI
-            if whiteScreenGui and whiteScreenGui.Parent then
-                whiteScreenGui:Destroy()
-                whiteScreenGui = nil
-            end
-        end
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, 0, 1, 0)
+        frame.Position = UDim2.new(0, 0, 0, 0)
+        frame.BorderSizePixel = 0
+        frame.ZIndex = 0
+        frame.BackgroundColor3 = (mode == "Black") and Color3.new(0, 0, 0) or Color3.new(1, 1, 1)
+        frame.Parent = screenGuiOverlay
+
+        screenGuiOverlay.Parent = player:WaitForChild("PlayerGui")
+    end
+end
+
+-- Tạo Dropdown chọn chế độ
+Tabs.Misc:AddDropdown("ScreenModeDropdown", {
+    Title = "Color Screen To Boost FPS",
+    Values = {"None", "Black", "White"},
+    Default = "None",
+    Multi = false,
+    Callback = function(selected)
+        applyScreenMode(selected)
     end
 })
 
