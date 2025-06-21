@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 getgenv().Key = "trongkim19052009"
@@ -217,45 +217,50 @@ local player = Players.LocalPlayer
 local GuiService = game:GetService("GuiService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- ✅ Hàm kiểm tra DeathScreen có đang hiển thị không
-local function isDeathScreenVisible()
-	local gui = player:FindFirstChild("PlayerGui")
-	if not gui then return false end
+local function handleDeathScreen(gui)
+	print("🟥 DeathScreen mới được thêm:", gui:GetFullName())
+	deathScreenVisible = true
 
-	for _, g in ipairs(gui:GetChildren()) do
-		if g.Name == "DeathScreen" and g:IsA("ScreenGui") and g.Enabled then
-			return true
+	local disconnected = false
+	gui.AncestryChanged:Connect(function(_, parent)
+		if not disconnected and (not parent or not gui:IsDescendantOf(gui.Parent)) then
+			disconnected = true
+			deathScreenVisible = false
+			print("✅ DeathScreen đã biến mất.")
 		end
-	end
+	end)
 
-	return false
+	gui.Destroying:Connect(function()
+		if not disconnected then
+			disconnected = true
+			deathScreenVisible = false
+			print("✅ DeathScreen bị Destroy.")
+		end
+	end)
 end
 
--- Theo dõi DeathScreen xuất hiện để log (tùy chọn, không ảnh hưởng logic chính)
-local function listenForDeathScreenLog()
-	print("👁️ Theo dõi DeathScreen (log)...")
+-- Theo dõi DeathScreen khi được thêm vào GUI
+local function listenForDeathScreen()
+	print("👁️ Bắt đầu theo dõi DeathScreen...")
 
-	local gui = player:WaitForChild("PlayerGui")
+	local gui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 	for _, g in ipairs(gui:GetChildren()) do
 		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
-			print("🟥 DeathScreen đã có từ trước.")
+			handleDeathScreen(g)
 		end
 	end
 
 	gui.ChildAdded:Connect(function(g)
 		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
-			print("🟥 DeathScreen mới được thêm:", g:GetFullName())
-			g:GetPropertyChangedSignal("Enabled"):Connect(function()
-				print("[DeathScreen] ⚙️ Trạng thái Enabled thay đổi:", g.Enabled)
-			end)
+			handleDeathScreen(g)
 		end
 	end)
 end
 
--- Kích hoạt theo dõi log khi nhân vật hồi sinh
-player.CharacterAdded:Connect(function()
-	print("👤 Nhân vật đã xuất hiện. Theo dõi DeathScreen log...")
-	listenForDeathScreenLog()
+-- Kích hoạt theo dõi mỗi khi nhân vật xuất hiện (gồm hồi sinh)
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+	print("👤 Nhân vật đã xuất hiện. Bắt đầu kiểm tra DeathScreen...")
+	listenForDeathScreen()
 end)
 
 -- Tìm nút Ranked
@@ -285,7 +290,7 @@ local function findPlayButton()
     return nil
 end
 
--- Kiểm tra nút đứng yên tuyệt đối trong vài frame (đảm bảo đã load)
+-- Kiểm tra nút đứng yên tuyệt đối trong vài frame
 local function waitUntilStable(button, frameCount, timeout)
     local lastPos = button.AbsolutePosition
     local stableFrames = 0
@@ -316,9 +321,9 @@ local function waitUntilStable(button, frameCount, timeout)
     return false
 end
 
--- ✅ Nhấn nút Play
+-- Nhấn nút Play
 local function pressPlay(playBtn)
-	if isDeathScreenVisible() then
+	if deathScreenVisible then
 		print("[AutoPlay] ⚠️ DeathScreen đang hiển thị, không nhấn Play.")
 		return false
 	end
@@ -651,13 +656,13 @@ task.spawn(function()
 			continue
 		end
 
-		if not player.Character and not isDeathScreenVisible() then
+		if not player.Character and not deathScreenVisible then
 			local ranked = findRankedButton()
 			local playBtn = findPlayButton()
 
 			if ranked and playBtn then
 				print("[AutoPlay] Đã thấy Ranked. Đợi 2 giây cho UI load...")
-				task.wait(2)
+				task.wait(2) -- Chờ UI ổn định đơn giản
 				print("[AutoPlay] Thử nhấn Play...")
 
 				if pressPlay(playBtn) then
@@ -675,7 +680,7 @@ task.spawn(function()
 			else
 				print("[AutoPlay] Chưa tìm thấy nút Ranked hoặc Play.")
 			end
-		elseif isDeathScreenVisible() then
+		elseif deathScreenVisible then
 			print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
 		end
 
