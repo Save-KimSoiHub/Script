@@ -15,7 +15,7 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "KimSoi Hub [Basic]",
+    Title = "KimSoi Hub [Teser]",
     SubTitle = "By KimSoi",
     TabWidth = 160,
     Size = UDim2.fromOffset(540, 450),
@@ -121,7 +121,7 @@ local PositionData = {
     }
 }
 
--- 🌐 Toạ độ farm đã gán cho từng player
+-- Toạ độ farm đã gán cho từng player
 GlobalPlayerPositions = {}
 
 local function extractUsername(comboText)
@@ -131,7 +131,7 @@ local function extractUsername(comboText)
     return "Unknown"
 end
 
--- 🔠 Lấy danh sách player dạng "DisplayName (Username)", sắp xếp A-Z
+-- Lấy danh sách player
 function getPlayerList()
     local list = {}
     for _, player in ipairs(Players:GetPlayers()) do
@@ -141,7 +141,7 @@ function getPlayerList()
     return list
 end
 
--- 🧠 Gán toạ độ farm theo thứ tự player
+-- Gán toạ độ farm theo thứ tự player
 local function assignPlayerPositions()
     local sorted = getPlayerList()
     local coords = PositionData[game.PlaceId]
@@ -205,7 +205,6 @@ local GuiService = game:GetService("GuiService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local function handleDeathScreen(gui)
-	print("🟥 DeathScreen mới được thêm:", gui:GetFullName())
 	deathScreenVisible = true
 
 	local disconnected = false
@@ -213,7 +212,6 @@ local function handleDeathScreen(gui)
 		if not disconnected and (not parent or not gui:IsDescendantOf(gui.Parent)) then
 			disconnected = true
 			deathScreenVisible = false
-			print("✅ DeathScreen đã biến mất.")
 		end
 	end)
 
@@ -221,14 +219,12 @@ local function handleDeathScreen(gui)
 		if not disconnected then
 			disconnected = true
 			deathScreenVisible = false
-			print("✅ DeathScreen bị Destroy.")
 		end
 	end)
 end
 
 -- Theo dõi DeathScreen khi được thêm vào GUI
 local function listenForDeathScreen()
-	print("👁️ Bắt đầu theo dõi DeathScreen...")
 
 	local gui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 	for _, g in ipairs(gui:GetChildren()) do
@@ -246,7 +242,6 @@ end
 
 -- Kích hoạt theo dõi mỗi khi nhân vật xuất hiện (gồm hồi sinh)
 game.Players.LocalPlayer.CharacterAdded:Connect(function()
-	print("👤 Nhân vật đã xuất hiện. Bắt đầu kiểm tra DeathScreen...")
 	listenForDeathScreen()
 end)
 
@@ -311,7 +306,6 @@ end
 -- Nhấn nút Play
 local function pressPlay(playBtn)
 	if deathScreenVisible then
-		print("[AutoPlay] ⚠️ DeathScreen đang hiển thị, không nhấn Play.")
 		return false
 	end
 
@@ -327,7 +321,6 @@ local function pressPlay(playBtn)
 			task.wait(0.05)
 		end
 
-		print("[AutoPlay] ✅ Đã gửi Enter để nhấn Play.")
 		return true
 	end
 
