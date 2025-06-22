@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -711,7 +711,7 @@ local function followBoss(bossModel)
         task.wait(0.1)
     end
 
-    -- print("[Boss] Đã bị tiêu diệt")
+    print("[Boss] Đã bị tiêu diệt")
 
     if shared.autoFarm then
         shared.forceUnlock = false
@@ -723,7 +723,7 @@ local function followBoss(bossModel)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
     else
-        -- print("Không Gọi Hàm Teleport")
+        print("Không Gọi Hàm Teleport")
     end
 end
 
@@ -744,7 +744,7 @@ task.spawn(function()
         if placeId == 9224601490 then
             local marco = npcsFolder:FindFirstChild("Marco")
             if marco then
-                -- print("[Marco] Đã xuất hiện")
+                print("[Marco] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
                 shared.bienCaoCap = true
@@ -752,13 +752,13 @@ task.spawn(function()
                 followBoss(marco)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Marco") or not shared.autoBoss
             else
-                -- print("[Marco] Chưa xuất hiện")
+                print("[Marco] Chưa xuất hiện")
             end
 
         elseif placeId == 16190471004 then
             local cakeQueen = npcsFolder:FindFirstChild("Cake Queen")
             if cakeQueen then
-                -- print("[Cake Queen] Đã xuất hiện")
+                print("[Cake Queen] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
                 shared.bienCaoCap = true
@@ -766,12 +766,12 @@ task.spawn(function()
                 followBoss(cakeQueen)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Cake Queen") or not shared.autoBoss
             else
-                -- print("[Cake Queen] Chưa xuất hiện")
+                print("[Cake Queen] Chưa xuất hiện")
             end
 
             local katakuri = npcsFolder:FindFirstChild("Katakuri")
             if katakuri then
-                -- print("[Katakuri] Đã xuất hiện")
+                print("[Katakuri] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
                 shared.bienCaoCap = true
@@ -779,13 +779,13 @@ task.spawn(function()
                 followBoss(katakuri)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Katakuri") or not shared.autoBoss
             else
-                -- print("[Katakuri] Chưa xuất hiện")
+                print("[Katakuri] Chưa xuất hiện")
             end
 
         elseif placeId == 12413901502 then
             local kaido = npcsFolder:FindFirstChild("Kaido")
             if kaido then
-                -- print("[Kaido] Đã xuất hiện")
+                print("[Kaido] Đã xuất hiện")
                 shared.forceUnlock = true
                 task.wait(1)
                 shared.bienCaoCap = true
@@ -793,11 +793,11 @@ task.spawn(function()
                 followBoss(kaido)
                 repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Kaido") or not shared.autoBoss
             else
-                -- print("[Kaido] Chưa xuất hiện")
+                print("[Kaido] Chưa xuất hiện")
             end
 
         else
-            -- warn("Không hỗ trợ map này. PlaceId:", placeId)
+            warn("Không hỗ trợ map này. PlaceId:", placeId)
             break
         end
 
@@ -827,7 +827,7 @@ Tabs.Main:AddInput("ManaToReset", {
     end
 })
 
--- Auto Check Mana
+-- Auto Check Mana (Chắc chắn không lỗi)
 do
     local manaConnection = nil
     local charAddedConn = nil
@@ -853,13 +853,13 @@ do
         if currentMana and currentMana > 0 and currentMana < shared.THRESHOLD and currentHumanoid.Health > 0 and (now - lastLowManaTime >= 10) then
             lowManaCount += 1
             lastLowManaTime = now
-            -- print("🧪 [ManaCheck] Mana thấp lần:", lowManaCount)
+            print("🧪 [ManaCheck] Mana thấp lần:", lowManaCount)
         elseif currentMana and currentMana >= shared.THRESHOLD then
             lowManaCount = 0
         end
 
         if lowManaCount >= 5 and currentHumanoid.Health > 0 then
-            -- print("🟥 [ManaCheck] Reset vì mana thấp!")
+            print("🟥 [ManaCheck] Reset vì mana thấp!")
             currentHumanoid.Health = 0
             lowManaCount = 0
             canAct = false
@@ -897,10 +897,10 @@ do
 
             if ok then
                 progressStamina = ui
-                -- print("✅ [ManaCheck] Tìm thấy ProgressStamina.")
+                print("✅ [ManaCheck] Tìm thấy ProgressStamina.")
             else
                 progressStamina = nil
-                -- warn("⚠️ [ManaCheck] Không tìm thấy ProgressStamina.")
+                warn("⚠️ [ManaCheck] Không tìm thấy ProgressStamina.")
             end
         end)
 
@@ -953,7 +953,7 @@ Tabs.Misc:AddDropdown("SlotSelector", {
     Default = "1",
     Callback = function(value)
         selectedSlot = tonumber(value)
-        -- print("Đã chọn slot: " .. selectedSlot)
+        print("Đã chọn slot: " .. selectedSlot)
     end
 })
 
@@ -970,7 +970,7 @@ Tabs.Misc:AddButton({
             }
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-        -- print("Đã gửi lệnh SwitchSlot đến slot: " .. selectedSlot)
+        print("Đã gửi lệnh SwitchSlot đến slot: " .. selectedSlot)
     end
 })
 
@@ -1117,7 +1117,7 @@ Tabs.Misc:AddButton({
             end
         end
 
-        -- print("✅ Boost FPS hoàn tất!")
+        print("✅ Boost FPS hoàn tất!")
     end
 })
 
@@ -1160,9 +1160,9 @@ for _, code in ipairs(codes) do
     end)
 
     if success then
-        -- print("Đã thử code:", code, "=> Kết quả:", result)
+        print("Đã thử code:", code, "=> Kết quả:", result)
     else
-        -- print("Lỗi khi thử code:", code, "=> Lỗi:", errorMsg)
+        print("Lỗi khi thử code:", code, "=> Lỗi:", errorMsg)
     end
     task.wait(1) -- tránh spam quá nhanh
 end
@@ -1201,12 +1201,12 @@ Tabs.Sever:AddButton({
 
         local placeId = mapIds[selectedMapName]
         if not placeId then
-            -- warn("❌ Không tìm thấy ID cho map: " .. tostring(selectedMapName))
+            warn("❌ Không tìm thấy ID cho map: " .. tostring(selectedMapName))
             return
         end
 
         local args = { "Core", "Teleport", { PlaceId = placeId } }
-        -- print("🔹 Gửi yêu cầu dịch chuyển đến:", selectedMapName, "(PlaceId:", placeId, ")")
+        print("🔹 Gửi yêu cầu dịch chuyển đến:", selectedMapName, "(PlaceId:", placeId, ")")
         replicator:InvokeServer(unpack(args))
     end
 })
@@ -1297,10 +1297,68 @@ local Player = game.Players.LocalPlayer
 local mainData = Player:WaitForChild("MAIN_DATA", 10)
 
 if not mainData then
-    -- warn("MAIN_DATA not found!")
+    warn("MAIN_DATA not found!")
     return
 end
 
+-- Tạo GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MainDataDisplay"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.CoreGui
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(0, 200, 0, 200) -- Chiều rộng nhỏ lại
+textLabel.AutomaticSize = Enum.AutomaticSize.Y -- Tự mở rộng chiều cao theo nội dung
+textLabel.Position = UDim2.new(0, 10, 0, 10) -- Góc trái trên
+textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.TextYAlignment = Enum.TextYAlignment.Top
+textLabel.BackgroundTransparency = 0.3
+textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.TextSize = 14
+textLabel.Font = Enum.Font.SourceSans
+textLabel.TextWrapped = true -- Cho phép tự xuống dòng
+textLabel.Text = ""
+textLabel.Parent = screenGui
+
+-- Cờ bật/tắt
+local enabled = true
+
+-- Phím tắt bật/tắt GUI (nhấn G)
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
+		enabled = not enabled
+		screenGui.Enabled = enabled
+	end
+end)
+
+-- Hàm cập nhật GUI
+local function updateData()
+	local info = ""
+	for _, v in pairs(mainData:GetChildren()) do
+		pcall(function()
+			info = info .. v.Name .. ": " .. tostring(v.Value) .. "\n"
+		end)
+	end
+	textLabel.Text = info
+end
+
+-- Cập nhật ban đầu
+updateData()
+
+-- Cập nhật mỗi 10 giây
+task.spawn(function()
+	while true do
+		if enabled then
+			updateData()
+		end
+		wait(10)
+	end
+end)
+        end
+    end
+})
 --Teleport NPC
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -1355,7 +1413,7 @@ Tabs.Sever:AddButton({
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:FindFirstChild("HumanoidRootPart")
         if not hrp then
-            -- warn("Không tìm thấy HumanoidRootPart.")
+            warn("Không tìm thấy HumanoidRootPart.")
             return
         end
 
@@ -1363,7 +1421,7 @@ Tabs.Sever:AddButton({
         if targetPos then
             hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
         else
-            -- warn("Không tìm thấy tọa độ cho NPC đã chọn.")
+            warn("Không tìm thấy tọa độ cho NPC đã chọn.")
         end
     end
 })
@@ -1417,7 +1475,7 @@ Tabs.Sever:AddButton({
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:FindFirstChild("HumanoidRootPart")
         if not hrp then
-            -- warn("Không tìm thấy HumanoidRootPart.")
+            warn("Không tìm thấy HumanoidRootPart.")
             return
         end
 
@@ -1425,7 +1483,7 @@ Tabs.Sever:AddButton({
         if targetPos then
             hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 5, 0))
         else
-            -- warn("Không tìm thấy tọa độ cho Arena đã chọn.")
+            warn("Không tìm thấy tọa độ cho Arena đã chọn.")
         end
     end
 })
@@ -1467,11 +1525,11 @@ local function getServer()
                     break
                 end
             else
-                -- warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
+                warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
                 break
             end
         else
-            -- warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
+            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
             break
         end
     end
@@ -1487,7 +1545,7 @@ local serverId = getServer()
 if serverId then
     TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
 else
-    -- warn("⚠️ Không tìm được server nào phù hợp.")
+    warn("⚠️ Không tìm được server nào phù hợp.")
 end
     end
 })
@@ -1532,11 +1590,11 @@ local function getLeastPopulatedServer()
                     break
                 end
             else
-                -- warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
+                warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
                 break
             end
         else
-            -- warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
+            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
             break
         end
     end
@@ -1548,7 +1606,7 @@ local targetServerId = getLeastPopulatedServer()
 if targetServerId then
     TeleportService:TeleportToPlaceInstance(PlaceId, targetServerId, player)
 else
-    -- warn("⚠️ Không tìm được server nào phù hợp.")
+    warn("⚠️ Không tìm được server nào phù hợp.")
 end
     end
 })
@@ -1585,12 +1643,12 @@ local function getServerMinute()
             local text = gui.Text
             local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
             if hour and minute and second then
-                -- print("🕒 Giờ máy chủ:", hour, minute, second)
+                print("🕒 Giờ máy chủ:", hour, minute, second)
                 return tonumber(minute)
             end
         end
     end
-    -- warn("⚠️ Không tìm thấy Servertime từ GUI.")
+    warn("⚠️ Không tìm thấy Servertime từ GUI.")
     return nil
 end
 
@@ -1619,11 +1677,11 @@ local function getServer()
                     break
                 end
             else
-                -- warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
+                warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
                 break
             end
         else
-            -- warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
+            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
             break
         end
     end
@@ -1638,15 +1696,15 @@ end
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
 if minute and minute < (60 - shared.timeToWait) then
-    -- print("✅ Phút máy chủ:", minute, " < 40 → Tiến hành hop server.")
+    print("✅ Phút máy chủ:", minute, " < 40 → Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
         TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
     else
-        -- warn("⚠️ Không tìm được server phù hợp.")
+        warn("⚠️ Không tìm được server phù hợp.")
     end
 else
-    -- print("⛔ Đã đến giờ boss (>= 40 phút). Không hop server.")
+    print("⛔ Đã đến giờ boss (>= 40 phút). Không hop server.")
 end
         end
     end
@@ -1673,12 +1731,12 @@ local function getServerMinute()
             local text = gui.Text
             local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
             if hour and minute and second then
-                -- print("🕒 Giờ máy chủ:", hour, minute, second)
+                print("🕒 Giờ máy chủ:", hour, minute, second)
                 return tonumber(minute)
             end
         end
     end
-    -- warn("⚠️ Không tìm thấy Servertime từ GUI.")
+    warn("⚠️ Không tìm thấy Servertime từ GUI.")
     return nil
 end
 
@@ -1707,11 +1765,11 @@ local function getServer()
                     break
                 end
             else
-                -- warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
+                warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
                 break
             end
         else
-           -- warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
+            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
             break
         end
     end
@@ -1726,15 +1784,15 @@ end
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
 if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
-    -- print("✅ Phút máy chủ:", minute, " → Tiến hành hop server.")
+    print("✅ Phút máy chủ:", minute, " → Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
         TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
     else
-        -- warn("⚠️ Không tìm được server phù hợp.")
+        warn("⚠️ Không tìm được server phù hợp.")
     end
 else
-    -- print("⛔ Trong khoảng thời gian boss (10 → 35 phút). Không hop server.")
+    print("⛔ Trong khoảng thời gian boss (10 → 35 phút). Không hop server.")
 end
         end
     end
@@ -1763,7 +1821,7 @@ Tabs.Fruit:AddDropdown("FruitSelector", {
             end
         end
         _G.selectedFruitName = selected
-        -- print("Selected fruits:", table.concat(selected, ", "))
+        print("Selected fruits:", table.concat(selected, ", "))
     end
 })
 
@@ -1775,7 +1833,7 @@ Tabs.Fruit:AddDropdown("SpinTypeSelector", {
     Default = "Normal",
     Callback = function(value)
         _G.selectedSpinType = value
-        -- print("Selected spin type:", value)
+        print("Selected spin type:", value)
     end
 })
 
@@ -1790,7 +1848,7 @@ autoSpinToggleRef = Tabs.Fruit:AddToggle("AutoSpinToggle", {
             startAutoSpin()
         else
             _G.autoSpinEnabled = false
-            -- print("Auto Spin đã tắt.")
+            print("Auto Spin đã tắt.")
         end
     end
 })
@@ -1808,7 +1866,7 @@ end
 -- Hàm chạy Auto Spin
 function startAutoSpin()
     task.spawn(function()
-        -- print("Auto Spin đang chạy...")
+        print("Auto Spin đang chạy...")
         while _G.autoSpinEnabled do
             local spinArgs = {Type = {}}
             if _G.selectedSpinType == "Fast" then
@@ -1819,17 +1877,17 @@ function startAutoSpin()
 
             local args = {"FruitsHandler", "Spin", spinArgs}
             local result = game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-            -- print("Kết quả spin trả về từ server:", result)
+            print("Kết quả spin trả về từ server:", result)
 
             if result and isRare(result) then
-                -- print("DỪNG! Gặp trái hiếm:", result)
+                print("DỪNG! Gặp trái hiếm:", result)
                 _G.autoSpinEnabled = false
                 if autoSpinToggleRef and autoSpinToggleRef.SetValue then
                     autoSpinToggleRef:SetValue(false) -- Gạt toggle về OFF
                 end
                 break
             else
-                -- print("Spin tiếp...")
+                print("Spin tiếp...")
             end
 
             task.wait(3.5)
@@ -1859,9 +1917,9 @@ for _, code in ipairs(codes) do
         return Replicator:InvokeServer(unpack(args))
     end)
     if success then
-        -- print("Đã thử code:", code, "=>", result)
+        print("Đã thử code:", code, "=>", result)
     else
-        -- print("Lỗi code:", code)
+        print("Lỗi code:", code)
     end
     task.wait(1)
 end
@@ -1952,7 +2010,7 @@ local function showRareFruitNotification(fruitName)
         label.TextStrokeTransparency = 0
         label.Font = Enum.Font.FredokaOne
         label.TextScaled = true
-        label.Text = "🎯 " .. username .. " Got Good Fruit: " .. fruitName
+        label.Text = "🎯 " .. username .. " quay ra: " .. fruitName
         label.Parent = scroll
 
         -- Cập nhật canvas
@@ -1968,10 +2026,10 @@ end
 
 while autoSpin do
     local equipped = getEquippedFruit()
-    -- print("Slot", currentSlot, "cầm:", equipped)
+    print("Slot", currentSlot, "cầm:", equipped)
 
     if equipped and isRare(equipped) then
-        -- print("🎯", username, "quay ra trái hiếm:", equipped)
+        print("🎯", username, "quay ra trái hiếm:", equipped)
         showRareFruitNotification(equipped)
 
         if currentSlot < maxSlot then
@@ -1979,12 +2037,12 @@ while autoSpin do
             Replicator:InvokeServer("FruitsHandler", "SwitchSlot", {Slot = currentSlot})
             task.wait(1.5)
         else
-            -- print("✅ Dừng spin, đã dùng hết slot.")
+            print("✅ Dừng spin, đã dùng hết slot.")
             autoSpin = false
             break
         end
     else
-        -- print("🔄 Spin tiếp...")
+        print("🔄 Spin tiếp...")
         Replicator:InvokeServer("FruitsHandler", "Spin", {})
         task.wait(2.5)
     end
@@ -2016,9 +2074,9 @@ for _, code in ipairs(codes) do
         return Replicator:InvokeServer(unpack(args))
     end)
     if success then
-        -- print("Đã thử code:", code, "=>", result)
+        print("Đã thử code:", code, "=>", result)
     else
-        -- print("Lỗi code:", code)
+        print("Lỗi code:", code)
     end
     task.wait(1)
 end
@@ -2109,7 +2167,7 @@ local function showRareFruitNotification(fruitName)
         label.TextStrokeTransparency = 0
         label.Font = Enum.Font.FredokaOne
         label.TextScaled = true
-        label.Text = "🎯 " .. username .. " Got Good Fruit: " .. fruitName
+        label.Text = "🎯 " .. username .. " quay ra: " .. fruitName
         label.Parent = scroll
 
         -- Cập nhật canvas
@@ -2125,10 +2183,10 @@ end
 
 while autoSpin do
     local equipped = getEquippedFruit()
-    -- print("Slot", currentSlot, "cầm:", equipped)
+    print("Slot", currentSlot, "cầm:", equipped)
 
     if equipped and isRare(equipped) then
-        -- print("🎯", username, "quay ra trái hiếm:", equipped)
+        print("🎯", username, "quay ra trái hiếm:", equipped)
         showRareFruitNotification(equipped)
 
         if currentSlot < maxSlot then
@@ -2136,12 +2194,12 @@ while autoSpin do
             Replicator:InvokeServer("FruitsHandler", "SwitchSlot", {Slot = currentSlot})
             task.wait(1.5)
         else
-            -- print("✅ Dừng spin, đã dùng hết slot.")
+            print("✅ Dừng spin, đã dùng hết slot.")
             autoSpin = false
             break
         end
     else
-        -- print("🔄 Spin tiếp...")
+        print("🔄 Spin tiếp...")
         Replicator:InvokeServer("FruitsHandler", "Spin", {})
         task.wait(2.5)
     end
@@ -2268,7 +2326,7 @@ Tabs.Player:AddToggle("ESPPlayerToggle", {
 local function teleportToPlayer(playerName)
     local targetPlayer = Players:FindFirstChild(playerName)
     if not targetPlayer then
-        -- warn("Không tìm thấy người chơi: " .. playerName)
+        warn("Không tìm thấy người chơi: " .. playerName)
         return
     end
 
@@ -2277,9 +2335,9 @@ local function teleportToPlayer(playerName)
 
     if targetChar and targetChar:FindFirstChild("HumanoidRootPart") and myChar and myChar:FindFirstChild("HumanoidRootPart") then
         myChar:MoveTo(targetChar.HumanoidRootPart.Position + Vector3.new(0, 3, 0))
-        -- print("Đã dịch chuyển đến: " .. playerName)
+        print("Đã dịch chuyển đến: " .. playerName)
     else
-        -- warn("Không thể dịch chuyển, nhân vật không đầy đủ")
+        warn("Không thể dịch chuyển, nhân vật không đầy đủ")
     end
 end
 
@@ -2291,7 +2349,7 @@ dropdownRef = Tabs.Player:AddDropdown("PlayerDropdownTeleport", {
     Default = nil,
     Callback = function(value)
         selectedPlayerUsername = extractUsername(value)
-        -- print("Đã chọn: " .. selectedPlayerUsername)
+        print("Đã chọn: " .. selectedPlayerUsername)
     end
 })
 
@@ -2301,7 +2359,7 @@ Tabs.Player:AddButton({
     Callback = function()
         if dropdownRef then
             dropdownRef:SetValues(getPlayerList())
-            -- print("Danh sách người chơi đã được làm mới.")
+            print("Danh sách người chơi đã được làm mới.")
         end
     end
 })
@@ -2313,7 +2371,7 @@ Tabs.Player:AddButton({
         if selectedPlayerUsername then
             teleportToPlayer(selectedPlayerUsername)
         else
-            -- warn("Bạn chưa chọn người chơi để teleport.")
+            warn("Bạn chưa chọn người chơi để teleport.")
         end
     end
 })
