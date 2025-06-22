@@ -599,7 +599,6 @@ local function waitUntilPositionReady()
             return hrp and hrp.Position
         end)
         if success and pos then
-            print(("CFrame.new(%.2f, %.2f, %.2f)"):format(pos.X, pos.Y, pos.Z))
             return true
         end
         task.wait(0.2)
@@ -654,38 +653,32 @@ task.spawn(function()
 			local playBtn = findPlayButton()
 
 			if ranked and playBtn then
-				print("[AutoPlay] Đã thấy Ranked. Đợi 2 giây cho UI load...")
 				task.wait(2) -- Chờ UI ổn định đơn giản
-				print("[AutoPlay] Thử nhấn Play...")
 
 				if pressPlay(playBtn) then
 					local confirmStart = tick()
 					while tick() - confirmStart < 10 do
 						if player.Character or not playBtn.Visible then
-							print("[AutoPlay] ✅ Vào game OK.")
 							break
 						end
 						task.wait(0.2)
 					end
-				else
-					print("[AutoPlay] ❌ Nhấn Play thất bại.")
 				end
-			else
-				print("[AutoPlay] Chưa tìm thấy nút Ranked hoặc Play.")
 			end
 		elseif deathScreenVisible then
-			print("[AutoPlay] ⏳ Đang chờ DeathScreen biến mất...")
+			-- Đợi DeathScreen biến mất
 		end
 
 		task.wait(0.5)
 	end
 end)
 
+
 -- Bắt đầu theo dõi slot trái và auto dùng skill
 watchSlotChanges()
 startSkillLoop()
         else
-            print("Auto Farm đã tắt.")
+            -- Tắt auto farm
         end
     end
 })
