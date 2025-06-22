@@ -1938,7 +1938,7 @@ function startAutoSpin()
 end
 
 Tabs.Fruit:AddParagraph({
-    Title = "Kaitun Can Not Turn Off !",
+    Title = "Warning:Kaitun Can Not Turn Off !",
     Content = ""
 })
 
