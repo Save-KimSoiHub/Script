@@ -1044,128 +1044,172 @@ Tabs.Misc:AddDropdown("ScreenModeDropdown", {
     end
 })
 
-Tabs.Misc:AddButton({
+local boostEnabled = false
+local originalSettings = {}
+
+Tabs.Misc:AddToggle("BoostFPSToggle", {
     Title = "Boost FPS",
-    Description = "Reduce Quality For High FPS",
-    Callback = function()
+    Default = false,
+    Callback = function(value)
+        boostEnabled = value
         local g = game
         local w = g.Workspace
         local l = g.Lighting
         local t = w.Terrain
 
-        -- Tắt hiệu ứng nước
-        t.WaterWaveSize = 0
-        t.WaterWaveSpeed = 0
-        t.WaterReflectance = 0
-        t.WaterTransparency = 0
+        if value then
+            -- Lưu cài đặt gốc
+            originalSettings = {
+                WaterWaveSize = t.WaterWaveSize,
+                WaterWaveSpeed = t.WaterWaveSpeed,
+                WaterReflectance = t.WaterReflectance,
+                WaterTransparency = t.WaterTransparency,
+                GlobalShadows = l.GlobalShadows,
+                FogEnd = l.FogEnd,
+                Brightness = l.Brightness,
+                QualityLevel = settings().Rendering.QualityLevel,
+                PostEffects = {},
+            }
 
-        -- Tắt ánh sáng, bóng, sương mù
-        l.GlobalShadows = false
-        l.FogEnd = 1e10
-        l.Brightness = 0
-
-        -- Tắt hiệu ứng Lighting
-        for _, v in ipairs(l:GetChildren()) do
-            if v:IsA("PostEffect") then
-                v.Enabled = false
-            end
-        end
-
-        -- Giảm chất lượng render
-        pcall(function()
-            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-        end)
-
-        -- Tối ưu từng object
-        local function optimizePart(v)
-            if v:IsA("BasePart") then
-                v.Material = Enum.Material.Plastic
-                v.Reflectance = 0
-            elseif v:IsA("Decal") or v:IsA("Texture") then
-                v.Transparency = 1
-            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                v.Lifetime = NumberRange.new(0)
-            elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                v.Enabled = false
-            elseif v:IsA("Explosion") then
-                v.BlastPressure = 1
-                v.BlastRadius = 1
-            elseif v:IsA("MeshPart") then
-                v.Material = Enum.Material.Plastic
-                v.TextureID = "rbxassetid://0"
-                v.Reflectance = 0
-            elseif v:IsA("SpecialMesh") then
-                v.TextureId = ""
-            elseif v:IsA("ShirtGraphic") then
-                v.Graphic = ""
-            elseif v:IsA("Shirt") or v:IsA("Pants") then
-                local prop = v.ClassName .. "Template"
-                if v[prop] then
-                    v[prop] = ""
+            for _, v in ipairs(l:GetChildren()) do
+                if v:IsA("PostEffect") then
+                    table.insert(originalSettings.PostEffects, {obj = v, enabled = v.Enabled})
+                    v.Enabled = false
                 end
             end
-        end
 
-        -- Duyệt toàn bộ object nhưng có delay nhỏ để tránh đơ
-        local all = w:GetDescendants()
-        for i = 1, #all do
-            optimizePart(all[i])
-            if i % 200 == 0 then
-                task.wait()
+            -- Áp dụng tối ưu
+            t.WaterWaveSize = 0
+            t.WaterWaveSpeed = 0
+            t.WaterReflectance = 0
+            t.WaterTransparency = 0
+
+            l.GlobalShadows = false
+            l.FogEnd = 1e10
+            l.Brightness = 0
+
+            pcall(function()
+                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            end)
+
+            local function optimizePart(v)
+                if v:IsA("BasePart") then
+                    v.Material = Enum.Material.Plastic
+                    v.Reflectance = 0
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = 1
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                    v.Lifetime = NumberRange.new(0)
+                elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                    v.Enabled = false
+                elseif v:IsA("Explosion") then
+                    v.BlastPressure = 1
+                    v.BlastRadius = 1
+                elseif v:IsA("MeshPart") then
+                    v.Material = Enum.Material.Plastic
+                    v.TextureID = "rbxassetid://0"
+                    v.Reflectance = 0
+                elseif v:IsA("SpecialMesh") then
+                    v.TextureId = ""
+                elseif v:IsA("ShirtGraphic") then
+                    v.Graphic = ""
+                elseif v:IsA("Shirt") or v:IsA("Pants") then
+                    local prop = v.ClassName .. "Template"
+                    if v[prop] then
+                        v[prop] = ""
+                    end
+                end
             end
+
+            local all = w:GetDescendants()
+            for i = 1, #all do
+                optimizePart(all[i])
+                if i % 200 == 0 then
+                    task.wait()
+                end
+            end
+
+            print("✅ Boost FPS đã bật.")
+        else
+            -- Khôi phục lại hiệu ứng và ánh sáng
+            if originalSettings.WaterWaveSize then
+                t.WaterWaveSize = originalSettings.WaterWaveSize
+                t.WaterWaveSpeed = originalSettings.WaterWaveSpeed
+                t.WaterReflectance = originalSettings.WaterReflectance
+                t.WaterTransparency = originalSettings.WaterTransparency
+
+                l.GlobalShadows = originalSettings.GlobalShadows
+                l.FogEnd = originalSettings.FogEnd
+                l.Brightness = originalSettings.Brightness
+
+                for _, data in ipairs(originalSettings.PostEffects) do
+                    data.obj.Enabled = data.enabled
+                end
+
+                pcall(function()
+                    settings().Rendering.QualityLevel = originalSettings.QualityLevel
+                end)
+            end
+
+            print("🔄 Đã khôi phục cài đặt hình ảnh.")
         end
-
-        print("✅ Boost FPS hoàn tất!")
     end
 })
 
-Tabs.Misc:AddButton({
+Tabs.Misc:AddToggle("RedeemAllCodeToggle", {
     Title = "Redeem All Code",
-    Description = "Redeem All Code",
-    Callback = function()
-        local codes = {
-    "WOW850",
-    "860KHYPEE",
-    "870OMG!",
-    "LOLX880K!",
-    "IAMLEOPARD",
-    "BIGUPDATE20",
-    "ANTICIPATION",
-    "BIGDAY",
-    "MAGNIFICENT890K!!",
-    "OMG9HUNDRED!",
-    "WOWZER910",
-    "HYPEE920K!",
-    "930KINS4NITY",
-    "LOL960K!"
-}
+    Description = "Can Not Turn OFF",
+    Default = false,
+    Callback = function(value)
+        if value then
+            local codes = {
+                "WOW850",
+                "860KHYPEE",
+                "870OMG!",
+                "LOLX880K!",
+                "IAMLEOPARD",
+                "BIGUPDATE20",
+                "ANTICIPATION",
+                "BIGDAY",
+                "MAGNIFICENT890K!!",
+                "OMG9HUNDRED!",
+                "WOWZER910",
+                "HYPEE920K!",
+                "930KINS4NITY",
+                "LOL960K!"
+            }
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Replicator = ReplicatedStorage:WaitForChild("Replicator")
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local Replicator = ReplicatedStorage:WaitForChild("Replicator")
 
-for _, code in ipairs(codes) do
-    local args = {
-        [1] = "Codes",
-        [2] = "Redeem",
-        [3] = {
-            ["Code"] = code
-        }
-    }
+            task.spawn(function()
+                for _, code in ipairs(codes) do
+                    local args = {
+                        [1] = "Codes",
+                        [2] = "Redeem",
+                        [3] = {
+                            ["Code"] = code
+                        }
+                    }
 
-    local result
-    local success, errorMsg = pcall(function()
-        result = Replicator:InvokeServer(unpack(args))
-    end)
+                    local result
+                    local success, errorMsg = pcall(function()
+                        result = Replicator:InvokeServer(unpack(args))
+                    end)
 
-    if success then
-        print("Đã thử code:", code, "=> Kết quả:", result)
-    else
-        print("Lỗi khi thử code:", code, "=> Lỗi:", errorMsg)
-    end
-    task.wait(1) -- tránh spam quá nhanh
-end
+                    if success then
+                        print("Đã thử code:", code, "=> Kết quả:", result)
+                    else
+                        print("Lỗi khi thử code:", code, "=> Lỗi:", errorMsg)
+                    end
+
+                    task.wait(1) -- tránh spam quá nhanh
+                end
+            end)
+        end
     end
 })
+
 -- Danh sách Map và ID tương ứng
 local mapIds = {
     ["Dressrosa"] = 9224601490,
@@ -1893,6 +1937,11 @@ function startAutoSpin()
     end)
 end
 
+Tabs.Fruit:AddParagraph({
+    Title = "Kaitun Can Not Turn Off !",
+    Content = ""
+})
+
 --Kích Hoạt Kaitun Auto Spin
 Tabs.Fruit:AddToggle("Kaitun Mythical", {
     Title = "Kaitun Auto Find Fruit Mythical",
@@ -2008,7 +2057,7 @@ local function showRareFruitNotification(fruitName)
         label.TextStrokeTransparency = 0
         label.Font = Enum.Font.FredokaOne
         label.TextScaled = true
-        label.Text = "🎯 " .. username .. " quay ra: " .. fruitName
+        label.Text = "🎯 " .. username .. " Got Good Fruit: " .. fruitName
         label.Parent = scroll
 
         -- Cập nhật canvas
@@ -2165,7 +2214,7 @@ local function showRareFruitNotification(fruitName)
         label.TextStrokeTransparency = 0
         label.Font = Enum.Font.FredokaOne
         label.TextScaled = true
-        label.Text = "🎯 " .. username .. " quay ra: " .. fruitName
+        label.Text = "🎯 " .. username .. " Got Good Fruit: " .. fruitName
         label.Parent = scroll
 
         -- Cập nhật canvas
