@@ -15,7 +15,7 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
-    Title = "KimSoi Hub [Premium]",
+    Title = "KimSoi Hub [Tester]",
     SubTitle = "By KimSoi",
     TabWidth = 160,
     Size = UDim2.fromOffset(540, 450),
@@ -1044,6 +1044,9 @@ Tabs.Misc:AddDropdown("ScreenModeDropdown", {
     end
 })
 
+local boostEnabled = false
+local originalSettings = {}
+
 Tabs.Misc:AddButton({
     Title = "Boost FPS",
     Description = "Reduce Quality For High FPS",
@@ -1306,6 +1309,64 @@ if not mainData then
     return
 end
 
+-- Tạo GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MainDataDisplay"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.CoreGui
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(0, 200, 0, 200) -- Chiều rộng nhỏ lại
+textLabel.AutomaticSize = Enum.AutomaticSize.Y -- Tự mở rộng chiều cao theo nội dung
+textLabel.Position = UDim2.new(0, 10, 0, 10) -- Góc trái trên
+textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.TextYAlignment = Enum.TextYAlignment.Top
+textLabel.BackgroundTransparency = 0.3
+textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.TextSize = 14
+textLabel.Font = Enum.Font.SourceSans
+textLabel.TextWrapped = true -- Cho phép tự xuống dòng
+textLabel.Text = ""
+textLabel.Parent = screenGui
+
+-- Cờ bật/tắt
+local enabled = true
+
+-- Phím tắt bật/tắt GUI (nhấn G)
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
+		enabled = not enabled
+		screenGui.Enabled = enabled
+	end
+end)
+
+-- Hàm cập nhật GUI
+local function updateData()
+	local info = ""
+	for _, v in pairs(mainData:GetChildren()) do
+		pcall(function()
+			info = info .. v.Name .. ": " .. tostring(v.Value) .. "\n"
+		end)
+	end
+	textLabel.Text = info
+end
+
+-- Cập nhật ban đầu
+updateData()
+
+-- Cập nhật mỗi 10 giây
+task.spawn(function()
+	while true do
+		if enabled then
+			updateData()
+		end
+		wait(10)
+	end
+end)
+        end
+    end
+})
 --Teleport NPC
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
