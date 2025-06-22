@@ -1044,115 +1044,78 @@ Tabs.Misc:AddDropdown("ScreenModeDropdown", {
     end
 })
 
-local boostEnabled = false
-local originalSettings = {}
-
-Tabs.Misc:AddToggle("BoostFPSToggle", {
+Tabs.Misc:AddButton({
     Title = "Boost FPS",
-    Default = false,
-    Callback = function(value)
-        boostEnabled = value
+    Description = "Reduce Quality For High FPS",
+    Callback = function()
         local g = game
         local w = g.Workspace
         local l = g.Lighting
         local t = w.Terrain
 
-        if value then
-            -- Lưu cài đặt gốc
-            originalSettings = {
-                WaterWaveSize = t.WaterWaveSize,
-                WaterWaveSpeed = t.WaterWaveSpeed,
-                WaterReflectance = t.WaterReflectance,
-                WaterTransparency = t.WaterTransparency,
-                GlobalShadows = l.GlobalShadows,
-                FogEnd = l.FogEnd,
-                Brightness = l.Brightness,
-                QualityLevel = settings().Rendering.QualityLevel,
-                PostEffects = {},
-            }
+        -- Tắt hiệu ứng nước
+        t.WaterWaveSize = 0
+        t.WaterWaveSpeed = 0
+        t.WaterReflectance = 0
+        t.WaterTransparency = 0
 
-            for _, v in ipairs(l:GetChildren()) do
-                if v:IsA("PostEffect") then
-                    table.insert(originalSettings.PostEffects, {obj = v, enabled = v.Enabled})
-                    v.Enabled = false
-                end
+        -- Tắt ánh sáng, bóng, sương mù
+        l.GlobalShadows = false
+        l.FogEnd = 1e10
+        l.Brightness = 0
+
+        -- Tắt hiệu ứng Lighting
+        for _, v in ipairs(l:GetChildren()) do
+            if v:IsA("PostEffect") then
+                v.Enabled = false
             end
-
-            -- Áp dụng tối ưu
-            t.WaterWaveSize = 0
-            t.WaterWaveSpeed = 0
-            t.WaterReflectance = 0
-            t.WaterTransparency = 0
-
-            l.GlobalShadows = false
-            l.FogEnd = 1e10
-            l.Brightness = 0
-
-            pcall(function()
-                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-            end)
-
-            local function optimizePart(v)
-                if v:IsA("BasePart") then
-                    v.Material = Enum.Material.Plastic
-                    v.Reflectance = 0
-                elseif v:IsA("Decal") or v:IsA("Texture") then
-                    v.Transparency = 1
-                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                    v.Lifetime = NumberRange.new(0)
-                elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                    v.Enabled = false
-                elseif v:IsA("Explosion") then
-                    v.BlastPressure = 1
-                    v.BlastRadius = 1
-                elseif v:IsA("MeshPart") then
-                    v.Material = Enum.Material.Plastic
-                    v.TextureID = "rbxassetid://0"
-                    v.Reflectance = 0
-                elseif v:IsA("SpecialMesh") then
-                    v.TextureId = ""
-                elseif v:IsA("ShirtGraphic") then
-                    v.Graphic = ""
-                elseif v:IsA("Shirt") or v:IsA("Pants") then
-                    local prop = v.ClassName .. "Template"
-                    if v[prop] then
-                        v[prop] = ""
-                    end
-                end
-            end
-
-            local all = w:GetDescendants()
-            for i = 1, #all do
-                optimizePart(all[i])
-                if i % 200 == 0 then
-                    task.wait()
-                end
-            end
-
-            print("✅ Boost FPS đã bật.")
-        else
-            -- Khôi phục lại hiệu ứng và ánh sáng
-            if originalSettings.WaterWaveSize then
-                t.WaterWaveSize = originalSettings.WaterWaveSize
-                t.WaterWaveSpeed = originalSettings.WaterWaveSpeed
-                t.WaterReflectance = originalSettings.WaterReflectance
-                t.WaterTransparency = originalSettings.WaterTransparency
-
-                l.GlobalShadows = originalSettings.GlobalShadows
-                l.FogEnd = originalSettings.FogEnd
-                l.Brightness = originalSettings.Brightness
-
-                for _, data in ipairs(originalSettings.PostEffects) do
-                    data.obj.Enabled = data.enabled
-                end
-
-                pcall(function()
-                    settings().Rendering.QualityLevel = originalSettings.QualityLevel
-                end)
-            end
-
-            print("🔄 Đã khôi phục cài đặt hình ảnh.")
         end
+
+        -- Giảm chất lượng render
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        end)
+
+        -- Tối ưu từng object
+        local function optimizePart(v)
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.Plastic
+                v.Reflectance = 0
+            elseif v:IsA("Decal") or v:IsA("Texture") then
+                v.Transparency = 1
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                v.Lifetime = NumberRange.new(0)
+            elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                v.Enabled = false
+            elseif v:IsA("Explosion") then
+                v.BlastPressure = 1
+                v.BlastRadius = 1
+            elseif v:IsA("MeshPart") then
+                v.Material = Enum.Material.Plastic
+                v.TextureID = "rbxassetid://0"
+                v.Reflectance = 0
+            elseif v:IsA("SpecialMesh") then
+                v.TextureId = ""
+            elseif v:IsA("ShirtGraphic") then
+                v.Graphic = ""
+            elseif v:IsA("Shirt") or v:IsA("Pants") then
+                local prop = v.ClassName .. "Template"
+                if v[prop] then
+                    v[prop] = ""
+                end
+            end
+        end
+
+        -- Duyệt toàn bộ object nhưng có delay nhỏ để tránh đơ
+        local all = w:GetDescendants()
+        for i = 1, #all do
+            optimizePart(all[i])
+            if i % 200 == 0 then
+                task.wait()
+            end
+        end
+
+        print("✅ Boost FPS hoàn tất!")
     end
 })
 
@@ -1343,64 +1306,6 @@ if not mainData then
     return
 end
 
--- Tạo GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MainDataDisplay"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = game.CoreGui
-
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(0, 200, 0, 200) -- Chiều rộng nhỏ lại
-textLabel.AutomaticSize = Enum.AutomaticSize.Y -- Tự mở rộng chiều cao theo nội dung
-textLabel.Position = UDim2.new(0, 10, 0, 10) -- Góc trái trên
-textLabel.TextXAlignment = Enum.TextXAlignment.Left
-textLabel.TextYAlignment = Enum.TextYAlignment.Top
-textLabel.BackgroundTransparency = 0.3
-textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-textLabel.TextColor3 = Color3.new(1, 1, 1)
-textLabel.TextSize = 14
-textLabel.Font = Enum.Font.SourceSans
-textLabel.TextWrapped = true -- Cho phép tự xuống dòng
-textLabel.Text = ""
-textLabel.Parent = screenGui
-
--- Cờ bật/tắt
-local enabled = true
-
--- Phím tắt bật/tắt GUI (nhấn G)
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-	if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
-		enabled = not enabled
-		screenGui.Enabled = enabled
-	end
-end)
-
--- Hàm cập nhật GUI
-local function updateData()
-	local info = ""
-	for _, v in pairs(mainData:GetChildren()) do
-		pcall(function()
-			info = info .. v.Name .. ": " .. tostring(v.Value) .. "\n"
-		end)
-	end
-	textLabel.Text = info
-end
-
--- Cập nhật ban đầu
-updateData()
-
--- Cập nhật mỗi 10 giây
-task.spawn(function()
-	while true do
-		if enabled then
-			updateData()
-		end
-		wait(10)
-	end
-end)
-        end
-    end
-})
 --Teleport NPC
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
