@@ -1277,7 +1277,7 @@ Tabs.Rejoin:AddButton({
 })
 --Anti AFK
 Tabs.Misc:AddToggle("Anti AFK", {
-    Title = "Anti AFK",
+    Title = "Anti AFK [Can Not Turn OFF]",
     Default = false,
     Callback = function(value)
         if value then
@@ -1294,7 +1294,7 @@ end)
 
 --Show Stats
 Tabs.Misc:AddToggle("ShowStats", {
-    Title = "Show Stats",
+    Title = "Show Stats [Can Not Turn OFF]",
     Default = false,
     Callback = function(value)
         ShowStatsEnabled = value
