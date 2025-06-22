@@ -1074,8 +1074,8 @@ Tabs.Misc:AddDropdown("ScreenModeDropdown", {
 })
 
 Tabs.Misc:AddButton({
-    Title = "Boost FPS (Ultra)",
-    Description = "Giảm đồ họa tối đa để tăng FPS",
+    Title = "Boost FPS",
+    Description = "Reduce Quality For High FPS",
     Callback = function()
         local g = game
         local w = g.Workspace
