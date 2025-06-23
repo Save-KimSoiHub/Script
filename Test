@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1618,6 +1618,7 @@ else
 end
     end
 })
+--Enter Time
 --Nhập Time
 shared.timeToWait = 20
 Tabs.Main:AddInput("TimeToWaitInput", {
@@ -1629,182 +1630,153 @@ Tabs.Main:AddInput("TimeToWaitInput", {
         shared.timeToWait = tonumber(value) or 20
     end
 })
+--Hàm Ẩn
+_G.AutoPressPlay = function()
+	if _G.AutoPressPlayRunning then return end
+	_G.AutoPressPlayRunning = true
+
+	local HttpService = game:GetService("HttpService")
+	local TeleportService = game:GetService("TeleportService")
+	local Players = game:GetService("Players")
+	local PlaceId = game.PlaceId
+	local JobId = game.JobId
+	local player = Players.LocalPlayer
+
+	task.spawn(function()
+		while true do
+			if not (shared.AutoFindBoss or shared.AutoFindKatakuri) then
+				_G.AutoPressPlayRunning = false
+				break
+			end
+
+			if not player.Character and not deathScreenVisible then
+				-- Hàm lấy giờ máy chủ
+				local function getServerMinute()
+					for _, gui in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
+						if gui:IsA("TextLabel") then
+							local text = gui.Text
+							local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
+							if hour and minute and second then
+								print("🕒 Giờ máy chủ:", hour, minute, second)
+								return tonumber(minute)
+							end
+						end
+					end
+					return nil
+				end
+
+				-- Hàm tìm server khác
+				local function getServer()
+					local servers = {}
+					local cursor = ""
+					while true do
+						local success, response = pcall(function()
+							return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
+						end)
+						if success then
+							local data = HttpService:JSONDecode(response)
+							if data and data.data then
+								for _, server in ipairs(data.data) do
+									if server.playing < server.maxPlayers and server.id ~= JobId then
+										table.insert(servers, server.id)
+									end
+								end
+								if data.nextPageCursor then
+									cursor = data.nextPageCursor
+									task.wait(2)
+								else
+									break
+								end
+							else
+								break
+							end
+						else
+							break
+						end
+					end
+					if #servers > 0 then
+						return servers[math.random(1, #servers)]
+					else
+						return nil
+					end
+				end
+
+				local minute = getServerMinute()
+				if not minute then
+					print("⛔ Không lấy được giờ máy chủ.")
+					task.wait(1)
+					continue
+				end
+
+				local waitMinute = shared.timeToWait or 20
+				local shouldHop = false
+
+				if shared.AutoFindBoss then
+					if minute < (60 - waitMinute) then
+						print("🕐 Boss thường chưa đến giờ. Hop server...")
+						shouldHop = true
+					end
+				elseif shared.AutoFindKatakuri then
+					if not (minute > 0 and minute < (30 - waitMinute)) then
+						print("🕐 Katakuri không nằm trong khoảng. Hop server...")
+						shouldHop = true
+					end
+				end
+
+				if shouldHop then
+					local serverId = getServer()
+					if serverId then
+						TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
+						return
+					else
+						warn("⚠️ Không tìm được server phù hợp.")
+					end
+				else
+					print("✅ Đúng thời điểm. Tiến hành nhấn Play.")
+					local ranked = findRankedButton()
+					local playBtn = findPlayButton()
+					if ranked and playBtn then
+						task.wait(2)
+						if waitUntilStable(playBtn, 3, 3) and pressPlay(playBtn) then
+							local confirmStart = tick()
+							while tick() - confirmStart < 10 do
+								if player.Character or not playBtn.Visible then break end
+								task.wait(0.2)
+							end
+						end
+					end
+				end
+			end
+
+			task.wait(0.5)
+		end
+	end)
+end
+
 --Auto Find Boss
-Tabs.Main:AddToggle("Auto Find Boss", {
-    Title = "Auto Find Boss(Macro,Big Mon, Kaido)",
+Tabs.Main:AddToggle("AutoFindBoss", {
+    Title = "Auto Find Boss (Macro, Big Mon, Kaido)",
     Default = false,
     Callback = function(value)
+        shared.AutoFindBoss = value
         if value then
-            task.wait(3)
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local Players = game:GetService("Players")
-
-local PlaceId = game.PlaceId
-local JobId = game.JobId
-local player = Players.LocalPlayer
-
--- Hàm lấy phút từ Servertime hiển thị trên GUI
-local function getServerMinute()
-    for _, gui in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
-        if gui:IsA("TextLabel") then
-            local text = gui.Text
-            local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
-            if hour and minute and second then
-                print("🕒 Giờ máy chủ:", hour, minute, second)
-                return tonumber(minute)
-            end
-        end
-    end
-    warn("⚠️ Không tìm thấy Servertime từ GUI.")
-    return nil
-end
-
--- Hàm tìm server khác có slot trống và không trùng JobId
-local function getServer()
-    local servers = {}
-    local cursor = ""
-
-    while true do
-        local success, response = pcall(function()
-            return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
-        end)
-
-        if success then
-            local data = HttpService:JSONDecode(response)
-            if data and data.data then
-                for _, server in ipairs(data.data) do
-                    if server.playing < server.maxPlayers and server.id ~= JobId then
-                        table.insert(servers, server.id)
-                    end
-                end
-                if data.nextPageCursor then
-                    cursor = data.nextPageCursor
-                    wait(2) -- delay tránh rate limit
-                else
-                    break
-                end
-            else
-                warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
-                break
-            end
-        else
-            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
-            break
-        end
-    end
-
-    if #servers > 0 then
-        return servers[math.random(1, #servers)]
-    else
-        return nil
-    end
-end
-
--- Kiểm tra thời gian và hop server nếu cần
-local minute = getServerMinute()
-if minute and minute < (60 - shared.timeToWait) then
-    print("✅Tiến hành hop server.")
-    local serverId = getServer()
-    if serverId then
-        TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
-    else
-        warn("⚠️ Không tìm được server phù hợp.")
-    end
-else
-    print("⛔ Đã đến giờ boss Không hop server.")
-end
+            _G.AutoPressPlay()
         end
     end
 })
+
 --Auto Find Katakuri
-Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
-    Title = "Auto Find Boss(Katakuri)",
+Tabs.Main:AddToggle("AutoFindKatakuri", {
+    Title = "Auto Find Katakuri",
     Default = false,
     Callback = function(value)
+        shared.AutoFindKatakuri = value
         if value then
-            task.wait(3)
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local Players = game:GetService("Players")
-
-local PlaceId = game.PlaceId
-local JobId = game.JobId
-local player = Players.LocalPlayer
-
--- Hàm lấy phút từ Servertime hiển thị trên GUI
-local function getServerMinute()
-    for _, gui in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
-        if gui:IsA("TextLabel") then
-            local text = gui.Text
-            local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
-            if hour and minute and second then
-                print("🕒 Giờ máy chủ:", hour, minute, second)
-                return tonumber(minute)
-            end
-        end
-    end
-    warn("⚠️ Không tìm thấy Servertime từ GUI.")
-    return nil
-end
-
--- Hàm tìm server khác có slot trống và không trùng JobId
-local function getServer()
-    local servers = {}
-    local cursor = ""
-
-    while true do
-        local success, response = pcall(function()
-            return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
-        end)
-
-        if success then
-            local data = HttpService:JSONDecode(response)
-            if data and data.data then
-                for _, server in ipairs(data.data) do
-                    if server.playing < server.maxPlayers and server.id ~= JobId then
-                        table.insert(servers, server.id)
-                    end
-                end
-                if data.nextPageCursor then
-                    cursor = data.nextPageCursor
-                    wait(2) -- giảm tốc độ request để tránh bị rate limit
-                else
-                    break
-                end
-            else
-                warn("⚠️ Dữ liệu phản hồi không hợp lệ.")
-                break
-            end
-        else
-            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
-            break
-        end
-    end
-
-    if #servers > 0 then
-        return servers[math.random(1, #servers)]
-    else
-        return nil
-    end
-end
-
--- Kiểm tra thời gian và hop server nếu cần
-local minute = getServerMinute()
-if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
-    print("✅ Tiến hành hop server.")
-    local serverId = getServer()
-    if serverId then
-        TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
-    else
-        warn("⚠️ Không tìm được server phù hợp.")
-    end
-else
-    print("⛔ Trong khoảng thời gian boss Không hop server.")
-end
+            _G.AutoPressPlay()
         end
     end
 })
+
 -- Set Up Auto Spin
 _G.autoSpinEnabled = false
 _G.selectedFruitName = {}
