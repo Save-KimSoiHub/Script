@@ -1,0 +1,130 @@
+local Players = game:GetService("Players")
+local GuiService = game:GetService("GuiService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local player = Players.LocalPlayer
+local deathScreenVisible = false
+
+-- Theo dõi DeathScreen
+local function handleDeathScreen(gui)
+	deathScreenVisible = true
+	gui.AncestryChanged:Connect(function(_, parent)
+		if not parent or not gui:IsDescendantOf(gui.Parent) then
+			deathScreenVisible = false
+		end
+	end)
+	gui.Destroying:Connect(function()
+		deathScreenVisible = false
+	end)
+end
+
+local function listenForDeathScreen()
+	local gui = player:WaitForChild("PlayerGui")
+	for _, g in ipairs(gui:GetChildren()) do
+		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
+			handleDeathScreen(g)
+		end
+	end
+	gui.ChildAdded:Connect(function(g)
+		if g.Name == "DeathScreen" and g:IsA("ScreenGui") then
+			handleDeathScreen(g)
+		end
+	end)
+end
+listenForDeathScreen()
+
+-- Tìm nút Ranked
+local function findRankedButton()
+	for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
+		if guiObj:IsA("ScreenGui") then
+			for _, obj in ipairs(guiObj:GetDescendants()) do
+				if obj:IsA("GuiButton") and obj.Visible and obj.Name == "Ranked" then
+					return obj
+				end
+			end
+		end
+	end
+	return nil
+end
+
+-- Tìm nút Play
+local function findPlayButton()
+	for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
+		if guiObj:IsA("ScreenGui") then
+			local btn = guiObj:FindFirstChild("Play", true)
+			if btn and btn:IsA("GuiButton") and btn.Visible then
+				return btn
+			end
+		end
+	end
+	return nil
+end
+
+-- Chờ nút đứng yên (ổn định vị trí)
+local function waitUntilStable(button, frameCount, timeout)
+	local lastPos = button.AbsolutePosition
+	local stableFrames = 0
+	local startTime = tick()
+
+	while tick() - startTime < timeout do
+		if not button:IsDescendantOf(game) or not button.Visible then
+			stableFrames = 0
+			lastPos = button.AbsolutePosition
+			task.wait()
+			continue
+		end
+
+		local nowPos = button.AbsolutePosition
+		if (nowPos - lastPos).magnitude == 0 then
+			stableFrames += 1
+			if stableFrames >= frameCount then
+				return true
+			end
+		else
+			stableFrames = 0
+		end
+
+		lastPos = nowPos
+		task.wait()
+	end
+
+	return false
+end
+
+-- Nhấn nút Play
+local function pressPlay(playBtn)
+	if deathScreenVisible then return false end
+	if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
+		GuiService.SelectedObject = playBtn
+		task.wait(0.1)
+		for i = 1, 2 do
+			VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+			task.wait(0.05)
+			VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+			task.wait(0.05)
+		end
+		return true
+	end
+	return false
+end
+
+-- Tự động nhấn Play nếu chưa vào game
+task.spawn(function()
+	while true do
+		if not player.Character and not deathScreenVisible then
+			local ranked = findRankedButton()
+			local playBtn = findPlayButton()
+			if ranked and playBtn then
+				task.wait(2)
+				if waitUntilStable(playBtn, 3, 3) and pressPlay(playBtn) then
+					-- Chờ xác nhận đã vào game
+					local confirmStart = tick()
+					while tick() - confirmStart < 10 do
+						if player.Character or not playBtn.Visible then break end
+						task.wait(0.2)
+					end
+				end
+			end
+		end
+		task.wait(0.5)
+	end
+end)
