@@ -1704,7 +1704,7 @@ end
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
 if minute and minute < (60 - shared.timeToWait) then
-    print("✅ Phút máy chủ:", minute, " < 40 → Tiến hành hop server.")
+    print("✅Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
         TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
@@ -1712,7 +1712,7 @@ if minute and minute < (60 - shared.timeToWait) then
         warn("⚠️ Không tìm được server phù hợp.")
     end
 else
-    print("⛔ Đã đến giờ boss (>= 40 phút). Không hop server.")
+    print("⛔ Đã đến giờ boss Không hop server.")
 end
         end
     end
@@ -1792,7 +1792,7 @@ end
 -- Kiểm tra thời gian và hop server nếu cần
 local minute = getServerMinute()
 if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
-    print("✅ Phút máy chủ:", minute, " → Tiến hành hop server.")
+    print("✅ Tiến hành hop server.")
     local serverId = getServer()
     if serverId then
         TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
@@ -1800,7 +1800,7 @@ if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
         warn("⚠️ Không tìm được server phù hợp.")
     end
 else
-    print("⛔ Trong khoảng thời gian boss (10 → 35 phút). Không hop server.")
+    print("⛔ Trong khoảng thời gian boss Không hop server.")
 end
         end
     end
