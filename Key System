@@ -15,9 +15,6 @@ local function __VxT9(input)
         return false
     end
 
-    if res:find("✅ Đăng nhập thành công") then
-        return true
-    end
     if res:lower():find("Đúng") then
         return true
     elseif res:lower():find("tồn") then
@@ -30,7 +27,7 @@ end
 
 local function __pKw()
     if __VxT9(__A9hK) then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/KimSoiHub/For-Tester/refs/heads/main/Main"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Test"))()
     else
         warn("Key không hợp lệ")
     end
