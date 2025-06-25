@@ -1,36 +1,35 @@
-local HttpService = game:GetService("HttpService")
-local __xT9L = "https://keysystem.trongkim1905.workers.dev"
-local __sK1w = game:GetService("RbxAnalyticsService"):GetClientId()
-local __A9hK = getgenv().Key
-local player = game.Players.LocalPlayer
-
-local function __VxT9(input)
-    local __url = string.format("%s/?key=%s&hwid=%s", __xT9L, input, __sK1w)
-    local ok, res = pcall(function()
-        return game:HttpGet(__url)
-    end)
-
-    if not ok then
-        player:Kick("KimSoiHub Is Down !,Please Report It In Discord ")
-        return false
-    end
-
-    if res:lower():find("Đúng") then
-        return true
-    elseif res:lower():find("tồn") then
-        player:Kick("Invalid Key !")
-        return false
-    else
-        player:Kick("Invalid HWID !,Please Reset HWID")
-    end
+local a = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
+if not a then
+    return game.Players.LocalPlayer:Kick("❌ Executor không hỗ trợ HTTP Request!")
 end
 
-local function __pKw()
-    if __VxT9(__A9hK) then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Test"))()
-    else
-        warn("Key không hợp lệ")
-    end
+local b = getgenv().Key
+local c = "https://api-pbqa.onrender.com/check"
+local d = game.Players.LocalPlayer
+local e
+pcall(function()
+    e = game:GetService("RbxAnalyticsService"):GetClientId()
+end)
+if not e then
+    return d:Kick("❌ Không lấy được HWID")
 end
 
-__pKw()
+local f = string.format("%s?key=%s&hwid=%s", c, b, e)
+local g, h = pcall(function()
+    return a({ Url = f, Method = "GET" })
+end)
+if not g or not h or not h.Body then
+    return d:Kick("KimSoiHub Is Down !,Please Report It In Discord")
+end
+
+local i = h.Body:lower()
+
+if i:find("Đúng") then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Test"))()
+elseif i:find("key") then
+    d:Kick("Invalid Key !")
+elseif i:find("hwid") then
+    d:Kick("Invalid HWID !,Please Reset HWID")
+else
+    d:Kick("❌ Unknown server response.")
+end
