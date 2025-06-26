@@ -1,0 +1,93 @@
+local a = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
+if not a then
+    warn("❌ Exploit HTTP request not supported!")
+    return
+end
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+repeat wait() until LocalPlayer:FindFirstChild("PlayerGui")
+local gui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Hàm lấy phút hiện tại từ server GUI
+local function getServerMinute()
+    for _, g in ipairs(gui:GetDescendants()) do
+        if g:IsA("TextLabel") then
+            local text = g.Text
+            local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
+            if hour and minute and second then
+                print("🕒 Servertime:", hour, minute, second)
+                return tonumber(minute)
+            end
+        end
+    end
+    return nil
+end
+
+-- Đợi đến khi GUI hiện Servertime
+local serverMinute
+repeat
+    serverMinute = getServerMinute()
+    wait(0.5)
+until serverMinute
+
+print("✅ Server minute:", serverMinute)
+
+local jobId = game.JobId
+local placeId = game.PlaceId
+
+-- ===== Katakuri Boss =====
+if placeId == 16190471004 then
+    local delayTime
+    if serverMinute >= 25 and serverMinute <= 31 then
+        delayTime = os.time()
+        print("🚀 Katakuri: Gửi ngay")
+    elseif serverMinute < 24 then
+        delayTime = os.time() + (24 - serverMinute) * 60
+        print("⏳ Katakuri: Sẽ gửi lúc phút 24")
+    end
+
+    if delayTime then
+        local url = string.format(
+            "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=true",
+            jobId, placeId, delayTime
+        )
+
+        local success, response = pcall(function()
+            return a({ Url = url, Method = "GET" })
+        end)
+
+        if success then
+            print("✅ Katakuri sent:", response.Body)
+        else
+            warn("❌ Katakuri send failed:", response)
+        end
+    end
+end
+
+-- ===== Map thường (boss=false) =====
+do
+    local delayTime
+    if serverMinute > 54 then
+        delayTime = os.time()
+        print("🚀 Map thường: Gửi ngay")
+    else
+        delayTime = os.time() + (54 - serverMinute) * 60
+        print("⏳ Map thường: Sẽ gửi lúc phút 54")
+    end
+
+    local url = string.format(
+        "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=false",
+        jobId, placeId, delayTime
+    )
+
+    local success, response = pcall(function()
+        return a({ Url = url, Method = "GET" })
+    end)
+
+    if success then
+        print("✅ Map thường sent:", response.Body)
+    else
+        warn("❌ Map thường send failed:", response)
+    end
+end
