@@ -1,4 +1,4 @@
---Main 
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2472,36 +2472,29 @@ Tabs.Discord:AddButton({
     end
 })
 
--- 💾 5. TỰ ĐỘNG LOAD CONFIG CUỐI CÙNG SAU KHI UI ĐÃ TẠO XONG
-local configName = "AutoLoadConfig"
-local configFile = "lastconfig.txt"
+-- 💾 6. Thông tin tên config
+local autoConfigName = "AutoLoadConfig"
 
+-- ✅ 7. Tự động load config đúng cách
 task.delay(1, function()
-    if isfile(configFile) then
-        local name = readfile(configFile)
-        if name and name ~= "" then
-            SaveManager:LoadConfig(name)
-            print("[✅ AutoLoad] Loaded config:", name)
-        end
-    end
+    SaveManager:LoadAutoloadConfig()
+    print("[✅ AutoLoad] Config loaded via LoadAutoloadConfig()")
 end)
 
--- 💾 6. TỰ ĐỘNG SAVE ĐỊNH KỲ + LÚC THOÁT GAME
+-- 💾 8. Tự động save + gắn Autoload mỗi 30 giây
 task.spawn(function()
     while true do
-        SaveManager:SaveConfig(configName)
-        writefile(configFile, configName)
-        task.wait(30) -- mỗi 30 giây
+        SaveManager:SaveConfig(autoConfigName)
+        SaveManager:SetAutoloadConfig(autoConfigName)
+        task.wait(30)
     end
 end)
 
+-- 🛑 9. Save lại lần cuối khi thoát game
 game:BindToClose(function()
-    SaveManager:SaveConfig(configName)
-    writefile(configFile, configName)
+    SaveManager:SaveConfig(autoConfigName)
+    SaveManager:SetAutoloadConfig(autoConfigName)
 end)
-
--- ✅ Cuối cùng vẫn gọi LoadAutoloadConfig như bình thường
-SaveManager:LoadAutoloadConfig()
 
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
