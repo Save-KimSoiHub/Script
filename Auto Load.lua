@@ -194,7 +194,7 @@ local SaveManager = {} do
 			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
 		end})
 
-		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
+		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName", "SaveManager_AutoLoad" })
 	end
 
 	SaveManager:BuildFolderTree()
