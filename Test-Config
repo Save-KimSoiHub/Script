@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2472,8 +2472,10 @@ Tabs.Discord:AddButton({
     end
 })
 
--- Auto load last config nếu bật
-SaveManager:AutoLoadLastUsed()
+-- ✅ Sau khi tạo hết toggle
+SaveManager:BuildConfigSection(Tabs.Setting)
 
--- Tạo giao diện
-SaveManager:BuildConfigSection(tab)
+-- ✅ Cuối cùng: auto load lại config gần nhất
+task.delay(1, function()
+    SaveManager:AutoLoadLastUsed()
+end)
