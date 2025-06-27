@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -39,22 +39,6 @@ SaveManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
 SaveManager:BuildConfigSection(Tabs.Setting)
-
--- Tự động tạo và lưu config mặc định nếu chưa có
-local defaultConfigName = "AutoConfig"
-local currentAutoload = SaveManager:GetAutoloadConfig()
-if not currentAutoload or currentAutoload == "" then
-    SaveManager:SaveConfig(defaultConfigName)
-    SaveManager:SetAutoloadConfig(defaultConfigName)
-end
-
--- Load lại config tự động mỗi lần mở script
-SaveManager:LoadConfig(defaultConfigName)
-
--- Auto lưu config khi thoát game
-game:BindToClose(function()
-    SaveManager:SaveConfig(defaultConfigName)
-end)
 
 -- Toggle Icon
 local ScreenGui = Instance.new("ScreenGui")
@@ -2487,6 +2471,21 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
+
+-- ⏬ Sau khi đã tạo xong toàn bộ UI
+local defaultConfigName = "AutoConfig"
+local currentAutoload = SaveManager:GetAutoloadConfig()
+if not currentAutoload or currentAutoload == "" then
+    SaveManager:SaveConfig(defaultConfigName)
+    SaveManager:SetAutoloadConfig(defaultConfigName)
+end
+
+SaveManager:LoadConfig(defaultConfigName)
+
+game:BindToClose(function()
+    SaveManager:SaveConfig(defaultConfigName)
+end)
+
 
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
