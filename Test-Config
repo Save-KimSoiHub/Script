@@ -1,4 +1,4 @@
---Main !
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -38,6 +38,7 @@ InterfaceManager:SetLibrary(Fluent)
 SaveManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
+SaveManager:BuildConfigSection(Tabs.Setting)
 
 -- Toggle Icon
 local ScreenGui = Instance.new("ScreenGui")
@@ -677,7 +678,6 @@ end)
 watchSlotChanges()
 startSkillLoop()
         end
-SaveManager:SaveConfig("AutoLoad") 
     end
 })
 
@@ -822,7 +822,6 @@ Tabs.Main:AddInput("ManaToReset", {
     Numeric = true,
     Callback = function(value)
         shared.THRESHOLD = tonumber(value) or 50
-	SaveManager:SaveConfig("AutoLoad") 
     end
 })
 
@@ -2473,22 +2472,20 @@ Tabs.Discord:AddButton({
     end
 })
 
-task.defer(function()
-    task.wait(1)
+SaveManager:LoadAutoloadConfig()
+updateConfigListDropdown()
 
-    SaveManager:SetFolder("KimSoiHub")
-    SaveManager:BuildConfigSection(Tabs.Setting)
-    SaveManager:LoadAutoloadConfig()
+local autoloadConfig = SaveManager:GetAutoloadConfig()
+if autoloadConfig and autoloadConfig ~= "" then
+    task.delay(0, function()
+        SaveManager:LoadConfig(autoloadConfig)
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Autoload",
+            Text = "Đã tự động load config: " .. autoloadConfig,
+            Duration = 5,
+            Icon = "rbxassetid://93005671600086"
+        })
+    end)
+end
 
-    -- 🔁 Gọi lại tất cả Toggle đang bật để ép chạy Callback
-    task.wait(0.2)
-    for _, section in pairs(Fluent:GetSections()) do
-        for _, element in pairs(section.Items or {}) do
-            if element.Type == "Toggle" and type(element.SetValue) == "function" and element.Value == true then
-                element:SetValue(false)
-                task.wait()
-                element:SetValue(true)
-            end
-        end
-    end
-end)
+Tabs.Setting:AddParagraph("AutoloadInfo", "Config tự động load hiện tại: " .. (autoloadConfig or "Không có"))
