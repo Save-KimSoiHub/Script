@@ -2491,6 +2491,28 @@ Tabs.Discord:AddButton({
     end
 })
 
+-- 📂 THÔNG TIN CONFIG
+local lastConfigFile = "lastconfig.txt"
+local defaultConfigName = "AutoLoadConfig"
+
+-- ✅ AUTO LOAD CONFIG SAU KHI TOÀN BỘ UI TẠO XONG
+task.delay(1, function()
+    if isfile(lastConfigFile) then
+        local last = readfile(lastConfigFile)
+        if last and last ~= "" then
+            SaveManager:LoadConfig(last)
+            print("[AutoLoad] Loaded config:", last)
+        end
+    end
+end)
+
+-- ✅ AUTO SAVE CONFIG KHI THOÁT GAME
+game:BindToClose(function()
+    SaveManager:SaveConfig(defaultConfigName)
+    writefile(lastConfigFile, defaultConfigName)
+    print("[AutoSave] Saved config on exit:", defaultConfigName)
+end)
+
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
 
