@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2471,23 +2471,27 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
-task.defer(function()
-    -- Cập nhật trạng thái từ toggle
-    local toggle = SaveManager.Options.SaveManager_AutoLoad
-    local isToggleOn = toggle and toggle.Value or false
-    SaveManager.AutoLoadEnabled = isToggleOn
 
+task.defer(function()
     -- Nếu chưa có file, tạo AutoSave
     if not isfile(SaveManager.LastConfigFile) then
         writefile(SaveManager.LastConfigFile, "AutoSave")
     end
 
-    -- Tự động load nếu toggle bật
-    if SaveManager.AutoLoadEnabled then
-        SaveManager:AutoLoadLastUsed()
-    end
+    -- ⏳ Delay để đảm bảo GUI & toggle đã được load từ config
+    task.delay(1, function()
+        local toggle = SaveManager.Options.SaveManager_AutoLoad
+        local isToggleOn = toggle and toggle.Value or false
+        SaveManager.AutoLoadEnabled = isToggleOn
 
-    -- Auto save khi có thay đổi
+        if isToggleOn then
+            SaveManager:AutoLoadLastUsed()
+        else
+            warn("[SaveManager] Auto-load is disabled by toggle.")
+        end
+    end)
+
+    -- 🔁 Auto save khi thay đổi
     local HttpService = game:GetService("HttpService")
     local lastData = ""
 
@@ -2497,7 +2501,6 @@ task.defer(function()
 
             local configFile = readfile(SaveManager.LastConfigFile)
             if configFile and configFile ~= "" then
-                -- Chuẩn bị data mới để so sánh
                 local success, encoded = pcall(function()
                     local data = { objects = {} }
                     for idx, option in next, SaveManager.Options do
