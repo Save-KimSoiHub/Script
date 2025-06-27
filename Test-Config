@@ -2472,27 +2472,36 @@ Tabs.Discord:AddButton({
     end
 })
 
--- 📂 THÔNG TIN CONFIG
-local lastConfigFile = "lastconfig.txt"
-local defaultConfigName = "AutoLoadConfig"
+-- 💾 5. TỰ ĐỘNG LOAD CONFIG CUỐI CÙNG SAU KHI UI ĐÃ TẠO XONG
+local configName = "AutoLoadConfig"
+local configFile = "lastconfig.txt"
 
--- ✅ AUTO LOAD CONFIG SAU KHI TOÀN BỘ UI TẠO XONG
 task.delay(1, function()
-    if isfile(lastConfigFile) then
-        local last = readfile(lastConfigFile)
-        if last and last ~= "" then
-            SaveManager:LoadConfig(last)
-            print("[AutoLoad] Loaded config:", last)
+    if isfile(configFile) then
+        local name = readfile(configFile)
+        if name and name ~= "" then
+            SaveManager:LoadConfig(name)
+            print("[✅ AutoLoad] Loaded config:", name)
         end
     end
 end)
 
--- ✅ AUTO SAVE CONFIG KHI THOÁT GAME
-game:BindToClose(function()
-    SaveManager:SaveConfig(defaultConfigName)
-    writefile(lastConfigFile, defaultConfigName)
-    print("[AutoSave] Saved config on exit:", defaultConfigName)
+-- 💾 6. TỰ ĐỘNG SAVE ĐỊNH KỲ + LÚC THOÁT GAME
+task.spawn(function()
+    while true do
+        SaveManager:SaveConfig(configName)
+        writefile(configFile, configName)
+        task.wait(30) -- mỗi 30 giây
+    end
 end)
+
+game:BindToClose(function()
+    SaveManager:SaveConfig(configName)
+    writefile(configFile, configName)
+end)
+
+-- ✅ Cuối cùng vẫn gọi LoadAutoloadConfig như bình thường
+SaveManager:LoadAutoloadConfig()
 
 SaveManager:LoadAutoloadConfig()
 updateConfigListDropdown()
