@@ -13,25 +13,6 @@ task.wait(1.5)
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-local lastConfigFile = "lastconfig.txt"
-local defaultConfigName = "AutoLoadConfig"
--- 🟢 Tự động Load Config cũ khi vào game
-if isfile(lastConfigFile) then
-    local last = readfile(lastConfigFile)
-    if last and last ~= "" then
-        task.delay(1, function()
-            SaveManager:LoadConfig(last)
-            print("[AutoLoad] Loaded config: " .. last)
-        end)
-    end
-end
-
--- 🔴 Khi thoát game → tự động Save lại config
-game:BindToClose(function()
-    SaveManager:SaveConfig(defaultConfigName)
-    writefile(lastConfigFile, defaultConfigName)
-    print("[AutoSave] Saved config on exit:", defaultConfigName)
-end)
 
 local Window = Fluent:CreateWindow({
     Title = "KimSoi Hub [Basic]",
