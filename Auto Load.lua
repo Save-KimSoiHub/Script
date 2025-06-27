@@ -1,13 +1,9 @@
--- ✅ Modified SaveManager with:
--- 1. Removed "Set as autoload" button
--- 2. Added Toggle to enable/disable auto load last-used config
-
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {} do
 	SaveManager.Folder = "FluentSettings"
 	SaveManager.Ignore = {}
-	SaveManager.AutoLoadEnabled = true -- ✅ Toggle auto load feature here
+	SaveManager.AutoLoadEnabled = true
 	SaveManager.LastConfigFile = SaveManager.Folder .. "/settings/lastconfig.txt"
 
 	SaveManager.Parser = {
@@ -98,7 +94,7 @@ local SaveManager = {} do
 		if not success then return false, "failed to encode data" end
 
 		writefile(fullPath, encoded)
-		writefile(self.LastConfigFile, name) -- 🔃 Save as last used config
+		writefile(self.LastConfigFile, name)
 		return true
 	end
 
@@ -161,6 +157,14 @@ local SaveManager = {} do
 		assert(self.Library, "Must set SaveManager.Library")
 		local section = tab:AddSection("Configuration")
 
+		section:AddToggle("SaveManager_AutoLoad", {
+			Title = "Auto Load Last Used Config",
+			Default = true,
+			Callback = function(state)
+				SaveManager.AutoLoadEnabled = state
+			end
+		})
+
 		section:AddInput("SaveManager_ConfigName",    { Title = "Config name" })
 		section:AddDropdown("SaveManager_ConfigList", { Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true })
 
@@ -190,7 +194,7 @@ local SaveManager = {} do
 			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
 		end})
 
-		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
+		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName", "SaveManager_AutoLoad" })
 	end
 
 	SaveManager:BuildFolderTree()
