@@ -1,4 +1,4 @@
---Main !!!
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2476,6 +2476,9 @@ task.defer(function()
     if not isfile(SaveManager.LastConfigFile) then
         writefile(SaveManager.LastConfigFile, "AutoSave")
     end
+
+    -- 🕒 Đợi đến khi Options có sẵn
+    repeat task.wait() until SaveManager.Options
 
     -- Vì luôn bật, nên gán trực tiếp
     SaveManager.AutoLoadEnabled = true
