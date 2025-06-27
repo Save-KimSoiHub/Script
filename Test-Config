@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -39,6 +39,8 @@ SaveManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
 SaveManager:BuildConfigSection(Tabs.Setting)
+SaveManager:AutoLoadLastUsed()
+SaveManager:BuildConfigSection(tab)
 
 -- Toggle Icon
 local ScreenGui = Instance.new("ScreenGui")
