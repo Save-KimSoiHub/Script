@@ -1,1 +1,131 @@
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1386516147515559977/wGn28dWXhbaV3j-3LdObAysSQ7mwjyjecEiSYRMS1DEYl2n3ne3YTGQupttISIHDl5pP";
 
+function checkAndSendDelays() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+
+  const now = Math.floor(Date.now() / 1000);
+  let rowsToDelete = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const jobId = row[0];
+    const placeId = row[1];
+    const delay = row[2];
+    const sentAt = row[3]; // Cột Sent At (epoch time)
+    const boss = Boolean(row[4]);
+
+    // Chưa đến thời gian delay thì bỏ qua
+    if (!delay || delay > now) continue;
+
+    // Nếu đã gửi và đủ 15 phút (900 giây) thì cho vào danh sách xóa
+    if (sentAt && now - sentAt >= 900) {
+      rowsToDelete.push(i + 1);
+      continue;
+    }
+
+    // Nếu chưa gửi (sentAt chưa có)
+    if (!sentAt) {
+      let bossName = "Unknown";
+      if (placeId == 9224601490) bossName = "Macro";
+      else if (placeId == 12413901502) bossName = "Kaido";
+      else if (placeId == 16190471004 && boss) bossName = "Katakuri";
+      else if (placeId == 16190471004) bossName = "Big Mom";
+
+      const payload = {
+        embeds: [{
+          title: "👑 KimSoi Hub Boss Notify (Boss Will Spawn In 6 Minute Later) 👑",
+          color: 0x00ff00,
+          fields: [
+            {
+              name: "Boss Name :",
+              value: bossName,
+              inline: true
+            },
+            {
+              name: "Job Id :",
+              value: jobId,
+              inline: false
+            },
+            {
+              name: "Script :",
+              value: `game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, "${jobId}", game.Players.LocalPlayer)`,
+              inline: false
+            }
+          ]
+        }]
+      };
+
+      try {
+        UrlFetchApp.fetch(WEBHOOK_URL, {
+          method: "post",
+          contentType: "application/json",
+          payload: JSON.stringify(payload)
+        });
+
+        // Ghi thời gian đã gửi vào cột thứ 4
+        sheet.getRange(i + 1, 4).setValue(now);
+      } catch (e) {
+        Logger.log("Error sending webhook: " + e);
+      }
+    }
+  }
+
+  // Xóa các dòng đã gửi và quá 15 phút
+  for (let i = rowsToDelete.length - 1; i >= 0; i--) {
+    sheet.deleteRow(rowsToDelete[i]);
+  }
+}
+
+function doGet(e) {
+  const jobId = e.parameter.jobid;
+  const placeId = parseInt(e.parameter.placeid);
+  const delay = parseInt(e.parameter.delay);
+  const boss = e.parameter.boss === 'true'; // true = Katakuri, false = Big Mom
+
+  if (!jobId || isNaN(placeId) || isNaN(delay)) {
+    return ContentService.createTextOutput("Missing or invalid parameters");
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+
+  let countSameJobId = 0;
+  let existsExact = false;
+
+  for (let i = 1; i < data.length; i++) {
+    const rowJobId = data[i][0];
+    const rowPlaceId = parseInt(data[i][1]);
+    const rowBoss = data[i][3] === true || data[i][3] === "true";
+
+    if (placeId === 16190471004) {
+      // Đếm số lần jobId xuất hiện tại placeId này
+      if (rowPlaceId === 16190471004 && rowJobId === jobId) {
+        countSameJobId++;
+
+        if (rowBoss === boss) {
+          existsExact = true; // Trùng cả jobId và boss
+        }
+      }
+    } else {
+      // Với các place khác, chỉ cần trùng jobId là không cho
+      if (rowJobId === jobId) {
+        return ContentService.createTextOutput("❌ jobId already exists (non-boss map)");
+      }
+    }
+  }
+
+  // Với Katakuri/Big Mom
+  if (placeId === 16190471004) {
+    if (existsExact) {
+      return ContentService.createTextOutput("❌ jobId với boss này đã tồn tại");
+    }
+    if (countSameJobId >= 2) {
+      return ContentService.createTextOutput("❌ Đã có đủ 2 dòng jobId này (true + false)");
+    }
+  }
+
+  // Thêm dòng nếu hợp lệ
+  sheet.appendRow([jobId, placeId, delay, boss.toString()]);
+  return ContentService.createTextOutput("✅ Added successfully");
+}
