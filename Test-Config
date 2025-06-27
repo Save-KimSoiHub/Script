@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2471,23 +2471,31 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
-AutoLoadLastUsed()
-task.spawn(function()
-	while true do
-		task.wait(30)
+task.defer(function()
+    local toggle = SaveManager.Options.SaveManager_AutoLoad
+    SaveManager.AutoLoadEnabled = toggle and toggle.Value or false
 
-		local configFile
-		if isfile(SaveManager.LastConfigFile) then
-			configFile = readfile(SaveManager.LastConfigFile)
-		end
+    -- Nếu chưa có file, thì tạo file mặc định
+    if not isfile(SaveManager.LastConfigFile) then
+        writefile(SaveManager.LastConfigFile, "AutoSave")
+    end
 
-		if configFile and configFile ~= "" then
-			local success, err = SaveManager:Save(configFile)
-			if not success then
-				warn("[SaveManager] Auto-save failed:", err)
-			else
-				print("[SaveManager] Auto-saved config:", configFile)
-			end
-		end
-	end
+    SaveManager:AutoLoadLastUsed()
+
+    -- Tự động lưu mỗi 30 giây
+    task.spawn(function()
+        while true do
+            task.wait(30)
+
+            local configFile = readfile(SaveManager.LastConfigFile)
+            if configFile and configFile ~= "" then
+                local success, err = SaveManager:Save(configFile)
+                if not success then
+                    warn("[SaveManager] Auto-save failed:", err)
+                else
+                    print("[SaveManager] Auto-saved config:", configFile)
+                end
+            end
+        end
+    end)
 end)
