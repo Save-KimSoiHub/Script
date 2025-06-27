@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2473,47 +2473,41 @@ Tabs.Discord:AddButton({
 })
 
 task.defer(function()
-    -- Nếu chưa có file, tạo AutoSave
-    if not isfile(SaveManager.LastConfigFile) then
-        writefile(SaveManager.LastConfigFile, "AutoSave")
-    end
+	-- Tạo file nếu chưa có
+	if not isfile(SaveManager.LastConfigFile) then
+		writefile(SaveManager.LastConfigFile, "AutoSave")
+	end
 
-local toggle = SaveManager.Options.SaveManager_AutoLoad
-local isToggleOn = toggle and toggle.Value or false
-SaveManager.AutoLoadEnabled = isToggleOn
+	-- Luôn auto-load
+	SaveManager.AutoLoadEnabled = true
+	SaveManager:AutoLoadLastUsed()
 
-if isToggleOn then
-    SaveManager:AutoLoadLastUsed()
-else
-    warn("[SaveManager] Auto-load is disabled by toggle.")
-end
+	-- Auto-save mỗi 3 giây nếu có thay đổi
+	local HttpService = game:GetService("HttpService")
+	local lastData = ""
 
-    -- 🔁 Auto save khi thay đổi
-    local HttpService = game:GetService("HttpService")
-    local lastData = ""
+	task.spawn(function()
+		while true do
+			task.wait(3)
 
-    task.spawn(function()
-        while true do
-            task.wait(3)
+			local configFile = readfile(SaveManager.LastConfigFile)
+			if configFile and configFile ~= "" then
+				local success, encoded = pcall(function()
+					local data = { objects = {} }
+					for idx, option in next, SaveManager.Options do
+						if SaveManager.Parser[option.Type] and not SaveManager.Ignore[idx] then
+							table.insert(data.objects, SaveManager.Parser[option.Type].Save(idx, option))
+						end
+					end
+					return HttpService:JSONEncode(data)
+				end)
 
-            local configFile = readfile(SaveManager.LastConfigFile)
-            if configFile and configFile ~= "" then
-                local success, encoded = pcall(function()
-                    local data = { objects = {} }
-                    for idx, option in next, SaveManager.Options do
-                        if SaveManager.Parser[option.Type] and not SaveManager.Ignore[idx] then
-                            table.insert(data.objects, SaveManager.Parser[option.Type].Save(idx, option))
-                        end
-                    end
-                    return HttpService:JSONEncode(data)
-                end)
-
-                if success and encoded ~= lastData then
-                    lastData = encoded
-                    writefile(SaveManager.Folder .. "/settings/" .. configFile .. ".json", encoded)
-                    print("[SaveManager] Auto-saved config:", configFile)
-                end
-            end
-        end
-    end)
+				if success and encoded ~= lastData then
+					lastData = encoded
+					writefile(SaveManager.Folder .. "/settings/" .. configFile .. ".json", encoded)
+					print("[SaveManager] Auto-saved config:", configFile)
+				end
+			end
+		end
+	end)
 end)
