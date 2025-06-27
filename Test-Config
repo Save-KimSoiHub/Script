@@ -2478,18 +2478,15 @@ task.defer(function()
         writefile(SaveManager.LastConfigFile, "AutoSave")
     end
 
-    -- ⏳ Delay để đảm bảo GUI & toggle đã được load từ config
-    task.delay(1, function()
-        local toggle = SaveManager.Options.SaveManager_AutoLoad
-        local isToggleOn = toggle and toggle.Value or false
-        SaveManager.AutoLoadEnabled = isToggleOn
+local toggle = SaveManager.Options.SaveManager_AutoLoad
+local isToggleOn = toggle and toggle.Value or false
+SaveManager.AutoLoadEnabled = isToggleOn
 
-        if isToggleOn then
-            SaveManager:AutoLoadLastUsed()
-        else
-            warn("[SaveManager] Auto-load is disabled by toggle.")
-        end
-    end)
+if isToggleOn then
+    SaveManager:AutoLoadLastUsed()
+else
+    warn("[SaveManager] Auto-load is disabled by toggle.")
+end
 
     -- 🔁 Auto save khi thay đổi
     local HttpService = game:GetService("HttpService")
