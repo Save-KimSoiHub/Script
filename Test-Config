@@ -2471,3 +2471,9 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
+
+task.defer(function()
+	local toggle = SaveManager.Options.SaveManager_AutoLoad
+	SaveManager.AutoLoadEnabled = toggle and toggle.Value or false
+	SaveManager:AutoLoadLastUsed()
+end)
