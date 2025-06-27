@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -39,8 +39,6 @@ SaveManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
 SaveManager:BuildConfigSection(Tabs.Setting)
-SaveManager:AutoLoadLastUsed()
-SaveManager:BuildConfigSection(tab)
 
 -- Toggle Icon
 local ScreenGui = Instance.new("ScreenGui")
@@ -2473,3 +2471,9 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
+
+-- Auto load last config nếu bật
+SaveManager:AutoLoadLastUsed()
+
+-- Tạo giao diện
+SaveManager:BuildConfigSection(tab)
