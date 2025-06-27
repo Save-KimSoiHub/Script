@@ -1,4 +1,4 @@
---Main 
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -677,6 +677,7 @@ end)
 watchSlotChanges()
 startSkillLoop()
         end
+SaveManager:SaveConfig("AutoLoad") 
     end
 })
 
@@ -821,6 +822,7 @@ Tabs.Main:AddInput("ManaToReset", {
     Numeric = true,
     Callback = function(value)
         shared.THRESHOLD = tonumber(value) or 50
+	SaveManager:SaveConfig("AutoLoad") 
     end
 })
 
@@ -2472,18 +2474,20 @@ Tabs.Discord:AddButton({
 })
 
 task.defer(function()
-    task.wait(1) -- Đợi toàn bộ GUI được tạo xong
-    SaveManager:SetFolder("KimSoiHub") -- Đặt tên folder lưu config
-    SaveManager:BuildConfigSection(Tabs.Setting) -- Gắn phần chọn config vào Tab Setting
-    SaveManager:LoadAutoloadConfig() -- Load lại config cũ
+    task.wait(1)
 
-    task.wait(0.2) -- Đợi config load xong
+    SaveManager:SetFolder("KimSoiHub")
+    SaveManager:BuildConfigSection(Tabs.Setting)
+    SaveManager:LoadAutoloadConfig()
 
-    -- 🔁 Gọi lại callback của tất cả toggle đang bật
+    -- 🔁 Gọi lại tất cả Toggle đang bật để ép chạy Callback
+    task.wait(0.2)
     for _, section in pairs(Fluent:GetSections()) do
         for _, element in pairs(section.Items or {}) do
-            if element.Type == "Toggle" and type(element.SetValue) == "function" then
-                element:SetValue(element.Value)
+            if element.Type == "Toggle" and type(element.SetValue) == "function" and element.Value == true then
+                element:SetValue(false)
+                task.wait()
+                element:SetValue(true)
             end
         end
     end
