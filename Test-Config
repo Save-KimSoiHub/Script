@@ -2471,11 +2471,3 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
-
--- ✅ Sau khi tạo hết toggle
-SaveManager:BuildConfigSection(Tabs.Setting)
-
--- ✅ Cuối cùng: auto load lại config gần nhất
-task.delay(1, function()
-    SaveManager:AutoLoadLastUsed()
-end)
