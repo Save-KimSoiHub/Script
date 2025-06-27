@@ -153,17 +153,7 @@ local SaveManager = {} do
 		end
 	end
 
-	function SaveManager:BuildConfigSection(tab)
-		assert(self.Library, "Must set SaveManager.Library")
-		local section = tab:AddSection("Configuration")
-
-		section:AddToggle("SaveManager_AutoLoad", {
-			Title = "Auto Load Last Used Config",
-			Default = true,
-			Callback = function(state)
-				SaveManager.AutoLoadEnabled = state
-			end
-		})
+SaveManager.AutoLoadEnabled = true
 
 		section:AddInput("SaveManager_ConfigName",    { Title = "Config name" })
 		section:AddDropdown("SaveManager_ConfigList", { Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true })
