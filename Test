@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -11,7 +11,7 @@ game.StarterGui:SetCore("SendNotification", {
 task.wait(1.5)
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Auto%20Load.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
@@ -339,22 +339,22 @@ local skills = {
     Ice = {"Partisan", "Geyser", "Pheasant", "IceAge", "IceDragon"},
     Darkness = {"BlackHole", "Liberation", "BlackWorld", "Kurouzu", "DarkHaul", "DarkEnd"},
     Ash = {"ThousandCrows", "Obelisk", "CrowCascade", "CrowCoffin"},
-    Light = {"LightKick", "MirrorKick", "BlindingCombo", "Guzan", "JewelsOfLight", "Flight"},
-    Flame = {"FireFist", "FireGun", "Pillar", "Beam", "Enkai", "Flight"},
+    Light = {"LightKick", "MirrorKick", "BlindingCombo", "Guzan", "JewelsOfLight"},
+    Flame = {"FireFist", "FireGun", "Pillar", "Beam", "Enkai"},
     Magma = {"MajorEruption", "MeteorVolcano", "Plume", "EruptiveSurge", "HellHound"},
     Paw = {"PressureCannon", "SonicStomp", "SumoThrustBarrage", "Torture", "UrsusShock"},
-    String = {"Fullbright", "OverheatWhip", "StringKnight", "SixteenBullets", "Skywalk"},
+    String = {"Fullbright", "OverheatWhip", "StringKnight", "SixteenBullets"},
     Love = {"CupidsArrows", "BouquetOfPain", "Heartthrob", "Heartstrings", "BlossomWind"},
-    Snow = {"SnowAngel", "WinterStorm", "FrostDome", "SnowballCatastrophe", "SnowDrift"},
+    Snow = {"SnowAngel", "WinterStorm", "FrostDome", "SnowballCatastrophe"},
     Quake = {"Fist", "Eruption", "Slam", "IslandShake", "SeaQuake"},
     Gravity = {"Push", "Launch", "Avalanche", "Shoot", "PlanetaryDevastation", "GreatMeteor"},
     Phoenix = {"Fujiazami", "TalonSlam", "PhoenixInferno", "Bluebird", "Transform", "HawkRush"},
     Dragon = {"DragonBreath", "DragonClaw", "Screech", "DracoMeteor", "CrimsonBomb", "Transformation", "Tatsumaki"},
-    TSRubber = {"JetPistol", "JetGatling", "RedHawk", "GrizzlyMagnum", "Gear4", "KongGun", "Culverin", "KongGatling", "KingKongGun", "ElasticPropulsion"},
+    TSRubber = {"JetPistol", "JetGatling", "RedHawk", "GrizzlyMagnum", "Gear4", "KongGun", "Culverin", "KongGatling", "KingKongGun"},
     Magnet = {"Repel", "MetalArms", "Cyclone", "PunkPrison", "PunkCannon"},
-    IceV2 = {"PiercingGlacier", "BlizzardBlade", "IceHail", "AbsoluteZero", "IceSkate"},
+    IceV2 = {"PiercingGlacier", "BlizzardBlade", "IceHail", "AbsoluteZero"},
     MagmaV2 = {"HoundBlaze", "MagmaRain", "MagmaFloor", "Meigo", "CrimsonHowl"},
-    LightV2 = {"PiercingShine", "PhotonStorm", "XFlash", "HeavenlyDescent", "SolarGrenade", "MirrorFlight"},
+    LightV2 = {"PiercingShine", "PhotonStorm", "XFlash", "HeavenlyDescent", "SolarGrenade"},
     FlameV2 = {"ScorchingFist", "TwistingClaw", "BlazingMeteor", "CrimsonBody", "Supernova"},
     Venom = {"ChloroFrenzy", "VenomRoad", "ToxicHydra", "PoisonStorm", "HydraCyclone", "Transform", "PoisonGeyser", "ToxicGeyser"},
     Dough = {"GrilledDough", "Muddle", "LotusDoughCombo", "Chestnut", "Anemone", "Buzzcut"},
@@ -2472,20 +2472,51 @@ Tabs.Discord:AddButton({
     end
 })
 
-SaveManager:LoadAutoloadConfig()
-updateConfigListDropdown()
+task.defer(function()
+    -- Nếu chưa có file, tạo AutoSave
+    if not isfile(SaveManager.LastConfigFile) then
+        writefile(SaveManager.LastConfigFile, "AutoSave")
+    end
 
-local autoloadConfig = SaveManager:GetAutoloadConfig()
-if autoloadConfig and autoloadConfig ~= "" then
-    task.delay(0, function()
-        SaveManager:LoadConfig(autoloadConfig)
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Autoload",
-            Text = "Đã tự động load config: " .. autoloadConfig,
-            Duration = 5,
-            Icon = "rbxassetid://93005671600086"
-        })
+    -- ⏳ Delay để đảm bảo GUI & toggle đã được load từ config
+    task.delay(1, function()
+        local toggle = SaveManager.Options.SaveManager_AutoLoad
+        local isToggleOn = toggle and toggle.Value or false
+        SaveManager.AutoLoadEnabled = isToggleOn
+
+        if isToggleOn then
+            SaveManager:AutoLoadLastUsed()
+        else
+            warn("[SaveManager] Auto-load is disabled by toggle.")
+        end
     end)
-end
 
-Tabs.Setting:AddParagraph("AutoloadInfo", "Config tự động load hiện tại: " .. (autoloadConfig or "Không có"))
+    -- 🔁 Auto save khi thay đổi
+    local HttpService = game:GetService("HttpService")
+    local lastData = ""
+
+    task.spawn(function()
+        while true do
+            task.wait(3)
+
+            local configFile = readfile(SaveManager.LastConfigFile)
+            if configFile and configFile ~= "" then
+                local success, encoded = pcall(function()
+                    local data = { objects = {} }
+                    for idx, option in next, SaveManager.Options do
+                        if SaveManager.Parser[option.Type] and not SaveManager.Ignore[idx] then
+                            table.insert(data.objects, SaveManager.Parser[option.Type].Save(idx, option))
+                        end
+                    end
+                    return HttpService:JSONEncode(data)
+                end)
+
+                if success and encoded ~= lastData then
+                    lastData = encoded
+                    writefile(SaveManager.Folder .. "/settings/" .. configFile .. ".json", encoded)
+                    print("[SaveManager] Auto-saved config:", configFile)
+                end
+            end
+        end
+    end)
+end)
