@@ -1,4 +1,4 @@
---Main !
+--Main 
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2472,9 +2472,19 @@ Tabs.Discord:AddButton({
 })
 
 task.defer(function()
-    task.wait(1) -- chờ tất cả GUI tạo xong
-    SaveManager:SetFolder("KimSoiHub")
-    SaveManager:BuildConfigSection(Tabs.Setting)
-    SaveManager:LoadAutoloadConfig()
-end)
+    task.wait(1) -- Đợi toàn bộ GUI được tạo xong
+    SaveManager:SetFolder("KimSoiHub") -- Đặt tên folder lưu config
+    SaveManager:BuildConfigSection(Tabs.Setting) -- Gắn phần chọn config vào Tab Setting
+    SaveManager:LoadAutoloadConfig() -- Load lại config cũ
 
+    task.wait(0.2) -- Đợi config load xong
+
+    -- 🔁 Gọi lại callback của tất cả toggle đang bật
+    for _, section in pairs(Fluent:GetSections()) do
+        for _, element in pairs(section.Items or {}) do
+            if element.Type == "Toggle" and type(element.SetValue) == "function" then
+                element:SetValue(element.Value)
+            end
+        end
+    end
+end)
