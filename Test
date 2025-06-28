@@ -9,7 +9,7 @@ game.StarterGui:SetCore("SendNotification", {
 })
 
 pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/nhansamtinam/KimSoiHub/refs/heads/main/AutoCheckManaRieng"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
 end)
 
 task.wait(1.5)
