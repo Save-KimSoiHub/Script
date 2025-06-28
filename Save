@@ -1,0 +1,148 @@
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1386516147515559977/wGn28dWXhbaV3j-3LdObAysSQ7mwjyjecEiSYRMS1DEYl2n3ne3YTGQupttISIHDl5pP";
+
+function checkAndSendDelays() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+  const now = Math.floor(Date.now() / 1000);
+  let rowsToDelete = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const jobId = row[0];
+    const placeId = row[1];
+    const delay = parseInt(row[2]);
+    const boss = row[3] === true || row[3] === "true";
+    const sentAt = row[4] ? parseInt(row[4]) : null;
+    const becomeAround = row[5] ? parseInt(row[5]) : null;
+
+    if (!delay || delay > now) continue;
+    if (sentAt && now - sentAt >= 900) {
+      rowsToDelete.push(i + 1);
+      continue;
+    }
+
+    if (!sentAt) {
+      let bossName = "Unknown";
+      if (placeId == 9224601490) bossName = "Macro";
+      else if (placeId == 12413901502) bossName = "Kaido";
+      else if (placeId == 16190471004 && boss) bossName = "Katakuri";
+      else if (placeId == 16190471004 && !boss) bossName = "Big Mom";
+
+      const payload = {
+        embeds: [{
+          title: "👑 KimSoi Hub Boss Notify 👑",
+          color: 0x00ff00,
+          fields: [
+            {
+              name: "Boss Name:",
+              value: bossName,
+              inline: true
+            },
+            {
+              name: "Become Around:",
+              value: `\`${becomeAround} min\``, // hiển thị như code block
+              inline: true
+            },
+            {
+              name: "Job Id:",
+              value: jobId,
+              inline: false
+            },
+            {
+              name: "Script:",
+              value: `game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, "${jobId}", game.Players.LocalPlayer)`,
+              inline: false
+            }
+          ]
+        }]
+      };
+
+      try {
+        UrlFetchApp.fetch(WEBHOOK_URL, {
+          method: "post",
+          contentType: "application/json",
+          payload: JSON.stringify(payload)
+        });
+
+        sheet.getRange(i + 1, 5).setValue(now); // Ghi lại thời điểm đã gửi
+      } catch (e) {
+        Logger.log("Error sending webhook: " + e);
+      }
+    }
+  }
+
+  // Xóa dòng đã gửi sau 15 phút
+  for (let i = rowsToDelete.length - 1; i >= 0; i--) {
+    sheet.deleteRow(rowsToDelete[i]);
+  }
+}
+
+function doGet(e) {
+  const jobId = e.parameter.jobid;
+  const placeId = parseInt(e.parameter.placeid);
+  const currentMinute = parseInt(e.parameter.minute);
+
+  if (!jobId || isNaN(placeId) || isNaN(currentMinute)) {
+    return ContentService.createTextOutput("Missing or invalid parameters");
+  }
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+
+  let countSameJobId = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const rowJobId = data[i][0];
+    const rowPlaceId = parseInt(data[i][1]);
+    const rowBoss = data[i][3] === true || data[i][3] === "true";
+
+    if (placeId === 16190471004 && rowPlaceId === 16190471004 && rowJobId === jobId) {
+      countSameJobId++;
+    } else if (rowJobId === jobId) {
+      return ContentService.createTextOutput("❌ jobId already exists (non-boss map)");
+    }
+  }
+
+  if (placeId === 16190471004 && countSameJobId >= 2) {
+    return ContentService.createTextOutput("❌ Đã có đủ 2 dòng jobId này (Big Mom + Katakuri)");
+  }
+
+  const now = new Date();
+  const currentSecond = Math.floor(now.getTime() / 1000);
+
+  // Big Mom
+  let delayEpochBM, becomeAroundBM;
+  if (currentMinute < 54) {
+    becomeAroundBM = 6;
+    const target = new Date(now);
+    target.setMinutes(54, 0, 0);
+    if (target < now) target.setHours(target.getHours() + 1);
+    delayEpochBM = Math.floor(target.getTime() / 1000);
+  } else {
+    becomeAroundBM = 60 - currentMinute;
+    delayEpochBM = currentSecond;
+  }
+
+  sheet.appendRow([jobId, placeId, delayEpochBM, "false", "", becomeAroundBM]);
+
+  // Katakuri nếu là boss map
+  if (placeId === 16190471004 && countSameJobId === 0) {
+    let delayEpochKT, becomeAroundKT;
+    if (currentMinute < 24) {
+      becomeAroundKT = 6;
+      const target = new Date(now);
+      target.setMinutes(24, 0, 0);
+      if (target < now) target.setHours(target.getHours() + 1);
+      delayEpochKT = Math.floor(target.getTime() / 1000);
+    } else if (currentMinute <= 30) {
+      becomeAroundKT = 30 - currentMinute;
+      delayEpochKT = currentSecond;
+    } else {
+      return ContentService.createTextOutput("⏩ Katakuri ngoài khoảng cho phép, không gửi");
+    }
+
+    sheet.appendRow([jobId, placeId, delayEpochKT, "true", "", becomeAroundKT]);
+  }
+
+  return ContentService.createTextOutput("✅ Added successfully");
+}
