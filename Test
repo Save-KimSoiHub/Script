@@ -1129,9 +1129,6 @@ jobIdInputRef = Tabs.Rejoin:AddInput("JobIdInput", {
     Placeholder = "Enter Job ID !",
     Callback = function(value)
         shared.jobIdInput = value
-        if jobIdInputRef then
-            jobIdInputRef:SetValue("")
-        end
     end
 })
 
