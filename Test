@@ -334,7 +334,7 @@ end
 local skills = {
     Barrier = {"Barrier", "Bubble", "Crash", "Spikes"},
     Chop = {"Cannon", "Grab", "Car", "Festival"},
-    Sand = {"DesertSlicer", "Spada", "Swamp", "SablesPesado"},
+    Sand = {"Slicer", "Spada", "Swamp", "SablesPesado"},
     Smoke = {"WhiteBlow", "WhiteOut", "Typhoon", "Firework"},
     Rubber = {"Pistol", "Bazooka", "Gatling", "Rocket", "Gear2"},
     Falcon = {"WingSlicer", "FlyingTalon", "WingCyclone", "FalconPunch"},
