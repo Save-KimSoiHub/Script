@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1684,7 +1684,7 @@ _G.AutoPressPlay_Find = _G.AutoPressPlay_Find or function()
 					end
 				end
 			end
-			task.wait(1)
+			task.wait(5)
 		end
 		_G._pressingPlay_Find = false
 	end)
