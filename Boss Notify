@@ -8,11 +8,9 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
 
--- Đợi GUI thật sự load (phải có Servertime)
 repeat RunService.RenderStepped:Wait() until LocalPlayer:FindFirstChild("PlayerGui")
 local gui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Đợi GUI hiển thị Servertime
 local function getServerMinute()
     while true do
         for _, g in ipairs(gui:GetDescendants()) do
@@ -33,24 +31,27 @@ print("✅ Server minute:", serverMinute)
 local jobId = game.JobId
 local placeId = game.PlaceId
 local delayTime
+local becomeAround
 
 -- ===== Katakuri logic (boss = true) =====
 if placeId == 16190471004 then
     if serverMinute >= 25 and serverMinute <= 31 then
         delayTime = os.time()
+        becomeAround = 30 - serverMinute
         print("🚀 Katakuri: Gửi ngay (boss=true)")
     elseif serverMinute < 24 then
         delayTime = os.time() + (24 - serverMinute) * 60
+        becomeAround = 6
         print("⏳ Katakuri: Sẽ gửi lúc phút 24 (boss=true)")
     else
-        delayTime = nil -- Không gửi Katakuri nếu sai thời gian
+        delayTime = nil
+        becomeAround = nil
     end
 
-    -- Gửi boss = true nếu có delayTime
-    if delayTime then
+    if delayTime and becomeAround then
         local bossUrl = string.format(
-            "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=true",
-            jobId, placeId, delayTime
+            "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=true&becomearound=%s",
+            jobId, placeId, delayTime, tostring(becomeAround)
         )
 
         local success, response = pcall(function()
@@ -69,15 +70,17 @@ end
 do
     if serverMinute > 54 then
         delayTime = os.time()
+        becomeAround = 60 - serverMinute
         print("🚀 Gửi ngay boss=false")
     else
         delayTime = os.time() + (54 - serverMinute) * 60
+        becomeAround = 6
         print("⏳ Sẽ gửi lúc phút 54 (boss=false)")
     end
 
     local defaultUrl = string.format(
-        "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=false",
-        jobId, placeId, delayTime
+        "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=false&becomearound=%s",
+        jobId, placeId, delayTime, tostring(becomeAround)
     )
 
     local success1, response1 = pcall(function()
