@@ -1122,23 +1122,20 @@ Tabs.Misc:AddButton({
     end
 })
 
-local firstEdit = true
-
-Tabs.Rejoin:AddInput("JobIdInput", {
-    Title = "Enter Job ID Here !",
-    Default = "Enter Job ID...",
-    Placeholder = "Enter Job ID...",
+jobIdInputRef = nil
+jobIdInputRef = Tabs.Rejoin:AddInput("JobIdInput", {
+    Title = "Enter Job ID Here!",
+    Default = "",
+    Placeholder = "Enter Job ID !",
     Callback = function(value)
-        if firstEdit then
-            firstEdit = false
-            shared.jobIdInput = ""
-        else
-            shared.jobIdInput = value
+        shared.jobIdInput = value
+        if jobIdInputRef then
+            jobIdInputRef:Set("")
         end
     end
 })
 
-Tabs.Misc:AddButton({
+Tabs.Rejoin:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
     Callback = function()
