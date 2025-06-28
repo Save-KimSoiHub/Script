@@ -37,11 +37,11 @@ local becomeAround
 if placeId == 16190471004 then
     if serverMinute >= 25 and serverMinute <= 31 then
         delayTime = os.time()
-        becomeAround = 30 - serverMinute
+        becomeAround = 30 - serverMinute - 1
         print("🚀 Katakuri: Gửi ngay (boss=true)")
     elseif serverMinute < 24 then
         delayTime = os.time() + (24 - serverMinute) * 60
-        becomeAround = 6
+        becomeAround = 5
         print("⏳ Katakuri: Sẽ gửi lúc phút 24 (boss=true)")
     else
         delayTime = nil
@@ -70,11 +70,11 @@ end
 do
     if serverMinute > 54 then
         delayTime = os.time()
-        becomeAround = 60 - serverMinute
+        becomeAround = 60 - serverMinute - 1
         print("🚀 Gửi ngay boss=false")
     else
         delayTime = os.time() + (54 - serverMinute) * 60
-        becomeAround = 6
+        becomeAround = 5
         print("⏳ Sẽ gửi lúc phút 54 (boss=false)")
     end
 
