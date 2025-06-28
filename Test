@@ -14,10 +14,6 @@ local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Auto%20Load.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
-end)
-
 local Window = Fluent:CreateWindow({
     Title = "KimSoi Hub [Basic]",
     SubTitle = "By KimSoi",
