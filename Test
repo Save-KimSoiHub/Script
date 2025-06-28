@@ -1122,6 +1122,30 @@ Tabs.Misc:AddButton({
     end
 })
 
+local firstEdit = true
+
+Tabs.Rejoin:AddInput("JobIdInput", {
+    Title = "Enter Job ID Here !",
+    Default = "Enter Job ID...",
+    Placeholder = "Enter Job ID...",
+    Callback = function(value)
+        if firstEdit then
+            firstEdit = false
+            shared.jobIdInput = ""
+        else
+            shared.jobIdInput = value
+        end
+    end
+})
+
+Tabs.Misc:AddButton({
+    Title = "Join With Job ID Entered !",
+    Description = "",
+    Callback = function()
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, "shared.jobIdInput", game.Players.LocalPlayer)
+    end
+})
+
 Tabs.Misc:AddToggle("RedeemAllCodeToggle", {
     Title = "Redeem All Code",
     Description = "Can Not Turn OFF",
