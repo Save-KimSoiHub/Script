@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1130,7 +1130,7 @@ jobIdInputRef = Tabs.Rejoin:AddInput("JobIdInput", {
     Callback = function(value)
         shared.jobIdInput = value
         if jobIdInputRef then
-            jobIdInputRef:Set("")
+            jobIdInputRef:SetValue("")
         end
     end
 })
