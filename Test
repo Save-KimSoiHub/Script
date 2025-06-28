@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1122,8 +1122,8 @@ Tabs.Misc:AddButton({
     end
 })
 
-jobIdInputRef = nil
-jobIdInputRef = Tabs.Rejoin:AddInput("JobIdInput", {
+
+Tabs.Rejoin:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
     Placeholder = "Enter Job ID !",
@@ -1136,7 +1136,7 @@ Tabs.Rejoin:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
     Callback = function()
-        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, "shared.jobIdInput", game.Players.LocalPlayer)
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, shared.jobIdInput, game.Players.LocalPlayer)
     end
 })
 
