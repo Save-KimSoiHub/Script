@@ -7,7 +7,6 @@ game.StarterGui:SetCore("SendNotification", {
     Duration = 10,
     Icon = "rbxassetid://93005671600086"
 })
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
 
 task.wait(1.5)
 
