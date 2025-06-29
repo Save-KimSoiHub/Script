@@ -158,7 +158,7 @@ local SaveManager = {} do
 		local section = tab:AddSection("Configuration")
 
 		section:AddToggle("SaveManager_AutoLoad", {
-			Title = "Auto Load Last Used Config",
+			Title = "Auto Load Last Used Config (Always Turn On)",
 			Default = true,
 			Callback = function(state)
 				SaveManager.AutoLoadEnabled = state
