@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1963,13 +1963,13 @@ autoSpinToggleRef = Tabs.Fruit:AddToggle("AutoSpinToggle", {
 })
 
 -- Hàm kiểm tra trái có nằm trong danh sách cần dừng
+-- Hàm kiểm tra trái có nằm trong danh sách cần dừng
 local function isRare(fruitName)
     for _, v in pairs(_G.selectedFruitName or {}) do
         if string.lower(v) == string.lower(fruitName) then
             return true
         end
     end
-    autoSpinToggleRef:SetValue(false)
     return false
 end
 
