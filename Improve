@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1941,28 +1941,15 @@ autoSpinToggleRef = Tabs.Fruit:AddToggle("AutoSpinToggle", {
     Default = false,
     Callback = function(state)
         if state then
-            local currentFruit = getCurrentFruitName()
-            print("🔍 Trái đang cầm:", currentFruit)
-
-            if isRare(currentFruit) then
-                print("✅ Đang cầm trái hiếm. Dừng Auto Spin.")
-                if autoSpinToggleRef and autoSpinToggleRef.SetValue then
-                    autoSpinToggleRef:SetValue(false)
-                end
-                return
-            end
-
-            print("▶️ Bắt đầu Auto Spin...")
             _G.autoSpinEnabled = true
             startAutoSpin()
         else
             _G.autoSpinEnabled = false
-            print("🛑 Auto Spin đã tắt.")
+            print("Auto Spin đã tắt.")
         end
     end
 })
 
--- Hàm kiểm tra trái có nằm trong danh sách cần dừng
 -- Hàm kiểm tra trái có nằm trong danh sách cần dừng
 local function isRare(fruitName)
     for _, v in pairs(_G.selectedFruitName or {}) do
@@ -1973,38 +1960,31 @@ local function isRare(fruitName)
     return false
 end
 
--- Hàm lấy tên trái đang cầm
-function getCurrentFruitName()
-    local player = game:GetService("Players").LocalPlayer
-    local char = player.Character or player.CharacterAdded:Wait()
-    local tool = char:FindFirstChildOfClass("Tool")
-    return tool and tool.Name or ""
-end
-
 -- Hàm chạy Auto Spin
 function startAutoSpin()
     task.spawn(function()
-        print("🔄 Auto Spin đang chạy...")
+        print("Auto Spin đang chạy...")
         while _G.autoSpinEnabled do
-            local spinArgs = {}
-
+            local spinArgs = {Type = {}}
             if _G.selectedSpinType == "Fast" then
                 spinArgs = {Type = "Fast"}
+            else
+                spinArgs = {}
             end
 
             local args = {"FruitsHandler", "Spin", spinArgs}
             local result = game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-            print("🎰 Kết quả spin:", result)
+            print("Kết quả spin trả về từ server:", result)
 
             if result and isRare(result) then
-                print("💎 Gặp trái hiếm:", result, "→ Dừng lại.")
+                print("DỪNG! Gặp trái hiếm:", result)
                 _G.autoSpinEnabled = false
                 if autoSpinToggleRef and autoSpinToggleRef.SetValue then
                     autoSpinToggleRef:SetValue(false) -- Gạt toggle về OFF
                 end
                 break
             else
-                print("↪️ Spin tiếp...")
+                print("Spin tiếp...")
             end
 
             task.wait(3.5)
