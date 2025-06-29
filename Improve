@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1969,6 +1969,7 @@ local function isRare(fruitName)
             return true
         end
     end
+    autoSpinToggleRef:SetValue(false)
     return false
 end
 
