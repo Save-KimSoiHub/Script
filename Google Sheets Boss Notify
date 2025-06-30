@@ -1,4 +1,4 @@
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1386516147515559977/wGn28dWXhbaV3j-3LdObAysSQ7mwjyjecEiSYRMS1DEYl2n3ne3YTGQupttISIHDl5pP";
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1388698456595632239/X7a0oo3hUS3wRbHkM_ybPEMQ4bhv9mf5S_QVjwXZ6N74q0g_X8Z0LNs41zlynW_CYhr8";
 
 function checkAndSendDelays() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
@@ -12,19 +12,17 @@ function checkAndSendDelays() {
     const jobId = row[0];
     const placeId = row[1];
     const delay = row[2];
-    const sentAt = row[3]; // Cột Sent At (epoch time)
-    const boss = Boolean(row[4]);
+    const boss = Boolean(row[3]);
+    const becomeAround = row[4];
+    const sentAt = row[5];
 
-    // Chưa đến thời gian delay thì bỏ qua
     if (!delay || delay > now) continue;
 
-    // Nếu đã gửi và đủ 15 phút (900 giây) thì cho vào danh sách xóa
     if (sentAt && now - sentAt >= 900) {
       rowsToDelete.push(i + 1);
       continue;
     }
 
-    // Nếu chưa gửi (sentAt chưa có)
     if (!sentAt) {
       let bossName = "Unknown";
       if (placeId == 9224601490) bossName = "Macro";
@@ -32,28 +30,35 @@ function checkAndSendDelays() {
       else if (placeId == 16190471004 && boss) bossName = "Katakuri";
       else if (placeId == 16190471004) bossName = "Big Mom";
 
-      const payload = {
-        embeds: [{
-          title: "👑 KimSoi Hub Boss Notify (Boss Will Spawn In 6 Minute Later) 👑",
-          color: 0x00ff00,
-          fields: [
-            {
-              name: "Boss Name :",
-              value: bossName,
-              inline: true
-            },
-            {
-              name: "Job Id :",
-              value: jobId,
-              inline: false
-            },
-            {
-              name: "Script :",
+        const payload = {
+        embeds: [
+          {
+            title: "👑 KimSoi Hub Boss Notify 👑",
+            color: 0x00ff00,
+            fields: [
+              {
+                name:  "🔥 Boss:",
+                value: "```" + bossName + "```",
+                inline: true
+              },
+              {
+                name:  "⏰ Become Around:",
+                value: "```" + (becomeAround ? `${becomeAround} Minutes !` : "Unknown") + "```",
+                inline: true
+              },
+              {
+                name:  "📜 Job-Id:",
+                value: jobId,
+                inline: false
+              },
+              {
+              name: "📜 Script:",
               value: `game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, "${jobId}", game.Players.LocalPlayer)`,
               inline: false
-            }
-          ]
-        }]
+            },
+            ]
+          }
+        ]
       };
 
       try {
@@ -63,15 +68,13 @@ function checkAndSendDelays() {
           payload: JSON.stringify(payload)
         });
 
-        // Ghi thời gian đã gửi vào cột thứ 4
-        sheet.getRange(i + 1, 4).setValue(now);
+        sheet.getRange(i + 1, 6).setValue(now); // Ghi cột F
       } catch (e) {
         Logger.log("Error sending webhook: " + e);
       }
     }
   }
 
-  // Xóa các dòng đã gửi và quá 15 phút
   for (let i = rowsToDelete.length - 1; i >= 0; i--) {
     sheet.deleteRow(rowsToDelete[i]);
   }
@@ -81,7 +84,8 @@ function doGet(e) {
   const jobId = e.parameter.jobid;
   const placeId = parseInt(e.parameter.placeid);
   const delay = parseInt(e.parameter.delay);
-  const boss = e.parameter.boss === 'true'; // true = Katakuri, false = Big Mom
+  const boss = e.parameter.boss === 'true';
+  const becomeAround = e.parameter.becomearound || ""; // Mới thêm
 
   if (!jobId || isNaN(placeId) || isNaN(delay)) {
     return ContentService.createTextOutput("Missing or invalid parameters");
@@ -99,23 +103,19 @@ function doGet(e) {
     const rowBoss = data[i][3] === true || data[i][3] === "true";
 
     if (placeId === 16190471004) {
-      // Đếm số lần jobId xuất hiện tại placeId này
       if (rowPlaceId === 16190471004 && rowJobId === jobId) {
         countSameJobId++;
-
         if (rowBoss === boss) {
-          existsExact = true; // Trùng cả jobId và boss
+          existsExact = true;
         }
       }
     } else {
-      // Với các place khác, chỉ cần trùng jobId là không cho
       if (rowJobId === jobId) {
         return ContentService.createTextOutput("❌ jobId already exists (non-boss map)");
       }
     }
   }
 
-  // Với Katakuri/Big Mom
   if (placeId === 16190471004) {
     if (existsExact) {
       return ContentService.createTextOutput("❌ jobId với boss này đã tồn tại");
@@ -125,7 +125,7 @@ function doGet(e) {
     }
   }
 
-  // Thêm dòng nếu hợp lệ
-  sheet.appendRow([jobId, placeId, delay, boss.toString()]);
+  // Ghi thêm Become Around vào cột thứ 6
+  sheet.appendRow([jobId, placeId, delay, boss.toString(), becomeAround, ""]);
   return ContentService.createTextOutput("✅ Added successfully");
 }
