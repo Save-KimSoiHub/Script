@@ -1,4 +1,9 @@
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1388698456595632239/X7a0oo3hUS3wRbHkM_ybPEMQ4bhv9mf5S_QVjwXZ6N74q0g_X8Z0LNs41zlynW_CYhr8";
+const WEBHOOKS = {
+  Macro:    "https://discord.com/api/webhooks/1388698456595632239/X7a0oo3hUS3wRbHkM_ybPEMQ4bhv9mf5S_QVjwXZ6N74q0g_X8Z0LNs41zlynW_CYhr8",
+  BigMom:   "https://discord.com/api/webhooks/1389091255258189885/yR5hX5IXCvJIGbWbtPF0bK7ObV6ei0w-N8zRXRnNaaf5S7MOby0f-Ayhqykaw1bT0q6f",
+  Katakuri: "https://discord.com/api/webhooks/1389091695064252477/KIFdRtfFggMqQyMNgSo4NuJFMgESUNZW0PVUJy-89wxK54_AI7TehDYX37TdZsxuhETC",
+  Kaido:    "https://discord.com/api/webhooks/1389091809413824552/Kv_G0bX1FSWyka7WaD9DO24cq9mPO0MMxNuEJEr_T0-DNhstgyQqq6oZnp9mUXtB-X91."
+};
 
 function checkAndSendDelays() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
@@ -20,8 +25,14 @@ function checkAndSendDelays() {
     if (placeId == 9224601490) bossName = "Macro";
     else if (placeId == 12413901502) bossName = "Kaido";
     else if (placeId == 16190471004 && boss) bossName = "Katakuri";
-    else if (placeId == 16190471004) bossName = "Big Mom";
+    else if (placeId == 16190471004) bossName = "BigMom";
 
+    const webhookUrl = WEBHOOKS[bossName];
+    if (!webhookUrl) {
+      Logger.log(`❌ Không tìm thấy webhook cho boss ${bossName}`);
+      continue;
+    }
+    
     const payload = {
       embeds: [
         {
@@ -54,7 +65,7 @@ function checkAndSendDelays() {
     };
 
     try {
-      UrlFetchApp.fetch(WEBHOOK_URL, {
+      UrlFetchApp.fetch(webhookUrl, {
         method: "post",
         contentType: "application/json",
         payload: JSON.stringify(payload)
