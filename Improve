@@ -8,6 +8,12 @@ game.StarterGui:SetCore("SendNotification", {
     Icon = "rbxassetid://93005671600086"
 })
 
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
+    end)
+end)
+
 task.wait(1.5)
 
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
