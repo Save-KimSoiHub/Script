@@ -2,7 +2,7 @@ const WEBHOOKS = {
   Macro:    "https://discord.com/api/webhooks/1388698456595632239/X7a0oo3hUS3wRbHkM_ybPEMQ4bhv9mf5S_QVjwXZ6N74q0g_X8Z0LNs41zlynW_CYhr8",
   BigMom:   "https://discord.com/api/webhooks/1389091255258189885/yR5hX5IXCvJIGbWbtPF0bK7ObV6ei0w-N8zRXRnNaaf5S7MOby0f-Ayhqykaw1bT0q6f",
   Katakuri: "https://discord.com/api/webhooks/1389091695064252477/KIFdRtfFggMqQyMNgSo4NuJFMgESUNZW0PVUJy-89wxK54_AI7TehDYX37TdZsxuhETC",
-  Kaido:    "https://discord.com/api/webhooks/1389091809413824552/Kv_G0bX1FSWyka7WaD9DO24cq9mPO0MMxNuEJEr_T0-DNhstgyQqq6oZnp9mUXtB-X91."
+  Kaido:    "https://discord.com/api/webhooks/1389091809413824552/Kv_G0bX1FSWyka7WaD9DO24cq9mPO0MMxNuEJEr_T0-DNhstgyQqq6oZnp9mUXtB-X91"
 };
 
 function checkAndSendDelays() {
@@ -73,7 +73,8 @@ function checkAndSendDelays() {
 
       // Cập nhật delay + 1 giờ (3600 giây)
       const newDelay = now + 3600;
-      sheet.getRange(i + 1, 3).setValue(newDelay); // Cột C là delay
+      sheet.getRange(i + 1, 3).setValue(newDelay);
+      sheet.getRange(i + 1, 5).setValue(5);
     } catch (e) {
       Logger.log("Error sending webhook: " + e);
     }
