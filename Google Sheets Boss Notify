@@ -5,78 +5,67 @@ function checkAndSendDelays() {
   const data = sheet.getDataRange().getValues();
 
   const now = Math.floor(Date.now() / 1000);
-  let rowsToDelete = [];
 
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
     const jobId = row[0];
     const placeId = row[1];
     const delay = row[2];
-    const boss = Boolean(row[3]);
+    const boss = row[3] === true || row[3] === "true";
     const becomeAround = row[4];
-    const sentAt = row[5];
 
     if (!delay || delay > now) continue;
 
-    if (sentAt && now - sentAt >= 900) {
-      rowsToDelete.push(i + 1);
-      continue;
-    }
+    let bossName = "Unknown";
+    if (placeId == 9224601490) bossName = "Macro";
+    else if (placeId == 12413901502) bossName = "Kaido";
+    else if (placeId == 16190471004 && boss) bossName = "Katakuri";
+    else if (placeId == 16190471004) bossName = "Big Mom";
 
-    if (!sentAt) {
-      let bossName = "Unknown";
-      if (placeId == 9224601490) bossName = "Macro";
-      else if (placeId == 12413901502) bossName = "Kaido";
-      else if (placeId == 16190471004 && boss) bossName = "Katakuri";
-      else if (placeId == 16190471004) bossName = "Big Mom";
-
-        const payload = {
-        embeds: [
-          {
-            title: "👑 KimSoi Hub Boss Notify 👑",
-            color: 0x00ff00,
-            fields: [
-              {
-                name:  "🔥 Boss:",
-                value: "```" + bossName + "```",
-                inline: true
-              },
-              {
-                name:  "⏰ Become Around:",
-                value: "```" + (becomeAround ? `${becomeAround} Minutes !` : "Unknown") + "```",
-                inline: true
-              },
-              {
-                name:  "📜 Job-Id:",
-                value: jobId,
-                inline: false
-              },
-              {
+    const payload = {
+      embeds: [
+        {
+          title: "👑 KimSoi Hub Boss Notify 👑",
+          color: 0x00ff00,
+          fields: [
+            {
+              name: "🔥 Boss:",
+              value: "```" + bossName + "```",
+              inline: true
+            },
+            {
+              name: "⏰ Become Around:",
+              value: "```" + (becomeAround ? `${becomeAround} Minutes !` : "Unknown") + "```",
+              inline: true
+            },
+            {
+              name: "📜 Job-Id:",
+              value: jobId,
+              inline: false
+            },
+            {
               name: "📜 Script:",
               value: `game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, "${jobId}", game.Players.LocalPlayer)`,
               inline: false
             },
-            ]
-          }
-        ]
-      };
+          ]
+        }
+      ]
+    };
 
-      try {
-        UrlFetchApp.fetch(WEBHOOK_URL, {
-          method: "post",
-          contentType: "application/json",
-          payload: JSON.stringify(payload)
-        });
+    try {
+      UrlFetchApp.fetch(WEBHOOK_URL, {
+        method: "post",
+        contentType: "application/json",
+        payload: JSON.stringify(payload)
+      });
 
-        sheet.getRange(i + 1, 6).setValue(now); // Ghi cột F
-      } catch (e) {
-        Logger.log("Error sending webhook: " + e);
-      }
+      // Cập nhật delay + 1 giờ (3600 giây)
+      const newDelay = now + 3600;
+      sheet.getRange(i + 1, 3).setValue(newDelay); // Cột C là delay
+    } catch (e) {
+      Logger.log("Error sending webhook: " + e);
     }
-  }
-
-  for (let i = rowsToDelete.length - 1; i >= 0; i--) {
-    sheet.deleteRow(rowsToDelete[i]);
   }
 }
 
@@ -85,7 +74,7 @@ function doGet(e) {
   const placeId = parseInt(e.parameter.placeid);
   const delay = parseInt(e.parameter.delay);
   const boss = e.parameter.boss === 'true';
-  const becomeAround = e.parameter.becomearound || ""; // Mới thêm
+  const becomeAround = e.parameter.becomearound || "";
 
   if (!jobId || isNaN(placeId) || isNaN(delay)) {
     return ContentService.createTextOutput("Missing or invalid parameters");
@@ -125,7 +114,108 @@ function doGet(e) {
     }
   }
 
-  // Ghi thêm Become Around vào cột thứ 6
-  sheet.appendRow([jobId, placeId, delay, boss.toString(), becomeAround, ""]);
+  sheet.appendRow([jobId, placeId, delay, boss.toString(), becomeAround]);
   return ContentService.createTextOutput("✅ Added successfully");
+}
+
+function cleanDeadJobIds() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data  = sheet.getDataRange().getValues();
+
+  const validPlaceIds = [9224601490, 16190471004, 12413901502];
+  const placeJobRows  = {}; // {placeId: {jobId: [row1, row2,...]}}
+
+  // ── Gom tất cả dòng JobId trong sheet ───────────────────────
+  for (let r = 1; r < data.length; r++) {
+    const jobId   = data[r][0];
+    const placeId = Number(data[r][1]);
+    if (!validPlaceIds.includes(placeId)) continue;
+
+    if (!placeJobRows[placeId]) placeJobRows[placeId] = {};
+    if (!placeJobRows[placeId][jobId]) placeJobRows[placeId][jobId] = [];
+
+    placeJobRows[placeId][jobId].push(r + 1); // lưu tất cả dòng (1-based)
+  }
+
+  // ── Với mỗi placeId, lấy TẤT CẢ server sống ────────────────
+  const liveGlobal = new Set();
+  for (const placeId of validPlaceIds) {
+    const liveOfPlace = getAllLiveJobs(placeId);
+    if (liveOfPlace === null) {
+      Logger.log(`⚠️ Bỏ qua placeId ${placeId} (API lỗi)`);
+      continue;
+    }
+    liveOfPlace.forEach(id => liveGlobal.add(id));
+  }
+
+  // ── Duyệt & cập nhật missCount / xoá nếu ≥ 5 ───────────────
+  const rowsToDelete = [];
+  for (const placeId in placeJobRows) {
+    for (const jobId in placeJobRows[placeId]) {
+      const rows = placeJobRows[placeId][jobId]; // tất cả dòng trùng jobId
+      const alive = liveGlobal.has(jobId);
+
+      for (const row of rows) {
+        safeIncrementMiss(sheet, row, alive); // tăng/reset missCount
+
+        const miss = Number(sheet.getRange(row, 6).getValue()) || 0;
+        if (!alive && miss >= 5) {
+          rowsToDelete.push(row); // đánh dấu xóa
+          Logger.log(`🗑️ Xoá jobId ${jobId} tại dòng ${row} (missCount=${miss})`);
+        }
+      }
+    }
+  }
+
+  // ── Xoá từ dưới lên ────────────────────────────────────────
+  rowsToDelete.sort((a, b) => b - a).forEach(r => sheet.deleteRow(r));
+  Logger.log(`✅ Dọn xong, xoá ${rowsToDelete.length} dòng JobId.`);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Trả về Set(jobId) nếu thành công; trả về null nếu gặp lỗi
+   ────────────────────────────────────────────────────────── */
+function getAllLiveJobs(placeId) {
+  const live = new Set();
+  let cursor = "", retries;
+
+  while (true) {
+    let url = `https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100&sortOrder=Asc`;
+    if (cursor) url += `&cursor=${cursor}`;
+
+    retries = 0;
+    while (retries < 3) {
+      try {
+        const res  = UrlFetchApp.fetch(url, {muteHttpExceptions:true});
+        if (res.getResponseCode() !== 200) throw new Error(res.getContentText());
+        const json = JSON.parse(res.getContentText());
+
+        if (json.data) json.data.forEach(s => s.id && live.add(s.id));
+        cursor = json.nextPageCursor || "";
+        Utilities.sleep(1000);          // 1s giữa 2 request
+        break;                          // thành công → break retry
+      } catch (err) {
+        retries++;
+        Utilities.sleep(1500);          // đợi dài hơn trước khi retry
+        if (retries === 3) {
+          Logger.log(`❌ placeId ${placeId} thất bại sau 3 lần: ${err}`);
+          return null;                  // báo lỗi cho caller
+        }
+      }
+    }
+    if (!cursor) break;                 // hết trang
+  }
+  return live;
+}
+function safeIncrementMiss(sheet, row, alive) {
+  const missCol = 6; // Cột F: missCount
+  const miss = Number(sheet.getRange(row, missCol).getValue()) || 0;
+
+  if (alive) {
+    if (miss !== 0) {
+      sheet.getRange(row, missCol).setValue(0); // reset về 0 nếu còn sống
+    }
+  } else {
+    sheet.getRange(row, missCol).setValue(miss + 1); // tăng 1 nếu chết
+  }
 }
