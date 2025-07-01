@@ -36,11 +36,11 @@ local becomeAround
 -- ===== Katakuri logic (boss = true) =====
 if placeId == 16190471004 then
     if serverMinute >= 25 and serverMinute <= 30 then
-        delayTime = os.time()
+        delayTime = os.time() + (7 * 3600)
         becomeAround = 30 - serverMinute
         print("🚀 Katakuri: Gửi ngay (boss=true)")
     elseif serverMinute < 24 then
-        delayTime = os.time() + (24 - serverMinute) * 60
+        delayTime = os.time() + (7 * 3600) + (24 - serverMinute) * 60
         becomeAround = 5
         print("⏳ Katakuri: Sẽ gửi lúc phút 24 (boss=true)")
     else
@@ -69,11 +69,11 @@ end
 -- ===== Mặc định: boss = false (áp dụng cho tất cả) =====
 do
     if serverMinute > 54 then
-        delayTime = os.time()
+        delayTime = os.time() + (7 * 3600)
         becomeAround = 60 - serverMinute
         print("🚀 Gửi ngay boss=false")
     else
-        delayTime = os.time() + (54 - serverMinute) * 60
+        delayTime = os.time() + (7 * 3600) + (54 - serverMinute) * 60
         becomeAround = 5
         print("⏳ Sẽ gửi lúc phút 54 (boss=false)")
     end
