@@ -1301,7 +1301,7 @@ Tabs.Rejoin:AddButton({
 })
 --Anti AFK
 Tabs.Misc:AddToggle("Anti AFK", {
-    Title = "Anti AFK [Can Not Turn OFF]",
+    Title = "Anti Kick When AFK Over 20 Minutes !",
     Default = false,
     Callback = function(value)
         if value then
