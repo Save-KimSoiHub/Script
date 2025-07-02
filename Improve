@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1740,7 +1740,7 @@ Tabs.Main:AddInput("TimeToWaitInput", {
         shared.timeToWait = tonumber(value) or 20
     end
 })
---Auto Find Boss
+-- Auto Find Boss
 local autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
 	Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
 	Default = false,
@@ -1780,7 +1780,6 @@ local autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
 
 				local function getServer()
 					local HttpService = game:GetService("HttpService")
-					local TeleportService = game:GetService("TeleportService")
 					local PlaceId = game.PlaceId
 					local JobId = game.JobId
 					local servers, cursor = {}, ""
@@ -1826,7 +1825,9 @@ local autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
 					end
 				else
 					print("⛔ Không hop vì đã đến giờ boss. Tắt toggle.")
-					autoFindToggle:SetValue(false)
+					task.delay(0.1, function()
+						autoFindToggle:SetValue(false)
+					end)
 				end
 			end)
 		end
