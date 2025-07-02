@@ -1837,99 +1837,116 @@ function AutoFindBossFunction()
         autoFindToggle:SetValue(false)
     end
 end
+-- Auto Find Katakuri
+local autoFindKatakuriToggle
 
-Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
+autoFindKatakuriToggle = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
     Title = "Auto Find Boss (Katakuri)",
     Default = false,
     Callback = function(value)
         shared.AutoFindKatakuri = value
         if value then
-            _G.AutoPressPlay_Find()
-
-            task.spawn(function()
-                local Players = game:GetService("Players")
-                local HttpService = game:GetService("HttpService")
-                local TeleportService = game:GetService("TeleportService")
-                local player = Players.LocalPlayer
-                local PlaceId = game.PlaceId
-                local JobId = game.JobId
-
-                -- Đợi nhân vật vào game
-                repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-
-                -- Hàm lấy phút từ Servertime
-                local function getServerMinute()
-                    for _, gui in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
-                        if gui:IsA("TextLabel") then
-                            local text = gui.Text
-                            local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
-                            if hour and minute and second then
-                                print("🕒 Servertime:", hour, minute, second)
-                                return tonumber(minute)
-                            end
-                        end
-                    end
-                    warn("⚠️ Không tìm thấy Servertime từ GUI.")
-                    return nil
-                end
-
-                -- Hàm lấy server khác
-                local function getServer()
-                    local servers = {}
-                    local cursor = ""
-
-                    while true do
-                        local success, response = pcall(function()
-                            return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
-                        end)
-
-                        if success then
-                            local data = HttpService:JSONDecode(response)
-                            if data and data.data then
-                                for _, s in ipairs(data.data) do
-                                    if s.playing < s.maxPlayers and s.id ~= JobId then
-                                        table.insert(servers, s.id)
-                                    end
-                                end
-                                if data.nextPageCursor then
-                                    cursor = data.nextPageCursor
-                                    task.wait(1)
-                                else
-                                    break
-                                end
-                            else
-                                break
-                            end
-                        else
-                            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
-                            break
-                        end
-                    end
-
-                    if #servers > 0 then
-                        return servers[math.random(1, #servers)]
-                    else
-                        return nil
-                    end
-                end
-
-                -- Kiểm tra và hop server nếu cần
-                local minute = getServerMinute()
-                if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
-                    print("✅ Tiến hành hop server.")
-                    local serverId = getServer()
-                    if serverId then
-                        TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
-                    else
-                        warn("⚠️ Không tìm được server phù hợp.")
-                    end
-                else
-                    print("⛔ Trong khoảng thời gian boss, không hop.")
-                end
-            end)
+            task.delay(0.2, AutoFindKatakuriFunction)
         end
     end
 })
+
+function AutoFindKatakuriFunction()
+    _G.AutoPressPlay_Find()
+
+    local Players = game:GetService("Players")
+    local HttpService = game:GetService("HttpService")
+    local TeleportService = game:GetService("TeleportService")
+    local player = Players.LocalPlayer
+    local PlaceId = game.PlaceId
+    local JobId = game.JobId
+
+    -- Đợi nhân vật vào game
+    repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+    local gui = player:WaitForChild("PlayerGui")
+
+    -- Chờ đến khi có TextLabel chứa "Servertime:"
+    local serverTimeTextLabel
+    while not serverTimeTextLabel do
+        for _, g in ipairs(gui:GetDescendants()) do
+            if g:IsA("TextLabel") and string.find(g.Text, "Servertime:") then
+                serverTimeTextLabel = g
+                break
+            end
+        end
+        task.wait(0.5)
+    end
+
+    -- Hàm lấy phút từ Servertime
+    local function getServerMinute()
+        local text = serverTimeTextLabel.Text
+        local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
+        if hour and minute and second then
+            print("🕒 Servertime:", hour, minute, second)
+            return tonumber(minute)
+        end
+        warn("⚠️ Không đọc được Servertime.")
+        return nil
+    end
+
+    -- Hàm lấy server khác
+    local function getServer()
+        local servers = {}
+        local cursor = ""
+
+        while true do
+            local success, response = pcall(function()
+                return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
+            end)
+
+            if success then
+                local data = HttpService:JSONDecode(response)
+                if data and data.data then
+                    for _, s in ipairs(data.data) do
+                        if s.playing < s.maxPlayers and s.id ~= JobId then
+                            table.insert(servers, s.id)
+                        end
+                    end
+                    if data.nextPageCursor then
+                        cursor = data.nextPageCursor
+                        task.wait(1)
+                    else
+                        break
+                    end
+                else
+                    break
+                end
+            else
+                warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
+                break
+            end
+        end
+
+        if #servers > 0 then
+            return servers[math.random(1, #servers)]
+        else
+            return nil
+        end
+    end
+
+    -- Kiểm tra và hop server nếu cần
+    local minute = getServerMinute()
+    if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
+        print("✅ Tiến hành hop server.")
+        local serverId = getServer()
+        if serverId then
+            TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
+        else
+            warn("⚠️ Không tìm được server phù hợp.")
+        end
+    else
+        print("⛔ Trong khoảng thời gian boss. Tắt toggle.")
+        task.delay(0.1, function()
+            autoFindKatakuriToggle:SetValue(false)
+        end)
+    end
+end
 
 -- Set Up Auto Spin
 _G.autoSpinEnabled = false
