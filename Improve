@@ -1740,7 +1740,7 @@ Tabs.Main:AddInput("TimeToWaitInput", {
         shared.timeToWait = tonumber(value) or 20
     end
 })
---Auto Find Boss
+-- Auto Find Boss
 Tabs.Main:AddToggle("Auto Find Boss", {
 	Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
 	Default = false,
@@ -1749,22 +1749,31 @@ Tabs.Main:AddToggle("Auto Find Boss", {
 		if value then
 			_G.AutoPressPlay_Find()
 
-			-- Đợi nhân vật vào game rồi hop server
 			task.spawn(function()
 				local player = game:GetService("Players").LocalPlayer
 				repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 
 				local gui = player:WaitForChild("PlayerGui")
-				local function getServerMinute()
+
+				-- Chờ đến khi có TextLabel chứa "Servertime:"
+				local serverTimeTextLabel
+				while not serverTimeTextLabel do
 					for _, g in ipairs(gui:GetDescendants()) do
-						if g:IsA("TextLabel") then
-							local text = g.Text
-							local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
-							if hour and minute and second then
-								print("🕒 Servertime:", hour, minute, second)
-								return tonumber(minute)
-							end
+						if g:IsA("TextLabel") and string.find(g.Text, "Servertime:") then
+							serverTimeTextLabel = g
+							break
 						end
+					end
+					task.wait(0.5)
+				end
+
+				-- Hàm lấy phút từ TextLabel
+				local function getServerMinute()
+					local text = serverTimeTextLabel.Text
+					local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
+					if hour and minute and second then
+						print("🕒 Servertime:", hour, minute, second)
+						return tonumber(minute)
 					end
 					return nil
 				end
@@ -1805,6 +1814,7 @@ Tabs.Main:AddToggle("Auto Find Boss", {
 					return nil
 				end
 
+				-- Lấy thời gian và quyết định
 				local minute = getServerMinute()
 				if minute and minute < (60 - shared.timeToWait) then
 					print("✅ Tiến hành hop server")
@@ -1815,7 +1825,11 @@ Tabs.Main:AddToggle("Auto Find Boss", {
 						warn("⚠️ Không tìm được server phù hợp.")
 					end
 				else
-					print("⛔ Không hop vì đã đến giờ boss.")
+					print("⛔ Không hop vì đã đến giờ boss. Tắt toggle.")
+					local toggleObj = Fluent and Fluent.Flags and Fluent.Flags["Auto Find Boss"]
+					if toggleObj and toggleObj.SetValue then
+						toggleObj:SetValue(false)
+					end
 				end
 			end)
 		end
