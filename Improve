@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1129,12 +1129,26 @@ Tabs.Misc:AddButton({
     end
 })
 
-Tabs.Sever:AddInput("JobIdInput", {
+-- Ô nhập Job ID
+Tabs.Server:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
-    Placeholder = "Enter Job ID !",
+    Placeholder = "Enter Job ID!",
     Callback = function(value)
         shared.jobIdInput = value
+    end
+})
+
+-- Nút Clear Input
+Tabs.Server:AddButton({
+    Title = "Clear Job ID",
+    Description = "",
+    Callback = function()
+        shared.jobIdInput = ""
+        local input = Library and Library.Flags and Library.Flags.JobIdInput
+        if input and input.SetValue then
+            input:SetValue("")
+        end
     end
 })
 
