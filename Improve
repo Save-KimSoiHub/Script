@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -33,9 +33,8 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
-    Teleport = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
-    Sever = Window:AddTab({ Title = "Server", Icon = "" }),
-    Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
+    Sever = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
+    Rejoin = Window:AddTab({ Title = "Rejoin-Server", Icon = "" }),
     Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
     Player = Window:AddTab({ Title = "Player", Icon = "" }),
     Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
@@ -1129,7 +1128,7 @@ Tabs.Misc:AddButton({
     end
 })
 
-Tabs.Server:AddInput("JobIdInput", {
+Tabs.Rejoin:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
     Placeholder = "Enter Job ID !",
@@ -1138,7 +1137,7 @@ Tabs.Server:AddInput("JobIdInput", {
     end
 })
 
-Tabs.Server:AddButton({
+Tabs.Rejoin:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
     Callback = function()
@@ -1213,7 +1212,7 @@ local mapIds = {
 local selectedMapName = "Dressrosa"
 
 -- Dropdown chọn map
-Tabs.Teleport:AddDropdown("MapSelector", {
+Tabs.Sever:AddDropdown("MapSelector", {
     Title = "Select Map",
     Values = { "Dressrosa", "Wano", "Whole Cake", "Ranked Map", "AFK World" },
     Multi = false,
@@ -1224,7 +1223,7 @@ Tabs.Teleport:AddDropdown("MapSelector", {
 })
 
 -- Nút Teleport
-Tabs.Teleport:AddButton({
+Tabs.Sever:AddButton({
     Title = "Teleport To Selected Map",
     Description = "Teleport To Selected Map",
     Callback = function()
@@ -1432,7 +1431,7 @@ end
 local selectedNPCName = npcNames[1]
 
 -- Dropdown chọn NPC
-Tabs.Teleport:AddDropdown("NPCSelector", {
+Tabs.Sever:AddDropdown("NPCSelector", {
     Title = "Select NPC",
     Values = npcNames,
     Multi = false,
@@ -1443,7 +1442,7 @@ Tabs.Teleport:AddDropdown("NPCSelector", {
 })
 
 -- Nút Teleport
-Tabs.Teleport:AddButton({
+Tabs.Sever:AddButton({
     Title = "Teleport To Selected NPC",
     Description = "Teleport To Selected NPC",
     Callback = function()
@@ -1494,7 +1493,7 @@ end
 local selectedArenaName = arenaNames[1]
 
 -- Dropdown chọn Arena
-Tabs.Teleport:AddDropdown("ArenaSelector", {
+Tabs.Sever:AddDropdown("ArenaSelector", {
     Title = "Select Arena",
     Values = arenaNames,
     Multi = false,
@@ -1505,7 +1504,7 @@ Tabs.Teleport:AddDropdown("ArenaSelector", {
 })
 
 -- Nút Teleport đến Arena
-Tabs.Teleport:AddButton({
+Tabs.Sever:AddButton({
     Title = "Teleport To Selected Arena",
     Description = "Teleport To Selected Arena",
     Callback = function()
@@ -1526,7 +1525,7 @@ Tabs.Teleport:AddButton({
 })
 
 --Sever Hop
-Tabs.Server:AddButton({
+Tabs.Rejoin:AddButton({
     Title = "Sever Hop",
     Description = "Join Another Sever",
     Callback = function()
@@ -1587,7 +1586,7 @@ end
     end
 })
 --Sever Hop Less Player
-Tabs.Server:AddButton({
+Tabs.Rejoin:AddButton({
     Title = "Sever Hop Less Player",
     Description = "Join Another Sever Less Player",
     Callback = function()
