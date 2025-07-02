@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -32,12 +32,12 @@ local Window = Fluent:CreateWindow({
 -- Tabs
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
-    Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
     Teleport = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
-    Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
     Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
     Player = Window:AddTab({ Title = "Player", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
+    Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
     Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
 }
