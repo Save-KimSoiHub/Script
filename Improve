@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -832,119 +832,50 @@ Tabs.Main:AddInput("ManaToReset", {
     end
 })
 
--- Auto Check Mana (Chắc chắn không lỗi)
+-- Auto Check Mana (Cực gọn, reset ngay nếu mana thấp)
 do
-    local manaConnection = nil
-    local charAddedConn = nil
-    local currentHumanoid = nil
-    local progressStamina = nil
-    local lowManaCount = 0
-    local lastLowManaTime = 0
     local canAct = false
-
-    local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
-    local player = Players.LocalPlayer
+    local player = game:GetService("Players").LocalPlayer
+    local humanoid = nil
+    local manaTextLabel = player.PlayerGui.UI.HUD.Bars.ProgressStamina
 
-    -- Hàm kiểm tra mana mỗi frame (dùng lại sau reconnect)
-    local function manaCheckFunction()
+    local function checkMana()
         if not shared.autoCheckMana or not canAct then return end
-        if not currentHumanoid or not progressStamina then return end
+        humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then return end
 
-        local manaText = progressStamina.Text or ""
+        local manaText = manaTextLabel.Text or ""
         local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
-        local now = tick()
 
-        if currentMana and currentMana > 0 and currentMana < shared.THRESHOLD and currentHumanoid.Health > 0 and (now - lastLowManaTime >= 10) then
-            lowManaCount += 1
-            lastLowManaTime = now
-            print("🧪 [ManaCheck] Mana thấp lần:", lowManaCount)
-        elseif currentMana and currentMana >= shared.THRESHOLD then
-            lowManaCount = 0
-        end
-
-        if lowManaCount >= 5 and currentHumanoid.Health > 0 then
-            print("🟥 [ManaCheck] Reset vì mana thấp!")
-            currentHumanoid.Health = 0
-            lowManaCount = 0
+        if currentMana and currentMana < shared.THRESHOLD then
+            print("🟥 [ManaCheck] Mana thấp, reset nhân vật!")
+            humanoid.Health = 0
             canAct = false
-
-            -- Ngắt kiểm tra tạm thời
-            if manaConnection then
-                manaConnection:Disconnect()
-                manaConnection = nil
-            end
-
             task.delay(20, function()
                 canAct = true
-                if shared.autoCheckMana then
-                    manaConnection = RunService.RenderStepped:Connect(manaCheckFunction)
-                end
             end)
         end
     end
 
-    -- Hàm gọi mỗi khi nhân vật mới xuất hiện
-    local function setupCharacter(char)
-        lowManaCount = 0
-        lastLowManaTime = 0
-        canAct = false
-        currentHumanoid = nil
-        progressStamina = nil
-
-        task.spawn(function()
-            currentHumanoid = char:WaitForChild("Humanoid", 5)
-            local gui = player:WaitForChild("PlayerGui")
-
-            local ok, ui = pcall(function()
-                return gui:WaitForChild("UI", 5):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
-            end)
-
-            if ok then
-                progressStamina = ui
-                print("✅ [ManaCheck] Tìm thấy ProgressStamina.")
-            else
-                progressStamina = nil
-                warn("⚠️ [ManaCheck] Không tìm thấy ProgressStamina.")
-            end
-        end)
-
-        -- Cho phép kiểm tra sau 20s
-        task.delay(20, function()
-            canAct = true
-        end)
-    end
-
-    -- Toggle trong UI
     Tabs.Main:AddToggle("AutoCheckManaToggle", {
         Title = "Auto Reset If Mana Is Low",
         Default = false,
-        Callback = function(enabled)
-            shared.autoCheckMana = enabled
+        Callback = function(value)
+            shared.autoCheckMana = value
+            canAct = false
 
-            -- Dọn dẹp kết nối cũ
-            if manaConnection then
-                manaConnection:Disconnect()
-                manaConnection = nil
+            if value then
+                print("🟩 [ManaCheck] Đang bật kiểm tra mana... (chờ 20s)")
+                task.delay(20, function()
+                    canAct = true
+                end)
+                RunService:UnbindFromRenderStep("ManaChecker")
+                RunService:BindToRenderStep("ManaChecker", Enum.RenderPriority.Last.Value, checkMana)
+            else
+                print("⛔ [ManaCheck] Đã tắt kiểm tra mana.")
+                RunService:UnbindFromRenderStep("ManaChecker")
             end
-
-            if charAddedConn then
-                charAddedConn:Disconnect()
-                charAddedConn = nil
-            end
-
-            if not enabled then return end
-
-            -- Nếu nhân vật đang tồn tại thì setup luôn
-            if player.Character then
-                setupCharacter(player.Character)
-            end
-
-            -- Gắn lại mỗi lần nhân vật mới
-            charAddedConn = player.CharacterAdded:Connect(setupCharacter)
-
-            -- Bắt đầu theo dõi
-            manaConnection = RunService.RenderStepped:Connect(manaCheckFunction)
         end
     })
 end
