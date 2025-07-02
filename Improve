@@ -166,7 +166,7 @@ Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
 
 Tabs.Main:AddParagraph({
-    Title = "Turn On Auto Load Last Config Used In Setting !",
+    Title = "Turn On Auto Load Last Used Config In Setting !",
     Content = ""
 })
 
