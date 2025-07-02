@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -832,17 +832,28 @@ Tabs.Main:AddInput("ManaToReset", {
     end
 })
 
--- Auto Check Mana (Cực gọn, reset ngay nếu mana thấp)
+-- Auto Check Mana (gọn, reset xong đợi 20s mới check lại)
 do
-    local canAct = false
     local RunService = game:GetService("RunService")
     local player = game:GetService("Players").LocalPlayer
-    local humanoid = nil
+    local canAct = false
     local manaTextLabel = player.PlayerGui.UI.HUD.Bars.ProgressStamina
+
+    local function waitAfterReset()
+        task.spawn(function()
+            local char = player.Character or player.CharacterAdded:Wait()
+            char:WaitForChild("Humanoid", 10)
+            task.wait(20)
+            canAct = true
+            print("🟢 [ManaCheck] Đã sẵn sàng kiểm tra lại.")
+        end)
+    end
 
     local function checkMana()
         if not shared.autoCheckMana or not canAct then return end
-        humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+
+        local char = player.Character
+        local humanoid = char and char:FindFirstChild("Humanoid")
         if not humanoid or humanoid.Health <= 0 then return end
 
         local manaText = manaTextLabel.Text or ""
@@ -850,11 +861,9 @@ do
 
         if currentMana and currentMana < shared.THRESHOLD then
             print("🟥 [ManaCheck] Mana thấp, reset nhân vật!")
-            humanoid.Health = 0
             canAct = false
-            task.delay(20, function()
-                canAct = true
-            end)
+            humanoid.Health = 0
+            waitAfterReset()
         end
     end
 
@@ -863,18 +872,14 @@ do
         Default = false,
         Callback = function(value)
             shared.autoCheckMana = value
-            canAct = false
+            RunService:UnbindFromRenderStep("ManaChecker")
 
             if value then
-                print("🟩 [ManaCheck] Đang bật kiểm tra mana... (chờ 20s)")
-                task.delay(20, function()
-                    canAct = true
-                end)
-                RunService:UnbindFromRenderStep("ManaChecker")
+                print("🟩 [ManaCheck] Đang bật kiểm tra mana... (chờ 20s đầu)")
+                waitAfterReset()
                 RunService:BindToRenderStep("ManaChecker", Enum.RenderPriority.Last.Value, checkMana)
             else
                 print("⛔ [ManaCheck] Đã tắt kiểm tra mana.")
-                RunService:UnbindFromRenderStep("ManaChecker")
             end
         end
     })
