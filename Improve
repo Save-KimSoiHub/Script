@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1317,80 +1317,96 @@ end)
 })
 
 --Show Stats
+local screenGui, updateLoop
+
 Tabs.Misc:AddToggle("ShowStats", {
-    Title = "Show Stats [Can Not Turn OFF]",
+    Title = "Show Stats",
     Default = false,
     Callback = function(value)
-        ShowStatsEnabled = value
         shared.ShowStats = value
+
         if value then
-            local ShowStatsEnabled = false
-local Player = game.Players.LocalPlayer
-local mainData = Player:WaitForChild("MAIN_DATA", 10)
+            -- Nếu GUI đã tồn tại thì không tạo lại
+            if screenGui then
+                screenGui.Enabled = true
+                return
+            end
 
-if not mainData then
-    warn("MAIN_DATA not found!")
-    return
-end
+            local Player = game.Players.LocalPlayer
+            local mainData = Player:WaitForChild("MAIN_DATA", 10)
+            if not mainData then
+                warn("MAIN_DATA not found!")
+                return
+            end
 
--- Tạo GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MainDataDisplay"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = game.CoreGui
+            -- Tạo GUI
+            screenGui = Instance.new("ScreenGui")
+            screenGui.Name = "MainDataDisplay"
+            screenGui.ResetOnSpawn = false
+            screenGui.Parent = game.CoreGui
 
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(0, 200, 0, 200) -- Chiều rộng nhỏ lại
-textLabel.AutomaticSize = Enum.AutomaticSize.Y -- Tự mở rộng chiều cao theo nội dung
-textLabel.Position = UDim2.new(0, 10, 0, 10) -- Góc trái trên
-textLabel.TextXAlignment = Enum.TextXAlignment.Left
-textLabel.TextYAlignment = Enum.TextYAlignment.Top
-textLabel.BackgroundTransparency = 0.3
-textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-textLabel.TextColor3 = Color3.new(1, 1, 1)
-textLabel.TextSize = 14
-textLabel.Font = Enum.Font.SourceSans
-textLabel.TextWrapped = true -- Cho phép tự xuống dòng
-textLabel.Text = ""
-textLabel.Parent = screenGui
+            local textLabel = Instance.new("TextLabel")
+            textLabel.Size = UDim2.new(0, 200, 0, 200)
+            textLabel.AutomaticSize = Enum.AutomaticSize.Y
+            textLabel.Position = UDim2.new(0, 10, 0, 10)
+            textLabel.TextXAlignment = Enum.TextXAlignment.Left
+            textLabel.TextYAlignment = Enum.TextYAlignment.Top
+            textLabel.BackgroundTransparency = 0.3
+            textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+            textLabel.TextColor3 = Color3.new(1, 1, 1)
+            textLabel.TextSize = 14
+            textLabel.Font = Enum.Font.SourceSans
+            textLabel.TextWrapped = true
+            textLabel.Text = ""
+            textLabel.Parent = screenGui
 
--- Cờ bật/tắt
-local enabled = true
+            -- Toggle on/off bằng phím G
+            local enabled = true
+            game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
+                    enabled = not enabled
+                    screenGui.Enabled = enabled
+                end
+            end)
 
--- Phím tắt bật/tắt GUI (nhấn G)
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-	if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
-		enabled = not enabled
-		screenGui.Enabled = enabled
-	end
-end)
+            -- Hàm cập nhật dữ liệu
+            local function updateData()
+                local info = ""
+                for _, v in pairs(mainData:GetChildren()) do
+                    pcall(function()
+                        info = info .. v.Name .. ": " .. tostring(v.Value) .. "\n"
+                    end)
+                end
+                textLabel.Text = info
+            end
 
--- Hàm cập nhật GUI
-local function updateData()
-	local info = ""
-	for _, v in pairs(mainData:GetChildren()) do
-		pcall(function()
-			info = info .. v.Name .. ": " .. tostring(v.Value) .. "\n"
-		end)
-	end
-	textLabel.Text = info
-end
+            -- Cập nhật mỗi 10 giây
+            updateLoop = task.spawn(function()
+                while screenGui and screenGui.Parent do
+                    if screenGui.Enabled then
+                        updateData()
+                    end
+                    task.wait(10)
+                end
+            end)
 
--- Cập nhật ban đầu
-updateData()
+            updateData()
 
--- Cập nhật mỗi 10 giây
-task.spawn(function()
-	while true do
-		if enabled then
-			updateData()
-		end
-		wait(10)
-	end
-end)
+        else
+            -- Toggle OFF: xóa GUI và dừng loop
+            if screenGui then
+                screenGui:Destroy()
+                screenGui = nil
+            end
+
+            if updateLoop then
+                task.cancel(updateLoop)
+                updateLoop = nil
+            end
         end
     end
 })
+
 --Teleport NPC
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
