@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1152,7 +1152,7 @@ Tabs.Sever:AddButton({
     end
 })
 
-Tabs.Server:AddInput("JobIdInput", {
+Tabs.Sever:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
     Placeholder = "Enter Job ID !",
@@ -1161,16 +1161,6 @@ Tabs.Server:AddInput("JobIdInput", {
     end
 })
 
-Tabs.Server:AddButton({
-    Title = "Clear Job ID",
-    Description = "",
-    Callback = function()
-        shared.jobIdInput = ""
-        InterfaceManager:Get("JobIdInput"):SetValue("")
-    end
-})
-
--- Nút Join: Teleport tới Job ID đã nhập
 Tabs.Sever:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
