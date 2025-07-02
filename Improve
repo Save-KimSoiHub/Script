@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1132,11 +1132,21 @@ Tabs.Misc:AddButton({
 Tabs.Rejoin:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
-    Placeholder = "Enter Job ID !",
+    Placeholder = "Enter Job ID!",
     Callback = function(value)
         shared.jobIdInput = value
     end
 })
+
+task.defer(function()
+    local input = Tabs.Rejoin:GetInput("JobIdInput") -- lấy input element từ tab
+    local textBox = input and input:Get()
+    if textBox and textBox:IsA("TextBox") then
+        textBox.Focused:Connect(function()
+            textBox.Text = "" -- reset mỗi lần người dùng nhấn vào
+        end)
+    end
+end)
 
 Tabs.Rejoin:AddButton({
     Title = "Join With Job ID Entered !",
