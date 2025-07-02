@@ -1,3 +1,4 @@
+-- !!!
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {} do
@@ -205,7 +206,7 @@ local SaveManager = {} do
 		end})
 
 		-- Ignore these keys from being saved into config
-		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName", "SaveManager_AutoLoad" })
+		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
 	end
 
 	SaveManager:BuildFolderTree()
