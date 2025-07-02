@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1129,7 +1129,6 @@ Tabs.Misc:AddButton({
     end
 })
 
--- Lưu lại input vào biến để sau này gọi SetValue
 local jobIdInputBox = Tabs.Sever:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
@@ -1138,6 +1137,19 @@ local jobIdInputBox = Tabs.Sever:AddInput("JobIdInput", {
         shared.jobIdInput = value
     end
 })
+
+-- Tự động reset khi click nếu có nội dung
+task.spawn(function()
+    repeat task.wait() until jobIdInputBox.Instance and jobIdInputBox.Instance:FindFirstChildWhichIsA("TextBox")
+
+    local textBox = jobIdInputBox.Instance:FindFirstChildWhichIsA("TextBox")
+    textBox.Focused:Connect(function()
+        if textBox.Text ~= "" then
+            shared.jobIdInput = ""
+            jobIdInputBox:SetValue("")
+        end
+    end)
+end)
 
 -- Nút Clear Input
 Tabs.Sever:AddButton({
