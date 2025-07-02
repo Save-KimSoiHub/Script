@@ -1,10 +1,12 @@
+-- !
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {} do
 	SaveManager.Folder = "FluentSettings"
 	SaveManager.Ignore = {}
-	SaveManager.AutoLoadEnabled = true
+	SaveManager.AutoLoadEnabled = false
 	SaveManager.LastConfigFile = SaveManager.Folder .. "/settings/lastconfig.txt"
+	SaveManager.AutoLoadStateFile = SaveManager.Folder .. "/settings/autoload_state.txt"
 
 	SaveManager.Parser = {
 		Toggle = {
@@ -76,7 +78,7 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:SetFolder(folder)
-		self.Folder = folder;
+		self.Folder = folder
 		self:BuildFolderTree()
 	end
 
@@ -139,6 +141,14 @@ local SaveManager = {} do
 	function SaveManager:SetLibrary(library)
 		self.Library = library
 		self.Options = library.Options
+
+		-- Đọc trạng thái AutoLoad sau khi Options đã có
+		if isfile(self.AutoLoadStateFile) then
+			local state = readfile(self.AutoLoadStateFile)
+			self.AutoLoadEnabled = (state == "true")
+		else
+			self.AutoLoadEnabled = false
+		end
 	end
 
 	function SaveManager:AutoLoadLastUsed()
@@ -158,43 +168,51 @@ local SaveManager = {} do
 		local section = tab:AddSection("Configuration")
 
 		section:AddToggle("SaveManager_AutoLoad", {
-			Title = "Auto Load Last Used Config (Always Turn On)",
-			Default = true,
+			Title = "Auto Load Last Used Config",
+			Default = self.AutoLoadEnabled,
 			Callback = function(state)
 				SaveManager.AutoLoadEnabled = state
+				writefile(SaveManager.AutoLoadStateFile, state and "true" or "false")
 			end
 		})
 
-		section:AddInput("SaveManager_ConfigName",    { Title = "Config name" })
-		section:AddDropdown("SaveManager_ConfigList", { Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true })
+		section:AddInput("SaveManager_ConfigName", { Title = "Config name" })
+		section:AddDropdown("SaveManager_ConfigList", {
+			Title = "Config list",
+			Values = self:RefreshConfigList(),
+			AllowNull = true
+		})
 
-		section:AddButton({Title = "Create config", Callback = function()
+		section:AddButton({ Title = "Create config", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigName.Value
 			if name:gsub(" ","") == "" then
 				return self.Library:Notify({Title = "Interface", Content = "Invalid config name", Duration = 5})
 			end
-			local success, err = self:Save(name)
+			local success = self:Save(name)
 			if success then
 				SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
 				SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
 			end
 		end})
 
-		section:AddButton({Title = "Load config", Callback = function()
+		section:AddButton({ Title = "Load config", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigList.Value
 			self:Load(name)
 		end})
 
-		section:AddButton({Title = "Overwrite config", Callback = function()
+		section:AddButton({ Title = "Overwrite config", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigList.Value
 			self:Save(name)
 		end})
 
-		section:AddButton({Title = "Refresh list", Callback = function()
+		section:AddButton({ Title = "Refresh list", Callback = function()
 			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
 		end})
 
-		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName", "SaveManager_AutoLoad" })
+		SaveManager:SetIgnoreIndexes({
+			"SaveManager_ConfigList",
+			"SaveManager_ConfigName"
+		})
 	end
 
 	SaveManager:BuildFolderTree()
