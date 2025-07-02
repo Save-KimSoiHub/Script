@@ -1,26 +1,12 @@
+-- !
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {} do
 	SaveManager.Folder = "FluentSettings"
 	SaveManager.Ignore = {}
+	SaveManager.AutoLoadEnabled = false
 	SaveManager.LastConfigFile = SaveManager.Folder .. "/settings/lastconfig.txt"
 	SaveManager.AutoLoadStateFile = SaveManager.Folder .. "/settings/autoload_state.txt"
-	SaveManager.AutoLoadEnabled = false -- mặc định ban đầu
-
-	-- build folder trước rồi đọc trạng thái autoload
-	function SaveManager:BuildFolderTree()
-		for _, path in next, { self.Folder, self.Folder .. "/settings" } do
-			if not isfolder(path) then makefolder(path) end
-		end
-
-		-- Load trạng thái autoload ngay sau khi tạo folder
-		if isfile(self.AutoLoadStateFile) then
-			local state = readfile(self.AutoLoadStateFile)
-			self.AutoLoadEnabled = (state == "true")
-		end
-	end
-
-	SaveManager:BuildFolderTree()
 
 	SaveManager.Parser = {
 		Toggle = {
@@ -97,32 +83,72 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:Save(name)
-		if not name then return false, "no config file is selected" end
+		if (not name) then return false, "no config file is selected" end
 		local fullPath = self.Folder .. "/settings/" .. name .. ".json"
+
 		local data = { objects = {} }
 		for idx, option in next, SaveManager.Options do
 			if not self.Parser[option.Type] or self.Ignore[idx] then continue end
 			table.insert(data.objects, self.Parser[option.Type].Save(idx, option))
 		end	
+
 		local success, encoded = pcall(httpService.JSONEncode, httpService, data)
 		if not success then return false, "failed to encode data" end
+
 		writefile(fullPath, encoded)
 		writefile(self.LastConfigFile, name)
 		return true
 	end
 
 	function SaveManager:Load(name)
-		if not name then return false, "no config file is selected" end
+		if (not name) then return false, "no config file is selected" end
 		local file = self.Folder .. "/settings/" .. name .. ".json"
 		if not isfile(file) then return false, "invalid file" end
+
 		local success, decoded = pcall(httpService.JSONDecode, httpService, readfile(file))
 		if not success then return false, "decode error" end
+
 		for _, option in next, decoded.objects do
 			if self.Parser[option.type] then
 				task.spawn(function() self.Parser[option.type].Load(option.idx, option) end)
 			end
 		end
 		return true
+	end
+
+	function SaveManager:IgnoreThemeSettings()
+		self:SetIgnoreIndexes({ "InterfaceTheme", "AcrylicToggle", "TransparentToggle", "MenuKeybind" })
+	end
+
+	function SaveManager:BuildFolderTree()
+		for _, path in next, { self.Folder, self.Folder .. "/settings" } do
+			if not isfolder(path) then makefolder(path) end
+		end
+	end
+
+	function SaveManager:RefreshConfigList()
+		local list = listfiles(self.Folder .. "/settings")
+		local out = {}
+		for _, file in next, list do
+			if file:sub(-5) == ".json" then
+				local name = file:match("([^/\\]+)%.json$")
+				if name and name ~= "options" then table.insert(out, name) end
+			end
+		end
+		return out
+	end
+
+	function SaveManager:SetLibrary(library)
+		self.Library = library
+		self.Options = library.Options
+
+		-- Đọc trạng thái AutoLoad sau khi Options đã có
+		if isfile(self.AutoLoadStateFile) then
+			local state = readfile(self.AutoLoadStateFile)
+			self.AutoLoadEnabled = (state == "true")
+		else
+			self.AutoLoadEnabled = false
+		end
 	end
 
 	function SaveManager:AutoLoadLastUsed()
@@ -143,7 +169,7 @@ local SaveManager = {} do
 
 		section:AddToggle("SaveManager_AutoLoad", {
 			Title = "Auto Load Last Used Config",
-			Default = SaveManager.AutoLoadEnabled,
+			Default = self.AutoLoadEnabled,
 			Callback = function(state)
 				SaveManager.AutoLoadEnabled = state
 				writefile(SaveManager.AutoLoadStateFile, state and "true" or "false")
@@ -157,7 +183,7 @@ local SaveManager = {} do
 			AllowNull = true
 		})
 
-		section:AddButton({Title = "Create config", Callback = function()
+		section:AddButton({ Title = "Create config", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigName.Value
 			if name:gsub(" ","") == "" then
 				return self.Library:Notify({Title = "Interface", Content = "Invalid config name", Duration = 5})
@@ -169,42 +195,27 @@ local SaveManager = {} do
 			end
 		end})
 
-		section:AddButton({Title = "Load config", Callback = function()
+		section:AddButton({ Title = "Load config", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigList.Value
 			self:Load(name)
 		end})
 
-		section:AddButton({Title = "Overwrite config", Callback = function()
+		section:AddButton({ Title = "Overwrite config", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigList.Value
 			self:Save(name)
 		end})
 
-		section:AddButton({Title = "Refresh list", Callback = function()
+		section:AddButton({ Title = "Refresh list", Callback = function()
 			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
 		end})
 
 		SaveManager:SetIgnoreIndexes({
 			"SaveManager_ConfigList",
-			"SaveManager_ConfigName",
+			"SaveManager_ConfigName"
 		})
 	end
 
-	function SaveManager:RefreshConfigList()
-		local list = listfiles(self.Folder .. "/settings")
-		local out = {}
-		for _, file in next, list do
-			if file:sub(-5) == ".json" then
-				local name = file:match("([^/\\]+)%.json$")
-				if name and name ~= "options" then table.insert(out, name) end
-			end
-		end
-		return out
-	end
-
-	function SaveManager:SetLibrary(library)
-		self.Library = library
-		self.Options = library.Options
-	end
+	SaveManager:BuildFolderTree()
 end
 
 return SaveManager
