@@ -1,4 +1,4 @@
---Main !
+--Main 
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1139,22 +1139,25 @@ Tabs.Rejoin:AddInput("JobIdInput", {
     end
 })
 
--- Thêm đoạn reset khi nhấn vào textbox
+-- ✅ Tự động reset TextBox về "" khi nhấn vào để nhập
 task.spawn(function()
-    -- Đợi Fluent render UI xong
+    -- Đợi Fluent render xong
     repeat task.wait() until Tabs.Rejoin and Tabs.Rejoin.Options and Tabs.Rejoin.Options.JobIdInput
-    local input = Tabs.Rejoin.Options.JobIdInput
 
+    local input = Tabs.Rejoin.Options.JobIdInput
     repeat task.wait() until input.Instance and input.Instance.TextBox
     local textBox = input.Instance.TextBox
 
-    -- Gán hàm khi người dùng nhấn vào để nhập
+    -- Reset mỗi lần nhấn vào TextBox
     textBox.Focused:Connect(function()
-        textBox.Text = ""
+        task.defer(function()
+            textBox.Text = ""
+            shared.jobIdInput = ""
+        end)
     end)
 end)
 
-
+-- Nút Join bằng Job ID
 Tabs.Rejoin:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
