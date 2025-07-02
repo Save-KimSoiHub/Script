@@ -166,8 +166,8 @@ Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
 
 Tabs.Main:AddParagraph({
-    Title = "Tutorial !",
-    Content = "If You Need Auto Farm Boss:Pls Turn On Auto Boss With Auto Farm"
+    Title = "Turn On Auto Load Last Config Used In Setting !",
+    Content = ""
 })
 
 local teleportLockPriority = 0
@@ -690,7 +690,7 @@ startSkillLoop()
 
 -- Auto Boss
 Tabs.Main:AddToggle("AutoBossToggle", {
-    Title = "Auto Boss",
+    Title = "Auto Boss (Turn On With Auto Farm)",
     Default = false,
     Callback = function(value)
         autoBossEnabled = value
