@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -34,7 +34,7 @@ local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
     Teleport = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
-    Sever = Window:AddTab({ Title = "Server", Icon = "" }),
+    Server = Window:AddTab({ Title = "Server", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
     Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
     Player = Window:AddTab({ Title = "Player", Icon = "" }),
@@ -1129,7 +1129,7 @@ Tabs.Misc:AddButton({
     end
 })
 
-Tabs.Rejoin:AddInput("JobIdInput", {
+Tabs.Server:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
     Placeholder = "Enter Job ID !",
@@ -1138,7 +1138,7 @@ Tabs.Rejoin:AddInput("JobIdInput", {
     end
 })
 
-Tabs.Rejoin:AddButton({
+Tabs.Server:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
     Callback = function()
@@ -1432,7 +1432,7 @@ end
 local selectedNPCName = npcNames[1]
 
 -- Dropdown chọn NPC
-Tabs.Sever:AddDropdown("NPCSelector", {
+Tabs.Teleport:AddDropdown("NPCSelector", {
     Title = "Select NPC",
     Values = npcNames,
     Multi = false,
@@ -1443,7 +1443,7 @@ Tabs.Sever:AddDropdown("NPCSelector", {
 })
 
 -- Nút Teleport
-Tabs.Sever:AddButton({
+Tabs.Teleport:AddButton({
     Title = "Teleport To Selected NPC",
     Description = "Teleport To Selected NPC",
     Callback = function()
@@ -1494,7 +1494,7 @@ end
 local selectedArenaName = arenaNames[1]
 
 -- Dropdown chọn Arena
-Tabs.Sever:AddDropdown("ArenaSelector", {
+Tabs.Teleport:AddDropdown("ArenaSelector", {
     Title = "Select Arena",
     Values = arenaNames,
     Multi = false,
@@ -1505,7 +1505,7 @@ Tabs.Sever:AddDropdown("ArenaSelector", {
 })
 
 -- Nút Teleport đến Arena
-Tabs.Sever:AddButton({
+Tabs.Teleport:AddButton({
     Title = "Teleport To Selected Arena",
     Description = "Teleport To Selected Arena",
     Callback = function()
@@ -1526,7 +1526,7 @@ Tabs.Sever:AddButton({
 })
 
 --Sever Hop
-Tabs.Rejoin:AddButton({
+Tabs.Server:AddButton({
     Title = "Sever Hop",
     Description = "Join Another Sever",
     Callback = function()
@@ -1587,7 +1587,7 @@ end
     end
 })
 --Sever Hop Less Player
-Tabs.Rejoin:AddButton({
+Tabs.Server:AddButton({
     Title = "Sever Hop Less Player",
     Description = "Join Another Sever Less Player",
     Callback = function()
