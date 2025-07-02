@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1129,7 +1129,7 @@ Tabs.Misc:AddButton({
 })
 
 
--- Tạo Input
+-- Enter Job ID
 Tabs.Rejoin:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
@@ -1139,23 +1139,21 @@ Tabs.Rejoin:AddInput("JobIdInput", {
     end
 })
 
--- Kết nối sự kiện Focus để xóa text mỗi lần nhấn vào
-task.defer(function()
-    local inputOption = Tabs.Rejoin.Options.JobIdInput
-    if not inputOption then return end
+-- Thêm đoạn reset khi nhấn vào textbox
+task.spawn(function()
+    -- Đợi Fluent render UI xong
+    repeat task.wait() until Tabs.Rejoin and Tabs.Rejoin.Options and Tabs.Rejoin.Options.JobIdInput
+    local input = Tabs.Rejoin.Options.JobIdInput
 
-    -- Đợi tới khi UI được tạo xong
-    while not inputOption.Instance or not inputOption.Instance.TextBox do
-        task.wait()
-    end
+    repeat task.wait() until input.Instance and input.Instance.TextBox
+    local textBox = input.Instance.TextBox
 
-    local textBox = inputOption.Instance.TextBox
-    if textBox then
-        textBox.Focused:Connect(function()
-            textBox.Text = ""
-        end)
-    end
+    -- Gán hàm khi người dùng nhấn vào để nhập
+    textBox.Focused:Connect(function()
+        textBox.Text = ""
+    end)
 end)
+
 
 Tabs.Rejoin:AddButton({
     Title = "Join With Job ID Entered !",
