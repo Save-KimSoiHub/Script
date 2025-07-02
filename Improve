@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1360,15 +1360,6 @@ Tabs.Misc:AddToggle("ShowStats", {
             textLabel.Text = ""
             textLabel.Parent = screenGui
 
-            -- Toggle on/off bằng phím G
-            local enabled = true
-            game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-                if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
-                    enabled = not enabled
-                    screenGui.Enabled = enabled
-                end
-            end)
-
             -- Hàm cập nhật dữ liệu
             local function updateData()
                 local info = ""
@@ -1383,9 +1374,7 @@ Tabs.Misc:AddToggle("ShowStats", {
             -- Cập nhật mỗi 10 giây
             updateLoop = task.spawn(function()
                 while screenGui and screenGui.Parent do
-                    if screenGui.Enabled then
-                        updateData()
-                    end
+                    updateData()
                     task.wait(10)
                 end
             end)
