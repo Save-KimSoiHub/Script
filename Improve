@@ -690,7 +690,7 @@ startSkillLoop()
 
 -- Auto Boss
 Tabs.Main:AddToggle("AutoBossToggle", {
-    Title = "Auto Attack Boss When Boss Spawn (Turn On With Auto Farm)",
+    Title = "Auto Boss (Turn On With Auto Farm)",
     Default = false,
     Callback = function(value)
         autoBossEnabled = value
