@@ -1129,29 +1129,6 @@ Tabs.Misc:AddButton({
     end
 })
 
--- Input: Nhập Job ID
-Tabs.Sever:AddInput("JobIdInput", {
-    Title = "Enter Job ID Here!",
-    Default = "",
-    Placeholder = "Enter Job ID !",
-    Callback = function(value)
-        shared.jobIdInput = value
-    end
-})
-
--- Nút Clear: Xóa nội dung input
-Tabs.Sever:AddButton({
-    Title = "Clear Job ID",
-    Description = "",
-    Callback = function()
-        shared.jobIdInput = ""
-        local Input = Window:GetElement("JobIdInput")
-        if Input then
-            Input:SetValue("")
-        end
-    end
-})
-
 Tabs.Sever:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
