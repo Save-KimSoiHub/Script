@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1129,6 +1129,7 @@ Tabs.Misc:AddButton({
 })
 
 
+-- Tạo Input
 Tabs.Rejoin:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
@@ -1138,12 +1139,20 @@ Tabs.Rejoin:AddInput("JobIdInput", {
     end
 })
 
+-- Kết nối sự kiện Focus để xóa text mỗi lần nhấn vào
 task.defer(function()
-    local input = Tabs.Rejoin:GetInput("JobIdInput") -- lấy input element từ tab
-    local textBox = input and input:Get()
-    if textBox and textBox:IsA("TextBox") then
+    local inputOption = Tabs.Rejoin.Options.JobIdInput
+    if not inputOption then return end
+
+    -- Đợi tới khi UI được tạo xong
+    while not inputOption.Instance or not inputOption.Instance.TextBox do
+        task.wait()
+    end
+
+    local textBox = inputOption.Instance.TextBox
+    if textBox then
         textBox.Focused:Connect(function()
-            textBox.Text = "" -- reset mỗi lần người dùng nhấn vào
+            textBox.Text = ""
         end)
     end
 end)
