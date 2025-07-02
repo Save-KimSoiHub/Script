@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1741,98 +1741,102 @@ Tabs.Main:AddInput("TimeToWaitInput", {
     end
 })
 -- Auto Find Boss
-local autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
-	Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
-	Default = false,
-	Callback = function(value)
-		shared.AutoFindBoss = value
-		if value then
-			_G.AutoPressPlay_Find()
+local autoFindToggle
 
-			task.spawn(function()
-				local player = game:GetService("Players").LocalPlayer
-				repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
+    Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
+    Default = false,
+    Callback = function(value)
+        shared.AutoFindBoss = value
 
-				local gui = player:WaitForChild("PlayerGui")
-
-				-- Chờ đến khi có TextLabel chứa "Servertime:"
-				local serverTimeTextLabel
-				while not serverTimeTextLabel do
-					for _, g in ipairs(gui:GetDescendants()) do
-						if g:IsA("TextLabel") and string.find(g.Text, "Servertime:") then
-							serverTimeTextLabel = g
-							break
-						end
-					end
-					task.wait(0.5)
-				end
-
-				-- Hàm lấy phút từ TextLabel
-				local function getServerMinute()
-					local text = serverTimeTextLabel.Text
-					local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
-					if hour and minute and second then
-						print("🕒 Servertime:", hour, minute, second)
-						return tonumber(minute)
-					end
-					return nil
-				end
-
-				local function getServer()
-					local HttpService = game:GetService("HttpService")
-					local PlaceId = game.PlaceId
-					local JobId = game.JobId
-					local servers, cursor = {}, ""
-
-					while true do
-						local success, response = pcall(function()
-							return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
-						end)
-
-						if success then
-							local data = HttpService:JSONDecode(response)
-							for _, s in ipairs(data.data) do
-								if s.playing < s.maxPlayers and s.id ~= JobId then
-									table.insert(servers, s.id)
-								end
-							end
-							if data.nextPageCursor then
-								cursor = data.nextPageCursor
-								task.wait(1)
-							else
-								break
-							end
-						else
-							break
-						end
-					end
-
-					if #servers > 0 then
-						return servers[math.random(1, #servers)]
-					end
-					return nil
-				end
-
-				-- Lấy thời gian và quyết định
-				local minute = getServerMinute()
-				if minute and minute < (60 - shared.timeToWait) then
-					print("✅ Tiến hành hop server")
-					local serverId = getServer()
-					if serverId then
-						game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, serverId, player)
-					else
-						warn("⚠️ Không tìm được server phù hợp.")
-					end
-				else
-					print("⛔ Không hop vì đã đến giờ boss. Tắt toggle.")
-					task.delay(0.1, function()
-						autoFindToggle:SetValue(false)
-					end)
-				end
-			end)
-		end
-	end
+        if value then
+            task.delay(0.2, AutoFindBossFunction) -- Tách hẳn ra
+        end
+    end
 })
+function AutoFindBossFunction()
+    _G.AutoPressPlay_Find()
+
+    local player = game:GetService("Players").LocalPlayer
+    repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+    local gui = player:WaitForChild("PlayerGui")
+
+    -- Chờ tới khi GUI hiện Servertime
+    local serverTimeTextLabel
+    while not serverTimeTextLabel do
+        for _, g in ipairs(gui:GetDescendants()) do
+            if g:IsA("TextLabel") and string.find(g.Text, "Servertime:") then
+                serverTimeTextLabel = g
+                break
+            end
+        end
+        task.wait(0.5)
+    end
+
+    -- Hàm lấy phút
+    local function getServerMinute()
+        local text = serverTimeTextLabel.Text
+        local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
+        if hour and minute and second then
+            print("🕒 Servertime:", hour, minute, second)
+            return tonumber(minute)
+        end
+        return nil
+    end
+
+    -- Hàm tìm server khác
+    local function getServer()
+        local HttpService = game:GetService("HttpService")
+        local PlaceId = game.PlaceId
+        local JobId = game.JobId
+        local servers, cursor = {}, ""
+
+        while true do
+            local success, response = pcall(function()
+                return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
+            end)
+
+            if success then
+                local data = HttpService:JSONDecode(response)
+                for _, s in ipairs(data.data) do
+                    if s.playing < s.maxPlayers and s.id ~= JobId then
+                        table.insert(servers, s.id)
+                    end
+                end
+                if data.nextPageCursor then
+                    cursor = data.nextPageCursor
+                    task.wait(1)
+                else
+                    break
+                end
+            else
+                break
+            end
+        end
+
+        if #servers > 0 then
+            return servers[math.random(1, #servers)]
+        end
+        return nil
+    end
+
+    -- Kiểm tra thời gian server
+    local minute = getServerMinute()
+    if minute and minute < (60 - shared.timeToWait) then
+        print("✅ Tiến hành hop server")
+        local serverId = getServer()
+        if serverId then
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, serverId, player)
+        else
+            warn("⚠️ Không tìm được server phù hợp.")
+        end
+    else
+        print("⛔ Không hop vì đã đến giờ boss. Tắt toggle.")
+        -- Lúc này đã ở ngoài callback nên SetValue an toàn
+        autoFindToggle:SetValue(false)
+    end
+end
 
 Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
     Title = "Auto Find Boss (Katakuri)",
