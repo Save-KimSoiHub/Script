@@ -1,4 +1,3 @@
--- !!!
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {} do
@@ -144,21 +143,24 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:AutoLoadLastUsed()
-	if isfile(self.AutoLoadStateFile) then
-		local state = readfile(self.AutoLoadStateFile)
-		self.AutoLoadEnabled = (state == "true")
-	end -- nếu chưa có file thì giữ nguyên giá trị mặc định (false)
-
-	if self.AutoLoadEnabled and isfile(self.LastConfigFile) then
-		local name = readfile(self.LastConfigFile)
-		local success, err = self:Load(name)
-		if success then
-			warn("[SaveManager] Auto-loaded last config:", name)
+		-- Load AutoLoad state from file (default false if file doesn't exist)
+		if isfile(self.AutoLoadStateFile) then
+			local state = readfile(self.AutoLoadStateFile)
+			self.AutoLoadEnabled = (state == "true")
 		else
-			warn("[SaveManager] Failed to auto-load last config:", err)
+			self.AutoLoadEnabled = false
+		end
+
+		if self.AutoLoadEnabled and isfile(self.LastConfigFile) then
+			local name = readfile(self.LastConfigFile)
+			local success, err = self:Load(name)
+			if success then
+				warn("[SaveManager] Auto-loaded last config:", name)
+			else
+				warn("[SaveManager] Failed to auto-load last config:", err)
+			end
 		end
 	end
-end
 
 	function SaveManager:BuildConfigSection(tab)
 		assert(self.Library, "Must set SaveManager.Library")
@@ -166,7 +168,7 @@ end
 
 		section:AddToggle("SaveManager_AutoLoad", {
 			Title = "Auto Load Last Used Config",
-			Default = true,
+			Default = SaveManager.AutoLoadEnabled, -- ✅ lấy từ file
 			Callback = function(state)
 				SaveManager.AutoLoadEnabled = state
 				writefile(SaveManager.AutoLoadStateFile, state and "true" or "false")
