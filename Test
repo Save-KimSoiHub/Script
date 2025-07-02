@@ -32,11 +32,12 @@ local Window = Fluent:CreateWindow({
 -- Tabs
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
-    Sever = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
-    Rejoin = Window:AddTab({ Title = "Rejoin-Server", Icon = "" }),
+    Teleport = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
     Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
     Player = Window:AddTab({ Title = "Player", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
+    Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
     Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
 }
@@ -165,8 +166,8 @@ Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
 
 Tabs.Main:AddParagraph({
-    Title = "Tutorial !",
-    Content = "If You Need Auto Farm Boss:Pls Turn On Auto Boss With Auto Farm"
+    Title = "Turn On Auto Load Last Used Config In Setting !",
+    Content = ""
 })
 
 local teleportLockPriority = 0
@@ -689,7 +690,7 @@ startSkillLoop()
 
 -- Auto Boss
 Tabs.Main:AddToggle("AutoBossToggle", {
-    Title = "Auto Boss",
+    Title = "Auto Boss (Turn On With Auto Farm)",
     Default = false,
     Callback = function(value)
         autoBossEnabled = value
@@ -831,119 +832,52 @@ Tabs.Main:AddInput("ManaToReset", {
     end
 })
 
--- Auto Check Mana (Chắc chắn không lỗi)
+-- Auto Check Mana (reset xong chờ 20 giây rồi mới tiếp tục)
 do
-    local manaConnection = nil
-    local charAddedConn = nil
-    local currentHumanoid = nil
-    local progressStamina = nil
-    local lowManaCount = 0
-    local lastLowManaTime = 0
-    local canAct = false
-
-    local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
-    local player = Players.LocalPlayer
+    local player = game:GetService("Players").LocalPlayer
+    local canAct = false
+    local manaTextLabel = player.PlayerGui.UI.HUD.Bars.ProgressStamina
 
-    -- Hàm kiểm tra mana mỗi frame (dùng lại sau reconnect)
-    local function manaCheckFunction()
-        if not shared.autoCheckMana or not canAct then return end
-        if not currentHumanoid or not progressStamina then return end
-
-        local manaText = progressStamina.Text or ""
-        local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
-        local now = tick()
-
-        if currentMana and currentMana > 0 and currentMana < shared.THRESHOLD and currentHumanoid.Health > 0 and (now - lastLowManaTime >= 10) then
-            lowManaCount += 1
-            lastLowManaTime = now
-            print("🧪 [ManaCheck] Mana thấp lần:", lowManaCount)
-        elseif currentMana and currentMana >= shared.THRESHOLD then
-            lowManaCount = 0
-        end
-
-        if lowManaCount >= 5 and currentHumanoid.Health > 0 then
-            print("🟥 [ManaCheck] Reset vì mana thấp!")
-            currentHumanoid.Health = 0
-            lowManaCount = 0
-            canAct = false
-
-            -- Ngắt kiểm tra tạm thời
-            if manaConnection then
-                manaConnection:Disconnect()
-                manaConnection = nil
-            end
-
-            task.delay(20, function()
-                canAct = true
-                if shared.autoCheckMana then
-                    manaConnection = RunService.RenderStepped:Connect(manaCheckFunction)
-                end
-            end)
-        end
-    end
-
-    -- Hàm gọi mỗi khi nhân vật mới xuất hiện
-    local function setupCharacter(char)
-        lowManaCount = 0
-        lastLowManaTime = 0
+    local function waitAfterReset()
         canAct = false
-        currentHumanoid = nil
-        progressStamina = nil
-
-        task.spawn(function()
-            currentHumanoid = char:WaitForChild("Humanoid", 5)
-            local gui = player:WaitForChild("PlayerGui")
-
-            local ok, ui = pcall(function()
-                return gui:WaitForChild("UI", 5):WaitForChild("HUD"):WaitForChild("Bars"):WaitForChild("ProgressStamina")
-            end)
-
-            if ok then
-                progressStamina = ui
-                print("✅ [ManaCheck] Tìm thấy ProgressStamina.")
-            else
-                progressStamina = nil
-                warn("⚠️ [ManaCheck] Không tìm thấy ProgressStamina.")
-            end
-        end)
-
-        -- Cho phép kiểm tra sau 20s
         task.delay(20, function()
             canAct = true
+            print("🟢 [ManaCheck] Đã sẵn sàng kiểm tra lại sau 20 giây.")
         end)
     end
 
-    -- Toggle trong UI
+    local function checkMana()
+        if not shared.autoCheckMana or not canAct then return end
+
+        local char = player.Character
+        local humanoid = char and char:FindFirstChild("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then return end
+
+        local manaText = manaTextLabel.Text or ""
+        local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
+
+        if currentMana and currentMana < shared.THRESHOLD then
+            print("🟥 [ManaCheck] Mana thấp, reset nhân vật!")
+            humanoid.Health = 0
+            waitAfterReset()
+        end
+    end
+
     Tabs.Main:AddToggle("AutoCheckManaToggle", {
         Title = "Auto Reset If Mana Is Low",
         Default = false,
-        Callback = function(enabled)
-            shared.autoCheckMana = enabled
+        Callback = function(value)
+            shared.autoCheckMana = value
+            RunService:UnbindFromRenderStep("ManaChecker")
 
-            -- Dọn dẹp kết nối cũ
-            if manaConnection then
-                manaConnection:Disconnect()
-                manaConnection = nil
+            if value then
+                print("🟩 [ManaCheck] Đang bật kiểm tra mana... (chờ 20s đầu)")
+                waitAfterReset()
+                RunService:BindToRenderStep("ManaChecker", Enum.RenderPriority.Last.Value, checkMana)
+            else
+                print("⛔ [ManaCheck] Đã tắt kiểm tra mana.")
             end
-
-            if charAddedConn then
-                charAddedConn:Disconnect()
-                charAddedConn = nil
-            end
-
-            if not enabled then return end
-
-            -- Nếu nhân vật đang tồn tại thì setup luôn
-            if player.Character then
-                setupCharacter(player.Character)
-            end
-
-            -- Gắn lại mỗi lần nhân vật mới
-            charAddedConn = player.CharacterAdded:Connect(setupCharacter)
-
-            -- Bắt đầu theo dõi
-            manaConnection = RunService.RenderStepped:Connect(manaCheckFunction)
         end
     })
 end
@@ -1128,17 +1062,26 @@ Tabs.Misc:AddButton({
     end
 })
 
-
-Tabs.Rejoin:AddInput("JobIdInput", {
+local jobIdInputBox = Tabs.Sever:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
-    Placeholder = "Enter Job ID !",
+    Placeholder = "Enter Job ID!",
     Callback = function(value)
         shared.jobIdInput = value
     end
 })
 
-Tabs.Rejoin:AddButton({
+-- Nút Clear Input
+Tabs.Sever:AddButton({
+    Title = "Clear Job ID Input",
+    Description = "",
+    Callback = function()
+        shared.jobIdInput = ""
+        jobIdInputBox:SetValue("")
+    end
+})
+
+Tabs.Sever:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
     Callback = function()
@@ -1147,8 +1090,8 @@ Tabs.Rejoin:AddButton({
 })
 
 Tabs.Misc:AddToggle("RedeemAllCodeToggle", {
-    Title = "Redeem All Code",
-    Description = "Can Not Turn OFF",
+    Title = "Redeem All Code [Can Not Turn OFF]",
+    Description = "",
     Default = false,
     Callback = function(value)
         if value then
@@ -1213,7 +1156,7 @@ local mapIds = {
 local selectedMapName = "Dressrosa"
 
 -- Dropdown chọn map
-Tabs.Sever:AddDropdown("MapSelector", {
+Tabs.Teleport:AddDropdown("MapSelector", {
     Title = "Select Map",
     Values = { "Dressrosa", "Wano", "Whole Cake", "Ranked Map", "AFK World" },
     Multi = false,
@@ -1224,7 +1167,7 @@ Tabs.Sever:AddDropdown("MapSelector", {
 })
 
 -- Nút Teleport
-Tabs.Sever:AddButton({
+Tabs.Teleport:AddButton({
     Title = "Teleport To Selected Map",
     Description = "Teleport To Selected Map",
     Callback = function()
@@ -1301,7 +1244,7 @@ Tabs.Rejoin:AddButton({
 })
 --Anti AFK
 Tabs.Misc:AddToggle("Anti AFK", {
-    Title = "Anti AFK [Can Not Turn OFF]",
+    Title = "Anti Kick When AFK Over 20 Minutes !",
     Default = false,
     Callback = function(value)
         if value then
@@ -1317,80 +1260,85 @@ end)
 })
 
 --Show Stats
+local screenGui, updateLoop
+
 Tabs.Misc:AddToggle("ShowStats", {
-    Title = "Show Stats [Can Not Turn OFF]",
+    Title = "Show Stats",
     Default = false,
     Callback = function(value)
-        ShowStatsEnabled = value
         shared.ShowStats = value
+
         if value then
-            local ShowStatsEnabled = false
-local Player = game.Players.LocalPlayer
-local mainData = Player:WaitForChild("MAIN_DATA", 10)
+            -- Nếu GUI đã tồn tại thì không tạo lại
+            if screenGui then
+                screenGui.Enabled = true
+                return
+            end
 
-if not mainData then
-    warn("MAIN_DATA not found!")
-    return
-end
+            local Player = game.Players.LocalPlayer
+            local mainData = Player:WaitForChild("MAIN_DATA", 10)
+            if not mainData then
+                warn("MAIN_DATA not found!")
+                return
+            end
 
--- Tạo GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MainDataDisplay"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = game.CoreGui
+            -- Tạo GUI
+            screenGui = Instance.new("ScreenGui")
+            screenGui.Name = "MainDataDisplay"
+            screenGui.ResetOnSpawn = false
+            screenGui.Parent = game.CoreGui
 
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(0, 200, 0, 200) -- Chiều rộng nhỏ lại
-textLabel.AutomaticSize = Enum.AutomaticSize.Y -- Tự mở rộng chiều cao theo nội dung
-textLabel.Position = UDim2.new(0, 10, 0, 10) -- Góc trái trên
-textLabel.TextXAlignment = Enum.TextXAlignment.Left
-textLabel.TextYAlignment = Enum.TextYAlignment.Top
-textLabel.BackgroundTransparency = 0.3
-textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-textLabel.TextColor3 = Color3.new(1, 1, 1)
-textLabel.TextSize = 14
-textLabel.Font = Enum.Font.SourceSans
-textLabel.TextWrapped = true -- Cho phép tự xuống dòng
-textLabel.Text = ""
-textLabel.Parent = screenGui
+            local textLabel = Instance.new("TextLabel")
+            textLabel.Size = UDim2.new(0, 200, 0, 200)
+            textLabel.AutomaticSize = Enum.AutomaticSize.Y
+            textLabel.Position = UDim2.new(0, 10, 0, 10)
+            textLabel.TextXAlignment = Enum.TextXAlignment.Left
+            textLabel.TextYAlignment = Enum.TextYAlignment.Top
+            textLabel.BackgroundTransparency = 0.3
+            textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
+            textLabel.TextColor3 = Color3.new(1, 1, 1)
+            textLabel.TextSize = 14
+            textLabel.Font = Enum.Font.SourceSans
+            textLabel.TextWrapped = true
+            textLabel.Text = ""
+            textLabel.Parent = screenGui
 
--- Cờ bật/tắt
-local enabled = true
+            -- Hàm cập nhật dữ liệu
+            local function updateData()
+                local info = ""
+                for _, v in pairs(mainData:GetChildren()) do
+                    pcall(function()
+                        info = info .. v.Name .. ": " .. tostring(v.Value) .. "\n"
+                    end)
+                end
+                textLabel.Text = info
+            end
 
--- Phím tắt bật/tắt GUI (nhấn G)
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-	if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
-		enabled = not enabled
-		screenGui.Enabled = enabled
-	end
-end)
+            -- Cập nhật mỗi 10 giây
+            updateLoop = task.spawn(function()
+                while screenGui and screenGui.Parent do
+                    updateData()
+                    task.wait(10)
+                end
+            end)
 
--- Hàm cập nhật GUI
-local function updateData()
-	local info = ""
-	for _, v in pairs(mainData:GetChildren()) do
-		pcall(function()
-			info = info .. v.Name .. ": " .. tostring(v.Value) .. "\n"
-		end)
-	end
-	textLabel.Text = info
-end
+            updateData()
 
--- Cập nhật ban đầu
-updateData()
+        else
+            -- Toggle OFF: xóa GUI và dừng loop
+            if screenGui then
+                screenGui:Destroy()
+                screenGui = nil
+            end
 
--- Cập nhật mỗi 10 giây
-task.spawn(function()
-	while true do
-		if enabled then
-			updateData()
-		end
-		wait(10)
-	end
-end)
+            if updateLoop then
+                task.cancel(updateLoop)
+                updateLoop = nil
+            end
         end
     end
 })
+
 --Teleport NPC
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -1427,7 +1375,7 @@ end
 local selectedNPCName = npcNames[1]
 
 -- Dropdown chọn NPC
-Tabs.Sever:AddDropdown("NPCSelector", {
+Tabs.Teleport:AddDropdown("NPCSelector", {
     Title = "Select NPC",
     Values = npcNames,
     Multi = false,
@@ -1438,7 +1386,7 @@ Tabs.Sever:AddDropdown("NPCSelector", {
 })
 
 -- Nút Teleport
-Tabs.Sever:AddButton({
+Tabs.Teleport:AddButton({
     Title = "Teleport To Selected NPC",
     Description = "Teleport To Selected NPC",
     Callback = function()
@@ -1489,7 +1437,7 @@ end
 local selectedArenaName = arenaNames[1]
 
 -- Dropdown chọn Arena
-Tabs.Sever:AddDropdown("ArenaSelector", {
+Tabs.Teleport:AddDropdown("ArenaSelector", {
     Title = "Select Arena",
     Values = arenaNames,
     Multi = false,
@@ -1500,7 +1448,7 @@ Tabs.Sever:AddDropdown("ArenaSelector", {
 })
 
 -- Nút Teleport đến Arena
-Tabs.Sever:AddButton({
+Tabs.Teleport:AddButton({
     Title = "Teleport To Selected Arena",
     Description = "Teleport To Selected Arena",
     Callback = function()
@@ -1521,7 +1469,7 @@ Tabs.Sever:AddButton({
 })
 
 --Sever Hop
-Tabs.Rejoin:AddButton({
+Tabs.Sever:AddButton({
     Title = "Sever Hop",
     Description = "Join Another Sever",
     Callback = function()
@@ -1582,7 +1530,7 @@ end
     end
 })
 --Sever Hop Less Player
-Tabs.Rejoin:AddButton({
+Tabs.Sever:AddButton({
     Title = "Sever Hop Less Player",
     Description = "Join Another Sever Less Player",
     Callback = function()
@@ -1725,180 +1673,213 @@ Tabs.Main:AddInput("TimeToWaitInput", {
         shared.timeToWait = tonumber(value) or 20
     end
 })
---Auto Find Boss
-Tabs.Main:AddToggle("Auto Find Boss", {
-	Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
-	Default = false,
-	Callback = function(value)
-		shared.AutoFindBoss = value
-		if value then
-			_G.AutoPressPlay_Find()
+-- Auto Find Boss
+local autoFindToggle
 
-			-- Đợi nhân vật vào game rồi hop server
-			task.spawn(function()
-				local player = game:GetService("Players").LocalPlayer
-				repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
+    Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
+    Default = false,
+    Callback = function(value)
+        shared.AutoFindBoss = value
 
-				local gui = player:WaitForChild("PlayerGui")
-				local function getServerMinute()
-					for _, g in ipairs(gui:GetDescendants()) do
-						if g:IsA("TextLabel") then
-							local text = g.Text
-							local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
-							if hour and minute and second then
-								print("🕒 Servertime:", hour, minute, second)
-								return tonumber(minute)
-							end
-						end
-					end
-					return nil
-				end
-
-				local function getServer()
-					local HttpService = game:GetService("HttpService")
-					local TeleportService = game:GetService("TeleportService")
-					local PlaceId = game.PlaceId
-					local JobId = game.JobId
-					local servers, cursor = {}, ""
-
-					while true do
-						local success, response = pcall(function()
-							return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
-						end)
-
-						if success then
-							local data = HttpService:JSONDecode(response)
-							for _, s in ipairs(data.data) do
-								if s.playing < s.maxPlayers and s.id ~= JobId then
-									table.insert(servers, s.id)
-								end
-							end
-							if data.nextPageCursor then
-								cursor = data.nextPageCursor
-								task.wait(1)
-							else
-								break
-							end
-						else
-							break
-						end
-					end
-
-					if #servers > 0 then
-						return servers[math.random(1, #servers)]
-					end
-					return nil
-				end
-
-				local minute = getServerMinute()
-				if minute and minute < (60 - shared.timeToWait) then
-					print("✅ Tiến hành hop server")
-					local serverId = getServer()
-					if serverId then
-						game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, serverId, player)
-					else
-						warn("⚠️ Không tìm được server phù hợp.")
-					end
-				else
-					print("⛔ Không hop vì đã đến giờ boss.")
-				end
-			end)
-		end
-	end
+        if value then
+            task.delay(0.2, AutoFindBossFunction) -- Tách hẳn ra
+        end
+    end
 })
+function AutoFindBossFunction()
+    _G.AutoPressPlay_Find()
 
-Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
+    local player = game:GetService("Players").LocalPlayer
+    repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+    local gui = player:WaitForChild("PlayerGui")
+
+    -- Chờ tới khi GUI hiện Servertime
+    local serverTimeTextLabel
+    while not serverTimeTextLabel do
+        for _, g in ipairs(gui:GetDescendants()) do
+            if g:IsA("TextLabel") and string.find(g.Text, "Servertime:") then
+                serverTimeTextLabel = g
+                break
+            end
+        end
+        task.wait(0.5)
+    end
+
+    -- Hàm lấy phút
+    local function getServerMinute()
+        local text = serverTimeTextLabel.Text
+        local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
+        if hour and minute and second then
+            print("🕒 Servertime:", hour, minute, second)
+            return tonumber(minute)
+        end
+        return nil
+    end
+
+    -- Hàm tìm server khác
+    local function getServer()
+        local HttpService = game:GetService("HttpService")
+        local PlaceId = game.PlaceId
+        local JobId = game.JobId
+        local servers, cursor = {}, ""
+
+        while true do
+            local success, response = pcall(function()
+                return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
+            end)
+
+            if success then
+                local data = HttpService:JSONDecode(response)
+                for _, s in ipairs(data.data) do
+                    if s.playing < s.maxPlayers and s.id ~= JobId then
+                        table.insert(servers, s.id)
+                    end
+                end
+                if data.nextPageCursor then
+                    cursor = data.nextPageCursor
+                    task.wait(1)
+                else
+                    break
+                end
+            else
+                break
+            end
+        end
+
+        if #servers > 0 then
+            return servers[math.random(1, #servers)]
+        end
+        return nil
+    end
+
+    -- Kiểm tra thời gian server
+    local minute = getServerMinute()
+    if minute and minute < (60 - shared.timeToWait) then
+        print("✅ Tiến hành hop server")
+        local serverId = getServer()
+        if serverId then
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, serverId, player)
+        else
+            warn("⚠️ Không tìm được server phù hợp.")
+        end
+    else
+        print("⛔ Không hop vì đã đến giờ boss. Tắt toggle.")
+        -- Lúc này đã ở ngoài callback nên SetValue an toàn
+        autoFindToggle:SetValue(false)
+    end
+end
+-- Auto Find Katakuri
+local autoFindKatakuriToggle
+
+autoFindKatakuriToggle = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
     Title = "Auto Find Boss (Katakuri)",
     Default = false,
     Callback = function(value)
         shared.AutoFindKatakuri = value
         if value then
-            _G.AutoPressPlay_Find()
-
-            task.spawn(function()
-                local Players = game:GetService("Players")
-                local HttpService = game:GetService("HttpService")
-                local TeleportService = game:GetService("TeleportService")
-                local player = Players.LocalPlayer
-                local PlaceId = game.PlaceId
-                local JobId = game.JobId
-
-                -- Đợi nhân vật vào game
-                repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-
-                -- Hàm lấy phút từ Servertime
-                local function getServerMinute()
-                    for _, gui in ipairs(player:WaitForChild("PlayerGui"):GetDescendants()) do
-                        if gui:IsA("TextLabel") then
-                            local text = gui.Text
-                            local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
-                            if hour and minute and second then
-                                print("🕒 Servertime:", hour, minute, second)
-                                return tonumber(minute)
-                            end
-                        end
-                    end
-                    warn("⚠️ Không tìm thấy Servertime từ GUI.")
-                    return nil
-                end
-
-                -- Hàm lấy server khác
-                local function getServer()
-                    local servers = {}
-                    local cursor = ""
-
-                    while true do
-                        local success, response = pcall(function()
-                            return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
-                        end)
-
-                        if success then
-                            local data = HttpService:JSONDecode(response)
-                            if data and data.data then
-                                for _, s in ipairs(data.data) do
-                                    if s.playing < s.maxPlayers and s.id ~= JobId then
-                                        table.insert(servers, s.id)
-                                    end
-                                end
-                                if data.nextPageCursor then
-                                    cursor = data.nextPageCursor
-                                    task.wait(1)
-                                else
-                                    break
-                                end
-                            else
-                                break
-                            end
-                        else
-                            warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
-                            break
-                        end
-                    end
-
-                    if #servers > 0 then
-                        return servers[math.random(1, #servers)]
-                    else
-                        return nil
-                    end
-                end
-
-                -- Kiểm tra và hop server nếu cần
-                local minute = getServerMinute()
-                if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
-                    print("✅ Tiến hành hop server.")
-                    local serverId = getServer()
-                    if serverId then
-                        TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
-                    else
-                        warn("⚠️ Không tìm được server phù hợp.")
-                    end
-                else
-                    print("⛔ Trong khoảng thời gian boss, không hop.")
-                end
-            end)
+            task.delay(0.2, AutoFindKatakuriFunction)
         end
     end
 })
+
+function AutoFindKatakuriFunction()
+    _G.AutoPressPlay_Find()
+
+    local Players = game:GetService("Players")
+    local HttpService = game:GetService("HttpService")
+    local TeleportService = game:GetService("TeleportService")
+    local player = Players.LocalPlayer
+    local PlaceId = game.PlaceId
+    local JobId = game.JobId
+
+    -- Đợi nhân vật vào game
+    repeat task.wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+    local gui = player:WaitForChild("PlayerGui")
+
+    -- Chờ đến khi có TextLabel chứa "Servertime:"
+    local serverTimeTextLabel
+    while not serverTimeTextLabel do
+        for _, g in ipairs(gui:GetDescendants()) do
+            if g:IsA("TextLabel") and string.find(g.Text, "Servertime:") then
+                serverTimeTextLabel = g
+                break
+            end
+        end
+        task.wait(0.5)
+    end
+
+    -- Hàm lấy phút từ Servertime
+    local function getServerMinute()
+        local text = serverTimeTextLabel.Text
+        local hour, minute, second = string.match(text, "Servertime:%s*(%d+):(%d+):(%d+)")
+        if hour and minute and second then
+            print("🕒 Servertime:", hour, minute, second)
+            return tonumber(minute)
+        end
+        warn("⚠️ Không đọc được Servertime.")
+        return nil
+    end
+
+    -- Hàm lấy server khác
+    local function getServer()
+        local servers = {}
+        local cursor = ""
+
+        while true do
+            local success, response = pcall(function()
+                return game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100&cursor=" .. cursor)
+            end)
+
+            if success then
+                local data = HttpService:JSONDecode(response)
+                if data and data.data then
+                    for _, s in ipairs(data.data) do
+                        if s.playing < s.maxPlayers and s.id ~= JobId then
+                            table.insert(servers, s.id)
+                        end
+                    end
+                    if data.nextPageCursor then
+                        cursor = data.nextPageCursor
+                        task.wait(1)
+                    else
+                        break
+                    end
+                else
+                    break
+                end
+            else
+                warn("⚠️ Gặp lỗi khi gửi yêu cầu HTTP hoặc bị chặn.")
+                break
+            end
+        end
+
+        if #servers > 0 then
+            return servers[math.random(1, #servers)]
+        else
+            return nil
+        end
+    end
+
+    -- Kiểm tra và hop server nếu cần
+    local minute = getServerMinute()
+    if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
+        print("✅ Tiến hành hop server.")
+        local serverId = getServer()
+        if serverId then
+            TeleportService:TeleportToPlaceInstance(PlaceId, serverId, player)
+        else
+            warn("⚠️ Không tìm được server phù hợp.")
+        end
+    else
+        print("⛔ Trong khoảng thời gian boss. Tắt toggle.")
+        task.delay(0.1, function()
+            autoFindKatakuriToggle:SetValue(false)
+        end)
+    end
+end
 
 -- Set Up Auto Spin
 _G.autoSpinEnabled = false
