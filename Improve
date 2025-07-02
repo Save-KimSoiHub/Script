@@ -1129,6 +1129,7 @@ Tabs.Misc:AddButton({
     end
 })
 
+-- Input: Nhập Job ID
 Tabs.Sever:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
@@ -1138,6 +1139,20 @@ Tabs.Sever:AddInput("JobIdInput", {
     end
 })
 
+-- Nút Clear: Xóa nội dung input
+Tabs.Sever:AddButton({
+    Title = "Clear Job ID",
+    Description = "",
+    Callback = function()
+        shared.jobIdInput = ""
+        local Input = Window:GetElement("JobIdInput")
+        if Input then
+            Input:SetValue("")
+        end
+    end
+})
+
+-- Nút Join: Teleport tới Job ID đã nhập
 Tabs.Sever:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
