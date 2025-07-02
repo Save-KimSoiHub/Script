@@ -33,6 +33,7 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Teleport = Window:AddTab({ Title = "Server", Icon = "" }),
     Sever = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin-Server", Icon = "" }),
     Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
