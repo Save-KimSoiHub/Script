@@ -1129,7 +1129,7 @@ Tabs.Misc:AddButton({
     end
 })
 
-Tabs.Server:AddInput("JobIdInput", {
+Tabs.Rejoin:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
     Placeholder = "Enter Job ID !",
@@ -1138,7 +1138,7 @@ Tabs.Server:AddInput("JobIdInput", {
     end
 })
 
-Tabs.Server:AddButton({
+Tabs.Rejoin:AddButton({
     Title = "Join With Job ID Entered !",
     Description = "",
     Callback = function()
@@ -1268,7 +1268,7 @@ Tabs.Rejoin:AddInput("MinuteInput", {
     end
 })
 
-Tabs.Rejoin:AddInput("SecondInput", {
+Tabs.Server:AddInput("SecondInput", {
     Title = "Second",
     Default = "0",
     Placeholder = "Enter A Second To Rejoin",
@@ -1278,7 +1278,7 @@ Tabs.Rejoin:AddInput("SecondInput", {
     end
 })
 
-Tabs.Rejoin:AddButton({
+Tabs.Server:AddButton({
     Title = "Click To Auto Rejoin",
     Description = "Rejoin After Set Time (Default: 0 Seconds)",
     Callback = function()
@@ -1432,7 +1432,7 @@ end
 local selectedNPCName = npcNames[1]
 
 -- Dropdown chọn NPC
-Tabs.Teleport:AddDropdown("NPCSelector", {
+Tabs.Sever:AddDropdown("NPCSelector", {
     Title = "Select NPC",
     Values = npcNames,
     Multi = false,
@@ -1443,7 +1443,7 @@ Tabs.Teleport:AddDropdown("NPCSelector", {
 })
 
 -- Nút Teleport
-Tabs.Teleport:AddButton({
+Tabs.Sever:AddButton({
     Title = "Teleport To Selected NPC",
     Description = "Teleport To Selected NPC",
     Callback = function()
@@ -1494,7 +1494,7 @@ end
 local selectedArenaName = arenaNames[1]
 
 -- Dropdown chọn Arena
-Tabs.Teleport:AddDropdown("ArenaSelector", {
+Tabs.Sever:AddDropdown("ArenaSelector", {
     Title = "Select Arena",
     Values = arenaNames,
     Multi = false,
@@ -1505,7 +1505,7 @@ Tabs.Teleport:AddDropdown("ArenaSelector", {
 })
 
 -- Nút Teleport đến Arena
-Tabs.Teleport:AddButton({
+Tabs.Sever:AddButton({
     Title = "Teleport To Selected Arena",
     Description = "Teleport To Selected Arena",
     Callback = function()
