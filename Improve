@@ -1147,8 +1147,8 @@ Tabs.Rejoin:AddButton({
 })
 
 Tabs.Misc:AddToggle("RedeemAllCodeToggle", {
-    Title = "Redeem All Code",
-    Description = "Can Not Turn OFF",
+    Title = "Redeem All Code [Can Not Turn OFF]",
+    Description = "",
     Default = false,
     Callback = function(value)
         if value then
