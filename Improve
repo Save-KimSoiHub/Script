@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -832,7 +832,7 @@ Tabs.Main:AddInput("ManaToReset", {
     end
 })
 
--- Auto Check Mana (gọn, chỉ bắt đầu khi có tọa độ nhân vật)
+-- Auto Check Mana (chờ HumanoidRootPart rồi mới check)
 do
     local RunService = game:GetService("RunService")
     local player = game:GetService("Players").LocalPlayer
@@ -842,17 +842,13 @@ do
     local function waitAfterReset()
         task.spawn(function()
             local char = player.Character or player.CharacterAdded:Wait()
-            local hrp = nil
-
-            -- Chờ đến khi nhân vật có tọa độ hợp lệ
-            while true do
-                hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp and hrp.Position.Magnitude > 0 then break end
-                task.wait(0.5)
+            local hrp = char:WaitForChild("HumanoidRootPart", 10)
+            if hrp then
+                canAct = true
+                print("🟢 [ManaCheck] Đã sẵn sàng kiểm tra lại. Vị trí:", hrp.Position)
+            else
+                warn("⚠️ [ManaCheck] Không tìm thấy HumanoidRootPart sau reset.")
             end
-
-            canAct = true
-            print("🟢 [ManaCheck] Đã sẵn sàng kiểm tra lại. Vị trí:", hrp.Position)
         end)
     end
 
@@ -882,7 +878,7 @@ do
             RunService:UnbindFromRenderStep("ManaChecker")
 
             if value then
-                print("🟩 [ManaCheck] Đang bật kiểm tra mana... (chờ nhân vật có tọa độ)")
+                print("🟩 [ManaCheck] Đang bật kiểm tra mana... (chờ nhân vật)")
                 waitAfterReset()
                 RunService:BindToRenderStep("ManaChecker", Enum.RenderPriority.Last.Value, checkMana)
             else
