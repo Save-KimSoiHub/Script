@@ -1130,7 +1130,7 @@ Tabs.Misc:AddButton({
 })
 
 -- Lưu lại input vào biến để sau này gọi SetValue
-local jobIdInputBox = Tabs.Server:AddInput("JobIdInput", {
+local jobIdInputBox = Tabs.Sever:AddInput("JobIdInput", {
     Title = "Enter Job ID Here!",
     Default = "",
     Placeholder = "Enter Job ID!",
@@ -1140,7 +1140,7 @@ local jobIdInputBox = Tabs.Server:AddInput("JobIdInput", {
 })
 
 -- Nút Clear Input
-Tabs.Server:AddButton({
+Tabs.Sever:AddButton({
     Title = "Clear Job ID Input",
     Description = "",
     Callback = function()
