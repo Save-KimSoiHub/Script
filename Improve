@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -690,7 +690,7 @@ startSkillLoop()
 
 -- Auto Boss
 Tabs.Main:AddToggle("AutoBossToggle", {
-    Title = "Auto Boss (Turn On With Auto Farm)",
+    Title = "Auto Attack Boss When Boss Spawn (Turn On With Auto Farm)",
     Default = false,
     Callback = function(value)
         autoBossEnabled = value
