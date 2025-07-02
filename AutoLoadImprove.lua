@@ -1,10 +1,10 @@
--- !
+-- !!!
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {} do
 	SaveManager.Folder = "FluentSettings"
 	SaveManager.Ignore = {}
-	SaveManager.AutoLoadEnabled = true
+	SaveManager.AutoLoadEnabled = false
 	SaveManager.LastConfigFile = SaveManager.Folder .. "/settings/lastconfig.txt"
 	SaveManager.AutoLoadStateFile = SaveManager.Folder .. "/settings/autoload_state.txt"
 
@@ -144,24 +144,21 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:AutoLoadLastUsed()
-		-- Load autoload flag from file
-		if isfile(self.AutoLoadStateFile) then
-			local state = readfile(self.AutoLoadStateFile)
-			self.AutoLoadEnabled = (state == "true")
-		else
-			self.AutoLoadEnabled = true -- mặc định là true nếu chưa có file
-		end
+	if isfile(self.AutoLoadStateFile) then
+		local state = readfile(self.AutoLoadStateFile)
+		self.AutoLoadEnabled = (state == "true")
+	end -- nếu chưa có file thì giữ nguyên giá trị mặc định (false)
 
-		if self.AutoLoadEnabled and isfile(self.LastConfigFile) then
-			local name = readfile(self.LastConfigFile)
-			local success, err = self:Load(name)
-			if success then
-				warn("[SaveManager] Auto-loaded last config:", name)
-			else
-				warn("[SaveManager] Failed to auto-load last config:", err)
-			end
+	if self.AutoLoadEnabled and isfile(self.LastConfigFile) then
+		local name = readfile(self.LastConfigFile)
+		local success, err = self:Load(name)
+		if success then
+			warn("[SaveManager] Auto-loaded last config:", name)
+		else
+			warn("[SaveManager] Failed to auto-load last config:", err)
 		end
 	end
+end
 
 	function SaveManager:BuildConfigSection(tab)
 		assert(self.Library, "Must set SaveManager.Library")
