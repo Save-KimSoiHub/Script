@@ -1,3 +1,4 @@
+-- !
 local httpService = game:GetService("HttpService")
 
 local SaveManager = {} do
@@ -5,6 +6,7 @@ local SaveManager = {} do
 	SaveManager.Ignore = {}
 	SaveManager.AutoLoadEnabled = true
 	SaveManager.LastConfigFile = SaveManager.Folder .. "/settings/lastconfig.txt"
+	SaveManager.AutoLoadStateFile = SaveManager.Folder .. "/settings/autoload_state.txt"
 
 	SaveManager.Parser = {
 		Toggle = {
@@ -76,7 +78,7 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:SetFolder(folder)
-		self.Folder = folder;
+		self.Folder = folder
 		self:BuildFolderTree()
 	end
 
@@ -142,6 +144,14 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:AutoLoadLastUsed()
+		-- Load autoload flag from file
+		if isfile(self.AutoLoadStateFile) then
+			local state = readfile(self.AutoLoadStateFile)
+			self.AutoLoadEnabled = (state == "true")
+		else
+			self.AutoLoadEnabled = true -- mặc định là true nếu chưa có file
+		end
+
 		if self.AutoLoadEnabled and isfile(self.LastConfigFile) then
 			local name = readfile(self.LastConfigFile)
 			local success, err = self:Load(name)
@@ -158,10 +168,11 @@ local SaveManager = {} do
 		local section = tab:AddSection("Configuration")
 
 		section:AddToggle("SaveManager_AutoLoad", {
-			Title = "Auto Load Last Used Config (Always Turn On)",
+			Title = "Auto Load Last Used Config",
 			Default = true,
 			Callback = function(state)
 				SaveManager.AutoLoadEnabled = state
+				writefile(SaveManager.AutoLoadStateFile, state and "true" or "false")
 			end
 		})
 
@@ -194,6 +205,7 @@ local SaveManager = {} do
 			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
 		end})
 
+		-- Ignore these keys from being saved into config
 		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName", "SaveManager_AutoLoad" })
 	end
 
