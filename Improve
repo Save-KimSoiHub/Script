@@ -165,62 +165,6 @@ assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
 
--- ✅ FruitManager dùng nội bộ (KHÔNG return)
-
-local FruitManager = {}
-
-local player = game:GetService("Players").LocalPlayer
-local currentFruit = nil
-local currentSlotValueConn = nil
-local isWatching = false
-
-local function getCurrentFruit()
-    return currentFruit
-end
-
-local function updateCurrentFruit()
-    local mainData = player:FindFirstChild("MAIN_DATA")
-    if not mainData then return end
-
-    local slot = mainData:FindFirstChild("Slot")
-    if not slot then return end
-
-    local slotIndex = tostring(slot.Value)
-    local slotValue = mainData.Slots:FindFirstChild(slotIndex)
-    if not slotValue then
-        currentFruit = nil
-        return
-    end
-
-    currentFruit = slotValue.Value
-
-    if currentSlotValueConn then
-        currentSlotValueConn:Disconnect()
-    end
-
-    currentSlotValueConn = slotValue:GetPropertyChangedSignal("Value"):Connect(function()
-        currentFruit = slotValue.Value
-        print("🔥 Trái trong slot thay đổi:", currentFruit)
-    end)
-end
-
-local function startWatchingFruit()
-    if isWatching then return end
-    isWatching = true
-
-    local mainData = player:WaitForChild("MAIN_DATA", 10)
-    if not mainData then return end
-    local slot = mainData:WaitForChild("Slot", 5)
-    if not slot then return end
-
-    slot:GetPropertyChangedSignal("Value"):Connect(updateCurrentFruit)
-    updateCurrentFruit()
-end
-
--- Gắn vào biến dùng chung
-FruitManager.Start = startWatchingFruit
-FruitManager.GetFruit = getCurrentFruit
-
 Tabs.Main:AddParagraph({
     Title = "Turn On Auto Load Last Used Config In Setting !",
     Content = ""
@@ -1936,15 +1880,15 @@ function AutoFindKatakuriFunction()
         end)
     end
 end
-
--- Set Up Auto Spin
+--Auto Spin
 local player = game:GetService("Players").LocalPlayer
+local currentFruit = nil
 
+-- Dropdown chọn trái cần dừng khi spin trúng
 _G.autoSpinEnabled = false
 _G.selectedFruitName = {}
 _G.selectedSpinType = "Normal"
 
--- Dropdown chọn trái cần dừng khi spin trúng
 Tabs.Fruit:AddDropdown("FruitSelector", {
     Title = "Select Fruit For Stop Spin",
     Values = {
@@ -2005,15 +1949,36 @@ local function isRare(fruitName)
     return false
 end
 
+-- Hàm cập nhật trái đang cầm
+local function updateCurrentFruit()
+    local mainData = player:FindFirstChild("MAIN_DATA")
+    if not mainData then return end
+    local currentSlot = mainData:FindFirstChild("Slot")
+    if not currentSlot then return end
+    local slotValue = mainData.Slots:FindFirstChild(tostring(currentSlot.Value))
+    currentFruit = slotValue and slotValue.Value or nil
+end
+
+-- Theo dõi thay đổi trái đang cầm
+local function watchSlotChanges()
+    local mainData = player:WaitForChild("MAIN_DATA", 10)
+    if not mainData then return end
+    local slot = mainData:WaitForChild("Slot", 5)
+    if not slot then return end
+    slot:GetPropertyChangedSignal("Value"):Connect(updateCurrentFruit)
+    updateCurrentFruit()
+end
+
+watchSlotChanges()
+
 -- Hàm chạy Auto Spin
 function startAutoSpin()
     task.spawn(function()
         print("Auto Spin đang chạy...")
 
-        -- Kiểm tra trái hiện tại
-        local fruit = FruitManager.GetFruit()
-        if fruit and isRare(fruit) then
-            print("Đã có trái hiếm trong tay:", fruit, "-> Không quay.")
+        -- 🔎 Kiểm tra trái đang cầm trước khi spin
+        if currentFruit and isRare(currentFruit) then
+            print("Đã có trái hiếm trong tay:", currentFruit, "-> Không quay.")
             _G.autoSpinEnabled = false
             if autoSpinToggleRef and autoSpinToggleRef.SetValue then
                 autoSpinToggleRef:SetValue(false)
