@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -165,7 +165,9 @@ assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
 
--- 📦 FruitManager.lua (hoặc bạn để chung trong main script cũng được)
+-- ✅ FruitManager dùng nội bộ (KHÔNG return)
+
+local FruitManager = {}
 
 local player = game:GetService("Players").LocalPlayer
 local currentFruit = nil
@@ -192,12 +194,10 @@ local function updateCurrentFruit()
 
     currentFruit = slotValue.Value
 
-    -- Hủy theo dõi slotValue cũ
     if currentSlotValueConn then
         currentSlotValueConn:Disconnect()
     end
 
-    -- Theo dõi thay đổi trong slot hiện tại
     currentSlotValueConn = slotValue:GetPropertyChangedSignal("Value"):Connect(function()
         currentFruit = slotValue.Value
         print("🔥 Trái trong slot thay đổi:", currentFruit)
@@ -217,10 +217,9 @@ local function startWatchingFruit()
     updateCurrentFruit()
 end
 
-return {
-    Start = startWatchingFruit,
-    GetFruit = getCurrentFruit,
-}
+-- Gắn vào biến dùng chung
+FruitManager.Start = startWatchingFruit
+FruitManager.GetFruit = getCurrentFruit
 
 Tabs.Main:AddParagraph({
     Title = "Turn On Auto Load Last Used Config In Setting !",
