@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1882,19 +1882,22 @@ function AutoFindKatakuriFunction()
 end
 
 -- Set Up Auto Spin
-_G.autoSpinEnabled = false
-_G.selectedFruitName = {}
-_G.selectedSpinType = "Normal"  -- Mặc định spin Normal
+local player = game:GetService("Players").LocalPlayer
+local currentFruit = nil
 
 -- Dropdown chọn trái cần dừng khi spin trúng
+_G.autoSpinEnabled = false
+_G.selectedFruitName = {}
+_G.selectedSpinType = "Normal"
+
 Tabs.Fruit:AddDropdown("FruitSelector", {
     Title = "Select Fruit For Stop Spin",
     Values = {
-    "Okuchi", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
-    "Venom", "FlameV2", "LightV2", "MagmaV2", "IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix",
-    "Gravity", "Quake", "Snow", "Love", "String", "Paw", "Magma", "Flame", "Light", "Ash", 
-    "Darkness", "Ice", "Bomb", "Gas", "Falcon", "Rubber", "Smoke", "Sand", "Chop", "Barrier"
-},
+        "Okuchi", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
+        "Venom", "FlameV2", "LightV2", "MagmaV2", "IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix",
+        "Gravity", "Quake", "Snow", "Love", "String", "Paw", "Magma", "Flame", "Light", "Ash", 
+        "Darkness", "Ice", "Bomb", "Gas", "Falcon", "Rubber", "Smoke", "Sand", "Chop", "Barrier"
+    },
     Multi = true,
     Default = {},
     Callback = function(value)
@@ -1947,16 +1950,47 @@ local function isRare(fruitName)
     return false
 end
 
+-- Hàm cập nhật trái đang cầm
+local function updateCurrentFruit()
+    local mainData = player:FindFirstChild("MAIN_DATA")
+    if not mainData then return end
+    local currentSlot = mainData:FindFirstChild("Slot")
+    if not currentSlot then return end
+    local slotValue = mainData.Slots:FindFirstChild(tostring(currentSlot.Value))
+    currentFruit = slotValue and slotValue.Value or nil
+end
+
+-- Theo dõi thay đổi trái đang cầm
+local function watchSlotChanges()
+    local mainData = player:WaitForChild("MAIN_DATA", 10)
+    if not mainData then return end
+    local slot = mainData:WaitForChild("Slot", 5)
+    if not slot then return end
+    slot:GetPropertyChangedSignal("Value"):Connect(updateCurrentFruit)
+    updateCurrentFruit()
+end
+
+watchSlotChanges()
+
 -- Hàm chạy Auto Spin
 function startAutoSpin()
     task.spawn(function()
         print("Auto Spin đang chạy...")
+
+        -- 🔎 Kiểm tra trái đang cầm trước khi spin
+        if currentFruit and isRare(currentFruit) then
+            print("Đã có trái hiếm trong tay:", currentFruit, "-> Không quay.")
+            _G.autoSpinEnabled = false
+            if autoSpinToggleRef and autoSpinToggleRef.SetValue then
+                autoSpinToggleRef:SetValue(false)
+            end
+            return
+        end
+
         while _G.autoSpinEnabled do
-            local spinArgs = {Type = {}}
+            local spinArgs = {}
             if _G.selectedSpinType == "Fast" then
                 spinArgs = {Type = "Fast"}
-            else
-                spinArgs = {}
             end
 
             local args = {"FruitsHandler", "Spin", spinArgs}
@@ -1964,10 +1998,10 @@ function startAutoSpin()
             print("Kết quả spin trả về từ server:", result)
 
             if result and isRare(result) then
-                print("DỪNG! Gặp trái hiếm:", result)
+                print("🎉 DỪNG! Gặp trái hiếm:", result)
                 _G.autoSpinEnabled = false
                 if autoSpinToggleRef and autoSpinToggleRef.SetValue then
-                    autoSpinToggleRef:SetValue(false) -- Gạt toggle về OFF
+                    autoSpinToggleRef:SetValue(false)
                 end
                 break
             else
