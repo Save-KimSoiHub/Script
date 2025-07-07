@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -29,22 +29,26 @@ local Window = Fluent:CreateWindow({
     Theme = "Default",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
--- 🔧 XÓA HIỆU ỨNG MỜ (nếu có)
+-- 🔧 XÓA TẤT CẢ HIỆU ỨNG GÂY MỜ (Blur, DepthOfField, SunRays...)
 task.spawn(function()
     while true do
         for _, v in ipairs(game:GetService("Lighting"):GetChildren()) do
-            if v:IsA("BlurEffect") then
+            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
                 v:Destroy()
             end
         end
         for _, v in ipairs(workspace.CurrentCamera:GetChildren()) do
-            if v:IsA("BlurEffect") then
+            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
                 v:Destroy()
             end
         end
-        task.wait(3)
+        task.wait(2)
     end
 end)
+
+game:GetService("Lighting").FogEnd = 1000000
+game:GetService("Lighting").Blur = nil
+game:GetService("Lighting").DepthOfField = nil
 
 -- Tabs
 local Tabs = {
