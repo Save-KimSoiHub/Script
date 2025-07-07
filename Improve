@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2511,8 +2511,7 @@ Tabs.Discord:AddButton({
     end
 })
 
--- 🧹 Xóa hiệu ứng mờ 1 lần duy nhất
-task.delay(1, function() -- đợi 1 giây để Fluent tạo UI xong
+task.delay(5, function() -- đợi 5 giây để Fluent và UI game tạo xong
     local lighting = game:GetService("Lighting")
     local camera = workspace.CurrentCamera
 
