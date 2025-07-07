@@ -29,40 +29,26 @@ local Window = Fluent:CreateWindow({
     Theme = "Default",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
--- Reset các hiệu ứng gây mờ
-workspace.CurrentCamera.FieldOfView = 70
-game:GetService("Lighting").FogEnd = 1000000
-game:GetService("Lighting").Brightness = 2
-game:GetService("Lighting").GlobalShadows = false
-game:GetService("Lighting").OutdoorAmbient = Color3.new(1, 1, 1)
+-- Dọn sạch hiệu ứng mờ 1 lần duy nhất
+task.delay(1, function() -- đợi 1 giây để đảm bảo các UI đã load xong
+    local lighting = game:GetService("Lighting")
+    local camera = workspace.CurrentCamera
 
--- Xoá mọi loại Blur, DepthOfField, UI gây mờ
-task.spawn(function()
-    while true do
-        for _, v in ipairs(game:GetService("Lighting"):GetChildren()) do
-            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
-                v:Destroy()
-            end
+    for _, v in ipairs(lighting:GetChildren()) do
+        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
+            v:Destroy()
         end
-        for _, v in ipairs(workspace.CurrentCamera:GetChildren()) do
-            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
-                v:Destroy()
-            end
-        end
-        for _, gui in pairs(game:GetService("CoreGui"):GetChildren()) do
-            if gui:IsA("ScreenGui") then
-                for _, obj in pairs(gui:GetDescendants()) do
-                    if obj:IsA("UIBlur") or obj:IsA("BlurEffect") or obj:IsA("DepthOfFieldEffect") then
-                        obj:Destroy()
-                    end
-                    if obj:IsA("ImageLabel") and obj.ImageTransparency < 0.5 then
-                        obj.ImageTransparency = 1
-                    end
-                end
-            end
-        end
-        task.wait(2)
     end
+    for _, v in ipairs(camera:GetChildren()) do
+        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
+            v:Destroy()
+        end
+    end
+
+    -- Reset camera và ánh sáng
+    camera.FieldOfView = 70
+    lighting.FogEnd = 1e6
+    lighting.GlobalShadows = false
 end)
 
 -- Tabs
