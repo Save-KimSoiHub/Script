@@ -29,6 +29,23 @@ local Window = Fluent:CreateWindow({
     Theme = "Default",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
+-- 🔧 XÓA HIỆU ỨNG MỜ (nếu có)
+task.spawn(function()
+    while true do
+        for _, v in ipairs(game:GetService("Lighting"):GetChildren()) do
+            if v:IsA("BlurEffect") then
+                v:Destroy()
+            end
+        end
+        for _, v in ipairs(workspace.CurrentCamera:GetChildren()) do
+            if v:IsA("BlurEffect") then
+                v:Destroy()
+            end
+        end
+        task.wait(3)
+    end
+end)
+
 -- Tabs
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
