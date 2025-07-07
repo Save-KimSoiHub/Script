@@ -29,6 +29,25 @@ local Window = Fluent:CreateWindow({
     Theme = "Default",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
+
+-- Tabs
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Teleport = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
+    Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
+    Player = Window:AddTab({ Title = "Player", Icon = "" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
+    Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
+    Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
+    Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
+    Discord = Window:AddTab({ Title = "Discord",Icon = ""})
+}
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+SaveManager:BuildConfigSection(Tabs.Setting)
+
 -- Dọn sạch hiệu ứng mờ 1 lần duy nhất
 task.delay(1, function() -- đợi 1 giây để đảm bảo các UI đã load xong
     local lighting = game:GetService("Lighting")
@@ -50,24 +69,6 @@ task.delay(1, function() -- đợi 1 giây để đảm bảo các UI đã load 
     lighting.FogEnd = 1e6
     lighting.GlobalShadows = false
 end)
-
--- Tabs
-local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Teleport = Window:AddTab({ Title = "Teleport-Map", Icon = "" }),
-    Fruit = Window:AddTab({ Title = "Fruit", Icon = "" }),
-    Player = Window:AddTab({ Title = "Player", Icon = "" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
-    Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
-    Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
-    Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
-    Discord = Window:AddTab({ Title = "Discord",Icon = ""})
-}
-InterfaceManager:SetLibrary(Fluent)
-SaveManager:SetLibrary(Fluent)
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({})
-SaveManager:BuildConfigSection(Tabs.Setting)
 
 -- Toggle Icon
 local ScreenGui = Instance.new("ScreenGui")
