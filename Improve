@@ -30,6 +30,36 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
+-- 🧠 Dọn hiệu ứng mờ sau 2 giây, thực hiện trong 5 giây đầu rồi tự dừng
+task.spawn(function()
+    task.wait(2) -- ⏳ Chờ 2 giây trước khi bắt đầu xoá
+
+    local lighting = game:GetService("Lighting")
+    local camera = workspace.CurrentCamera
+
+    for i = 1, 10 do  -- Dọn 10 lần, mỗi 0.5 giây
+        -- Xoá hiệu ứng mờ trong Lighting
+        for _, v in ipairs(lighting:GetChildren()) do
+            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
+                v:Destroy()
+            end
+        end
+        -- Xoá hiệu ứng mờ trong Camera
+        for _, v in ipairs(camera:GetChildren()) do
+            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
+                v:Destroy()
+            end
+        end
+
+        -- Reset FOV & ánh sáng
+        camera.FieldOfView = 70
+        lighting.FogEnd = 1e6
+        lighting.GlobalShadows = false
+
+        task.wait(0.5)
+    end
+end)
+
 -- Tabs
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
@@ -47,28 +77,6 @@ SaveManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({})
 SaveManager:BuildConfigSection(Tabs.Setting)
-
--- Dọn sạch hiệu ứng mờ 1 lần duy nhất
-task.delay(1, function() -- đợi 1 giây để đảm bảo các UI đã load xong
-    local lighting = game:GetService("Lighting")
-    local camera = workspace.CurrentCamera
-
-    for _, v in ipairs(lighting:GetChildren()) do
-        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
-            v:Destroy()
-        end
-    end
-    for _, v in ipairs(camera:GetChildren()) do
-        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
-            v:Destroy()
-        end
-    end
-
-    -- Reset camera và ánh sáng
-    camera.FieldOfView = 70
-    lighting.FogEnd = 1e6
-    lighting.GlobalShadows = false
-end)
 
 -- Toggle Icon
 local ScreenGui = Instance.new("ScreenGui")
