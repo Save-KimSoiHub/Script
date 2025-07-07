@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -30,34 +30,25 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- 🧠 Dọn hiệu ứng mờ sau 2 giây, thực hiện trong 5 giây đầu rồi tự dừng
-task.spawn(function()
-    task.wait(2) -- ⏳ Chờ 2 giây trước khi bắt đầu xoá
-
+task.delay(2, function()
     local lighting = game:GetService("Lighting")
     local camera = workspace.CurrentCamera
 
-    for i = 1, 10 do  -- Dọn 10 lần, mỗi 0.5 giây
-        -- Xoá hiệu ứng mờ trong Lighting
-        for _, v in ipairs(lighting:GetChildren()) do
-            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
-                v:Destroy()
-            end
+    for _, v in ipairs(lighting:GetChildren()) do
+        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
+            v:Destroy()
         end
-        -- Xoá hiệu ứng mờ trong Camera
-        for _, v in ipairs(camera:GetChildren()) do
-            if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
-                v:Destroy()
-            end
-        end
-
-        -- Reset FOV & ánh sáng
-        camera.FieldOfView = 70
-        lighting.FogEnd = 1e6
-        lighting.GlobalShadows = false
-
-        task.wait(0.5)
     end
+    for _, v in ipairs(camera:GetChildren()) do
+        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
+            v:Destroy()
+        end
+    end
+
+    -- Reset FOV & ánh sáng
+    camera.FieldOfView = 70
+    lighting.FogEnd = 1e6
+    lighting.GlobalShadows = false
 end)
 
 -- Tabs
