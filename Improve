@@ -1892,7 +1892,7 @@ _G.selectedSpinType = "Normal"
 Tabs.Fruit:AddDropdown("FruitSelector", {
     Title = "Select Fruit For Stop Spin",
     Values = {
-        "Okuchi", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
+        "Okuchi", "Soul", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
         "Venom", "FlameV2", "LightV2", "MagmaV2", "IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix",
         "Gravity", "Quake", "Snow", "Love", "String", "Paw", "Magma", "Flame", "Light", "Ash", 
         "Darkness", "Ice", "Bomb", "Gas", "Falcon", "Rubber", "Smoke", "Sand", "Chop", "Barrier"
@@ -2080,7 +2080,7 @@ task.wait(10)
 --Auto Spin + Thông Báo
 
 local rareFruits = {
-    "DarkXQuake", "DragonV2", "DoughV2", "Nika", "LeopardV2",
+    "DarkXQuake", "Soul", "DragonV2", "DoughV2", "Nika", "LeopardV2",
     "Ope", "Okuchi", "Soul", "Lightning"
 }
 
@@ -2237,7 +2237,7 @@ task.wait(10)
 --Auto Spin + Thông Báo
 
 local rareFruits = {
-    "DarkXQuake", "DragonV2", "DoughV2", "Nika", "LeopardV2",
+    "DarkXQuake", "Soul", "DragonV2", "DoughV2", "Nika", "LeopardV2",
     "Ope", "Okuchi", "Soul", "Lightning","Leopard", "Dough", "Venom", "FlameV2", "LightV2", "MagmaV2","IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix", "Gravity", "Quake"
 }
 
