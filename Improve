@@ -2511,27 +2511,6 @@ Tabs.Discord:AddButton({
     end
 })
 
-task.delay(5, function() -- đợi 5 giây để Fluent và UI game tạo xong
-    local lighting = game:GetService("Lighting")
-    local camera = workspace.CurrentCamera
-
-    for _, v in ipairs(lighting:GetChildren()) do
-        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
-            v:Destroy()
-        end
-    end
-    for _, v in ipairs(camera:GetChildren()) do
-        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
-            v:Destroy()
-        end
-    end
-
-    -- Reset FOV & ánh sáng mặc định
-    camera.FieldOfView = 70
-    lighting.FogEnd = 1e6
-    lighting.GlobalShadows = false
-end)
-
 task.defer(function()
     -- Nếu chưa có file, tạo AutoSave
     if not isfile(SaveManager.LastConfigFile) then
