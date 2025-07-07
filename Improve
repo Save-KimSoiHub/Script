@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -29,27 +29,6 @@ local Window = Fluent:CreateWindow({
     Theme = "Default",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
-
-task.delay(2, function()
-    local lighting = game:GetService("Lighting")
-    local camera = workspace.CurrentCamera
-
-    for _, v in ipairs(lighting:GetChildren()) do
-        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
-            v:Destroy()
-        end
-    end
-    for _, v in ipairs(camera:GetChildren()) do
-        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
-            v:Destroy()
-        end
-    end
-
-    -- Reset FOV & ánh sáng
-    camera.FieldOfView = 70
-    lighting.FogEnd = 1e6
-    lighting.GlobalShadows = false
-end)
 
 -- Tabs
 local Tabs = {
@@ -2531,6 +2510,28 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
+
+-- 🧹 Xóa hiệu ứng mờ 1 lần duy nhất
+task.delay(1, function() -- đợi 1 giây để Fluent tạo UI xong
+    local lighting = game:GetService("Lighting")
+    local camera = workspace.CurrentCamera
+
+    for _, v in ipairs(lighting:GetChildren()) do
+        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
+            v:Destroy()
+        end
+    end
+    for _, v in ipairs(camera:GetChildren()) do
+        if v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") then
+            v:Destroy()
+        end
+    end
+
+    -- Reset FOV & ánh sáng mặc định
+    camera.FieldOfView = 70
+    lighting.FogEnd = 1e6
+    lighting.GlobalShadows = false
+end)
 
 task.defer(function()
     -- Nếu chưa có file, tạo AutoSave
