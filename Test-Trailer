@@ -1,0 +1,9 @@
+local success1, err1 = pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Improve"))()
+end)
+
+task.wait(1)
+
+local success2, err2 = pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Clear"))()
+end)
