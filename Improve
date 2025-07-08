@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -88,6 +88,35 @@ TextButton.MouseButton1Down:Connect(function()
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
 local Players = game:GetService("Players")
+
+local Player = game.Players.LocalPlayer
+local mainData = Player:WaitForChild("MAIN_DATA", 10)
+
+-- Hàm lấy trái đang trang bị
+local function getEquippedFruit()
+    if not mainData then return nil end
+
+    local currentSlot = mainData:FindFirstChild("Slot")
+    if not currentSlot then return nil end
+
+    local slotValue = mainData:FindFirstChild("Slots"):FindFirstChild(tostring(currentSlot.Value))
+    if not slotValue then return nil end
+
+    return slotValue.Value or nil
+end
+
+-- Cập nhật vào biến shared mỗi giây (chạy ngầm)
+task.spawn(function()
+    while true do
+        local success, fruit = pcall(getEquippedFruit)
+        if success and fruit then
+            shared.CurrentFruit = fruit
+        else
+            shared.CurrentFruit = "Unknown"
+        end
+        task.wait(1)
+    end
+end)
 
 -- 🌐 Dữ liệu toạ độ theo map (PlaceId)
 local PositionData = {
@@ -199,7 +228,6 @@ local player = Players.LocalPlayer
 local gui = player:WaitForChild("PlayerGui")
 local deathScreenVisible = false
 local _isInGame = false
-local currentFruit = nil
 local currentHumanoid = nil
 local characterReady = false
 local lockConnection = nil
@@ -388,24 +416,6 @@ local function isSkillReady(skillName)
     return skillCD.Value <= 0
 end
 
-local function updateCurrentFruit()
-    local mainData = player:FindFirstChild("MAIN_DATA")
-    if not mainData then return end
-    local currentSlot = mainData:FindFirstChild("Slot")
-    if not currentSlot then return end
-    local slotValue = mainData.Slots:FindFirstChild(tostring(currentSlot.Value))
-    currentFruit = slotValue and slotValue.Value or nil
-end
-
-local function watchSlotChanges()
-    local mainData = player:WaitForChild("MAIN_DATA", 10)
-    if not mainData then return end
-    local slot = mainData:WaitForChild("Slot", 5)
-    if not slot then return end
-    slot:GetPropertyChangedSignal("Value"):Connect(updateCurrentFruit)
-    updateCurrentFruit()
-end
-
 -- Hàm khóa vị trí nhân vật
 local function lockPosition()
     if connection then connection:Disconnect() end
@@ -548,8 +558,8 @@ local function startSkillLoop()
                 unlockPosition()
             end
 
-            if _isInGame and characterReady and currentFruit and skills[currentFruit] and (shared.bienCaoCap or isTeleported) then
-                local fruitSkills = skills[currentFruit]
+            if _isInGame and characterReady and shared.CurrentFruit and skills[shared.CurrentFruit] and (shared.bienCaoCap or isTeleported) then
+                local fruitSkills = skills[shared.CurrentFruit]
                 local readySkills = {}
 
                 -- Ưu tiên chiêu đã hồi
@@ -563,7 +573,7 @@ local function startSkillLoop()
                 for _, skill in ipairs(readySkills) do
                     if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
                     task.spawn(function()
-                        castSkill(currentFruit, skill)
+                        castSkill(shared.CurrentFruit, skill)
                     end)
                     task.wait(0.03) -- delay nhẹ tránh overload server
                 end
@@ -588,8 +598,7 @@ local function setupCharacter(character)
         local maxWait = 5
         local elapsed = 0
         while elapsed < maxWait do
-            updateCurrentFruit()
-            if currentFruit and hrp:IsDescendantOf(game) then
+    	     if shared.CurrentFruit and hrp:IsDescendantOf(game) then
                 characterReady = true
                 break
             end
@@ -680,10 +689,6 @@ task.spawn(function()
 		task.wait(0.5)
 	end
 end)
-
-
--- Bắt đầu theo dõi slot trái và auto dùng skill
-watchSlotChanges()
 startSkillLoop()
         end
     end
