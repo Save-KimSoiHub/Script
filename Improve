@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1886,13 +1886,12 @@ function AutoFindKatakuriFunction()
         end)
     end
 end
---Auto Spin
 local player = game:GetService("Players").LocalPlayer
--- Dropdown chọn trái cần dừng khi spin trúng
 _G.autoSpinEnabled = false
 _G.selectedFruitName = {}
 _G.selectedSpinType = "Normal"
 
+-- Dropdown chọn trái cần dừng khi spin trúng
 Tabs.Fruit:AddDropdown("FruitSelector", {
     Title = "Select Fruit For Stop Spin",
     Values = {
@@ -1915,7 +1914,22 @@ Tabs.Fruit:AddDropdown("FruitSelector", {
     end
 })
 
--- Dropdown chọn kiểu spin (Normal / Fast)
+-- 🔧 Tự động khôi phục danh sách trái cần dừng khi load config
+task.defer(function()
+    local raw = (Fluent and Fluent.SaveManager and Fluent.SaveManager.Get and Fluent.SaveManager:Get("FruitSelector")) or nil
+    if raw then
+        local selected = {}
+        for fruitName, isSelected in pairs(raw) do
+            if isSelected then
+                table.insert(selected, fruitName)
+            end
+        end
+        _G.selectedFruitName = selected
+        print("[AutoSpin] Đã khôi phục trái cần dừng từ config:", table.concat(_G.selectedFruitName, ", "))
+    end
+end)
+
+-- Dropdown chọn kiểu spin
 Tabs.Fruit:AddDropdown("SpinTypeSelector", {
     Title = "Select Spin Type",
     Values = {"Normal", "Fast"},
@@ -1943,7 +1957,7 @@ autoSpinToggleRef = Tabs.Fruit:AddToggle("AutoSpinToggle", {
     end
 })
 
--- Hàm kiểm tra trái có nằm trong danh sách cần dừng
+-- Kiểm tra có phải trái hiếm không
 local function isRare(fruitName)
     for _, v in pairs(_G.selectedFruitName or {}) do
         if string.lower(v) == string.lower(fruitName) then
@@ -1958,11 +1972,11 @@ function startAutoSpin()
     task.spawn(function()
         print("Auto Spin đang chạy...")
 
-        -- ⏳ Chờ shared.CurrentFruit sẵn sàng
+        -- Đợi shared.CurrentFruit sẵn sàng
         local maxWait = 5
         local elapsed = 0
         while (not shared.CurrentFruit or shared.CurrentFruit == "") and elapsed < maxWait do
-            print("Đợi trái được cập nhật... (shared.CurrentFruit = ", tostring(shared.CurrentFruit), ")")
+            print("Đợi trái được cập nhật... (shared.CurrentFruit =", tostring(shared.CurrentFruit), ")")
             elapsed += 0.2
             task.wait(0.2)
         end
