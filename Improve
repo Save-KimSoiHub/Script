@@ -1896,7 +1896,7 @@ _G.selectedSpinType = "Normal"
 Tabs.Fruit:AddDropdown("FruitSelector", {
     Title = "Select Fruit For Stop Spin",
     Values = {
-        "Okuchi", "Soul", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
+        "Okuchi", "Lightning", "Soul", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
         "Venom", "FlameV2", "LightV2", "MagmaV2", "IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix",
         "Gravity", "Quake", "Snow", "Love", "String", "Paw", "Magma", "Flame", "Light", "Ash", 
         "Darkness", "Ice", "Bomb", "Gas", "Falcon", "Rubber", "Smoke", "Sand", "Chop", "Barrier"
