@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1958,9 +1958,18 @@ function startAutoSpin()
     task.spawn(function()
         print("Auto Spin đang chạy...")
 
+        -- ⏳ Chờ shared.CurrentFruit sẵn sàng
+        local maxWait = 5
+        local elapsed = 0
+        while (not shared.CurrentFruit or shared.CurrentFruit == "") and elapsed < maxWait do
+            print("Đợi trái được cập nhật... (shared.CurrentFruit = ", tostring(shared.CurrentFruit), ")")
+            elapsed += 0.2
+            task.wait(0.2)
+        end
+
         print("Trái đang giữ:", shared.CurrentFruit)
         if shared.CurrentFruit and isRare(shared.CurrentFruit) then
-            print("Đã có trái hiếm trong tay:", shared.CurrentFruit, "-> Không quay.")
+            print("❌ Đã có trái hiếm trong tay:", shared.CurrentFruit, "-> Không quay.")
             _G.autoSpinEnabled = false
             if autoSpinToggleRef and autoSpinToggleRef.SetValue then
                 autoSpinToggleRef:SetValue(false)
