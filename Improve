@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1888,8 +1888,6 @@ function AutoFindKatakuriFunction()
 end
 --Auto Spin
 local player = game:GetService("Players").LocalPlayer
-local currentFruit = nil
-
 -- Dropdown chọn trái cần dừng khi spin trúng
 _G.autoSpinEnabled = false
 _G.selectedFruitName = {}
@@ -1955,36 +1953,14 @@ local function isRare(fruitName)
     return false
 end
 
--- Hàm cập nhật trái đang cầm
-local function updateCurrentFruit()
-    local mainData = player:FindFirstChild("MAIN_DATA")
-    if not mainData then return end
-    local currentSlot = mainData:FindFirstChild("Slot")
-    if not currentSlot then return end
-    local slotValue = mainData.Slots:FindFirstChild(tostring(currentSlot.Value))
-    currentFruit = slotValue and slotValue.Value or nil
-end
-
--- Theo dõi thay đổi trái đang cầm
-local function watchSlotChanges()
-    local mainData = player:WaitForChild("MAIN_DATA", 10)
-    if not mainData then return end
-    local slot = mainData:WaitForChild("Slot", 5)
-    if not slot then return end
-    slot:GetPropertyChangedSignal("Value"):Connect(updateCurrentFruit)
-    updateCurrentFruit()
-end
-
-watchSlotChanges()
-
 -- Hàm chạy Auto Spin
 function startAutoSpin()
     task.spawn(function()
         print("Auto Spin đang chạy...")
 
-        -- 🔎 Kiểm tra trái đang cầm trước khi spin
-        if currentFruit and isRare(currentFruit) then
-            print("Đã có trái hiếm trong tay:", currentFruit, "-> Không quay.")
+        print("Trái đang giữ:", shared.CurrentFruit)
+        if shared.CurrentFruit and isRare(shared.CurrentFruit) then
+            print("Đã có trái hiếm trong tay:", shared.CurrentFruit, "-> Không quay.")
             _G.autoSpinEnabled = false
             if autoSpinToggleRef and autoSpinToggleRef.SetValue then
                 autoSpinToggleRef:SetValue(false)
