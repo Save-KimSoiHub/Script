@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1886,6 +1886,7 @@ function AutoFindKatakuriFunction()
         end)
     end
 end
+--Auto Spin
 local player = game:GetService("Players").LocalPlayer
 _G.autoSpinEnabled = false
 _G.selectedFruitName = {}
@@ -1914,7 +1915,7 @@ Tabs.Fruit:AddDropdown("FruitSelector", {
     end
 })
 
--- 🔧 Tự động khôi phục danh sách trái cần dừng khi load config
+-- 🔧 Tự động khôi phục trái cần dừng từ config (Fluent SaveManager)
 task.defer(function()
     local raw = (Fluent and Fluent.SaveManager and Fluent.SaveManager.Get and Fluent.SaveManager:Get("FruitSelector")) or nil
     if raw then
@@ -1925,7 +1926,7 @@ task.defer(function()
             end
         end
         _G.selectedFruitName = selected
-        print("[AutoSpin] Đã khôi phục trái cần dừng từ config:", table.concat(_G.selectedFruitName, ", "))
+        print("[AutoSpin] ✅ Đã khôi phục trái cần dừng từ config:", table.concat(_G.selectedFruitName, ", "))
     end
 end)
 
@@ -1949,7 +1950,13 @@ autoSpinToggleRef = Tabs.Fruit:AddToggle("AutoSpinToggle", {
     Callback = function(state)
         if state then
             _G.autoSpinEnabled = true
-            startAutoSpin()
+
+            -- ✅ Delay nhỏ để config và shared.CurrentFruit load xong
+            task.delay(0.1, function()
+                if _G.autoSpinEnabled then
+                    startAutoSpin()
+                end
+            end)
         else
             _G.autoSpinEnabled = false
             print("Auto Spin đã tắt.")
@@ -1957,7 +1964,7 @@ autoSpinToggleRef = Tabs.Fruit:AddToggle("AutoSpinToggle", {
     end
 })
 
--- Kiểm tra có phải trái hiếm không
+-- Hàm kiểm tra trái có nằm trong danh sách cần dừng
 local function isRare(fruitName)
     for _, v in pairs(_G.selectedFruitName or {}) do
         if string.lower(v) == string.lower(fruitName) then
@@ -1967,21 +1974,20 @@ local function isRare(fruitName)
     return false
 end
 
--- Hàm chạy Auto Spin
+-- Hàm chính chạy Auto Spin
 function startAutoSpin()
     task.spawn(function()
         print("Auto Spin đang chạy...")
 
-        -- Đợi shared.CurrentFruit sẵn sàng
-        local maxWait = 5
-        local elapsed = 0
-        while (not shared.CurrentFruit or shared.CurrentFruit == "") and elapsed < maxWait do
-            print("Đợi trái được cập nhật... (shared.CurrentFruit =", tostring(shared.CurrentFruit), ")")
-            elapsed += 0.2
+        -- ⏳ Đợi config + trái hiện tại load đầy đủ
+        local waitTime = 0
+        while (#_G.selectedFruitName == 0 or not shared.CurrentFruit) and waitTime < 3 do
+            print("⏳ Đợi config và trái hiện tại...")
+            waitTime += 0.2
             task.wait(0.2)
         end
 
-        print("Trái đang giữ:", shared.CurrentFruit)
+        print("🔍 Trái đang giữ:", shared.CurrentFruit)
         if shared.CurrentFruit and isRare(shared.CurrentFruit) then
             print("❌ Đã có trái hiếm trong tay:", shared.CurrentFruit, "-> Không quay.")
             _G.autoSpinEnabled = false
@@ -1999,7 +2005,7 @@ function startAutoSpin()
 
             local args = {"FruitsHandler", "Spin", spinArgs}
             local result = game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-            print("Kết quả spin trả về từ server:", result)
+            print("🎰 Kết quả spin:", result)
 
             if result and isRare(result) then
                 print("🎉 DỪNG! Gặp trái hiếm:", result)
@@ -2009,7 +2015,7 @@ function startAutoSpin()
                 end
                 break
             else
-                print("Spin tiếp...")
+                print("🔁 Spin tiếp...")
             end
 
             task.wait(3.5)
