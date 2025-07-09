@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -718,44 +718,39 @@ shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoBossToggle", {
 
         -- Hàm đi theo boss
         local function followBoss(bossModel)
-    local hrp = bossModel:FindFirstChild("HumanoidRootPart")
-    local humanoid = bossModel:FindFirstChild("Humanoid")
-    if not hrp or not humanoid then return end
+            local hrp = bossModel:FindFirstChild("HumanoidRootPart")
+            local humanoid = bossModel:FindFirstChild("Humanoid")
+            if not hrp or not humanoid then return end
 
-    local died = false
-    humanoid.Died:Connect(function()
-        died = true
-    end)
+            while humanoid.Health > 0 and shared.autoBoss do
+                local character = LocalPlayer.Character
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    character.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
+                end
+                task.wait(0.1)
+            end
 
-    while not died and shared.autoBoss do
-        local character = LocalPlayer.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
+            -- Sau khi boss chết → về farm
+            if shared.autoFarm and shared.myPos then
+                shared.forceUnlock = false
+                shared.bienCaoCap = false
+                isTeleported = false
+
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart", 5)
+                if hrp then
+                    hrp.CFrame = CFrame.new(shared.myPos)
+                    repeat task.wait(0.1) until (hrp.Position - shared.myPos).Magnitude < 5
+                end
+
+                -- Restart Auto Farm
+                shared.autoFarm = false
+                shared.autoFarmToggleRef:SetValue(false)
+                task.wait(0.3)
+                shared.autoFarm = true
+                shared.autoFarmToggleRef:SetValue(true)
+            end
         end
-        task.wait(0.1)
-    end
-
-    -- Sau khi boss chết → về farm
-    if shared.autoFarm and shared.myPos then
-        shared.forceUnlock = false
-        shared.bienCaoCap = false
-        isTeleported = false
-
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart", 5)
-        if hrp then
-            hrp.CFrame = CFrame.new(shared.myPos)
-            repeat task.wait(0.1) until (hrp.Position - shared.myPos).Magnitude < 5
-        end
-
-        -- Restart Auto Farm
-        shared.autoFarm = false
-        shared.autoFarmToggleRef:SetValue(false)
-        task.wait(0.3)
-        shared.autoFarm = true
-        shared.autoFarmToggleRef:SetValue(true)
-    end
-end
 
         -- Vòng lặp kiểm tra boss
         task.spawn(function()
