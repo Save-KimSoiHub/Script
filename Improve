@@ -161,15 +161,12 @@ local PositionData = {
 -- Toạ độ farm đã gán cho từng player
 GlobalPlayerPositions = {}
 
+
 local function extractUsername(comboText)
-    if typeof(comboText) == "string" and comboText:find("%(") and comboText:find("%)") then
-        return comboText:match("%((.-)%)")
-    end
-    return "Unknown"
+    return comboText:match("%((.-)%)") or comboText
 end
 
--- Lấy danh sách player
-function getPlayerList()
+local function getPlayerList()
     local list = {}
     for _, player in ipairs(Players:GetPlayers()) do
         table.insert(list, player.DisplayName .. " (" .. player.Name .. ")")
@@ -178,22 +175,30 @@ function getPlayerList()
     return list
 end
 
--- Gán toạ độ farm theo thứ tự player
 local function assignPlayerPositions()
-    local sorted = getPlayerList()
     local coords = PositionData[game.PlaceId]
-    if not coords then return end
+    if not coords then
+        warn("❌ Không có dữ liệu toạ độ cho map:", game.PlaceId)
+        return
+    end
 
+    local sorted = getPlayerList()
     GlobalPlayerPositions = {}
 
     for i, combo in ipairs(sorted) do
         local username = extractUsername(combo)
         local pos = coords[i]
-        GlobalPlayerPositions[username] = pos
-
-        if username == LocalPlayer.Name then
-            shared.MyFarmPosition = pos
+        if pos then
+            GlobalPlayerPositions[username] = pos
+            if username == LocalPlayer.Name then
+                shared.MyFarmPosition = pos
+                print("✅ Toạ độ farm của bạn:", pos)
+            end
         end
+    end
+
+    if not shared.MyFarmPosition then
+        warn("⚠️ Không tìm được toạ độ farm cho bạn!")
     end
 end
 
