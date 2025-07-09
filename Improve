@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -185,11 +185,18 @@ local function assignPlayerPositions()
     if not coords then return end
 
     GlobalPlayerPositions = {}
+    
     for i, combo in ipairs(sorted) do
         local username = extractUsername(combo)
         GlobalPlayerPositions[username] = coords[i]
+
+        -- Gán tọa độ của chính LocalPlayer vào shared.myPos
+        if username == Players.LocalPlayer.Name then
+            shared.myPos = coords[i]
+        end
     end
 end
+
 
 assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
