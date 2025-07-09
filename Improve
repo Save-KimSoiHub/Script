@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -453,7 +453,7 @@ local function fastTeleport()
     shared.myPos = GlobalPlayerPositions[player.Name]
     print(shared.myPos)
     if not shared.myPos then return end
-    hrp.CFrame = CFrame.new(myPos)
+    hrp.CFrame = CFrame.new(shared.myPos)
     isTeleported = true
 end
 
