@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -730,7 +730,6 @@ shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoBossToggle", {
                 shared.bienCaoCap = false
                 isTeleported = false
 
-                -- Cách teleport giống đoạn bạn xác nhận là hoạt động tốt
                 local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                 local hrp = character:WaitForChild("HumanoidRootPart", 5)
                 if hrp then
@@ -747,7 +746,63 @@ shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoBossToggle", {
             end
         end
 
-        -- Bạn cần gọi followBoss ở nơi phù hợp sau khi phát hiện boss
+        -- Vòng lặp kiểm tra boss
+        task.spawn(function()
+            while shared.autoBoss do
+                local npcsFolder = workspace:FindFirstChild("Characters") and workspace.Characters:FindFirstChild("NPCs")
+                if not npcsFolder then task.wait(1) continue end
+
+                if placeId == 9224601490 then
+                    local marco = npcsFolder:FindFirstChild("Marco")
+                    if marco then
+                        shared.forceUnlock = true
+                        task.wait(1)
+                        shared.bienCaoCap = true
+                        task.wait(1)
+                        followBoss(marco)
+                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Marco") or not shared.autoBoss
+                    end
+
+                elseif placeId == 16190471004 then
+                    local cakeQueen = npcsFolder:FindFirstChild("Cake Queen")
+                    if cakeQueen then
+                        shared.forceUnlock = true
+                        task.wait(1)
+                        shared.bienCaoCap = true
+                        task.wait(1)
+                        followBoss(cakeQueen)
+                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Cake Queen") or not shared.autoBoss
+                    end
+
+                    local katakuri = npcsFolder:FindFirstChild("Katakuri")
+                    if katakuri then
+                        shared.forceUnlock = true
+                        task.wait(1)
+                        shared.bienCaoCap = true
+                        task.wait(1)
+                        followBoss(katakuri)
+                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Katakuri") or not shared.autoBoss
+                    end
+
+                elseif placeId == 12413901502 then
+                    local kaido = npcsFolder:FindFirstChild("Kaido")
+                    if kaido then
+                        shared.forceUnlock = true
+                        task.wait(1)
+                        shared.bienCaoCap = true
+                        task.wait(1)
+                        followBoss(kaido)
+                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Kaido") or not shared.autoBoss
+                    end
+
+                else
+                    warn("Không hỗ trợ map này. PlaceId:", placeId)
+                    break
+                end
+
+                task.wait(1)
+            end
+        end)
     end
 })
 
