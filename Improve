@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -709,122 +709,124 @@ shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoBossToggle", {
     Callback = function(value)
         autoBossEnabled = value
         shared.autoBoss = value
+    end
+})
 
-        if not value then return end
+-- Hàm follow boss
+local function followBoss(bossModel)
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local hrp = bossModel:FindFirstChild("HumanoidRootPart")
+    local humanoid = bossModel:FindFirstChild("Humanoid")
+    if not hrp or not humanoid then return end
 
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-        local placeId = game.PlaceId
+    -- Bám theo boss đến khi chết hoặc bị tắt
+    while humanoid.Health > 0 and shared.autoBoss do
+        local character = LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
+        end
+        task.wait(0.1)
+    end
 
-        -- Hàm đi theo boss
-        local function followBoss(bossModel)
-            local hrp = bossModel:FindFirstChild("HumanoidRootPart")
-            local humanoid = bossModel:FindFirstChild("Humanoid")
-            if not hrp or not humanoid then return end
+    print("[Boss] Đã bị tiêu diệt")
 
-            while humanoid.Health > 0 and shared.autoBoss do
-                local character = LocalPlayer.Character
-                if character and character:FindFirstChild("HumanoidRootPart") then
-                    character.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
+    -- Sau khi boss chết → về farm
+    if shared.autoFarm and shared.MyFarmPosition then
+        shared.forceUnlock = false
+        shared.bienCaoCap = false
+        isTeleported = false
+
+        task.spawn(function()
+            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart", 3)
+            if not hrp then return end
+
+            hrp.CFrame = CFrame.new(shared.MyFarmPosition)
+
+            local timeout = 3 -- giây tối đa để chờ về đúng vị trí
+            local start = tick()
+            while (tick() - start) < timeout do
+                if (hrp.Position - shared.MyFarmPosition).Magnitude < 5 then
+                    break
                 end
                 task.wait(0.1)
             end
 
-            print("[Boss] Đã bị tiêu diệt")
+            -- Tắt / bật lại Auto Farm (nhẹ và nhanh)
+            shared.autoFarm = false
+            shared.autoFarmToggleRef:SetValue(false)
+            task.wait(0.25)
+            shared.autoFarm = true
+            shared.autoFarmToggleRef:SetValue(true)
+        end)
+    else
+        print("Không Gọi Hàm Teleport")
+    end
+end
 
-            -- Sau khi boss chết → về farm
-            if shared.autoFarm and shared.MyFarmPosition then
-                shared.forceUnlock = false
-                shared.bienCaoCap = false
-                isTeleported = false
+-- Vòng lặp boss
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local placeId = game.PlaceId
 
-                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.CFrame = CFrame.new(shared.MyFarmPosition)
-                    repeat task.wait(0.1) until (hrp.Position - shared.MyFarmPosition).Magnitude < 5
-                end
-
-                shared.autoFarm = false
-                shared.autoFarmToggleRef:SetValue(false)
-                task.wait(0.3)
-                shared.autoFarm = true
-                shared.autoFarmToggleRef:SetValue(true)
-            else
-                print("Không Gọi Hàm Teleport")
-            end
+    while true do
+        if not shared.autoBoss then
+            task.wait(1)
+            continue
         end
 
-        -- Vòng lặp kiểm tra boss
-        task.spawn(function()
-            while shared.autoBoss do
-                local npcsFolder = workspace:FindFirstChild("Characters") and workspace.Characters:FindFirstChild("NPCs")
-                if not npcsFolder then task.wait(1) continue end
+        local npcsFolder = workspace:FindFirstChild("Characters")
+        npcsFolder = npcsFolder and npcsFolder:FindFirstChild("NPCs")
+        if not npcsFolder then
+            task.wait(1)
+            continue
+        end
 
-                if placeId == 9224601490 then
-                    local marco = npcsFolder:FindFirstChild("Marco")
-                    if marco then
-                        print("[Marco] Đã xuất hiện")
-                        shared.forceUnlock = true
-                        task.wait(1)
-                        shared.bienCaoCap = true
-                        task.wait(1)
-                        followBoss(marco)
-                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Marco") or not shared.autoBoss
-                    else
-                        print("[Marco] Chưa xuất hiện")
-                    end
-
-                elseif placeId == 16190471004 then
-                    local cakeQueen = npcsFolder:FindFirstChild("Cake Queen")
-                    if cakeQueen then
-                        print("[Cake Queen] Đã xuất hiện")
-                        shared.forceUnlock = true
-                        task.wait(1)
-                        shared.bienCaoCap = true
-                        task.wait(1)
-                        followBoss(cakeQueen)
-                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Cake Queen") or not shared.autoBoss
-                    else
-                        print("[Cake Queen] Chưa xuất hiện")
-                    end
-
-                    local katakuri = npcsFolder:FindFirstChild("Katakuri")
-                    if katakuri then
-                        print("[Katakuri] Đã xuất hiện")
-                        shared.forceUnlock = true
-                        task.wait(1)
-                        shared.bienCaoCap = true
-                        task.wait(1)
-                        followBoss(katakuri)
-                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Katakuri") or not shared.autoBoss
-                    else
-                        print("[Katakuri] Chưa xuất hiện")
-                    end
-
-                elseif placeId == 12413901502 then
-                    local kaido = npcsFolder:FindFirstChild("Kaido")
-                    if kaido then
-                        print("[Kaido] Đã xuất hiện")
-                        shared.forceUnlock = true
-                        task.wait(1)
-                        shared.bienCaoCap = true
-                        task.wait(1)
-                        followBoss(kaido)
-                        repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Kaido") or not shared.autoBoss
-                    else
-                        print("[Kaido] Chưa xuất hiện")
-                    end
-
-                else
-                    warn("Không hỗ trợ map này. PlaceId:", placeId)
-                    break
-                end
-
+        -- Các boss tùy theo map
+        if placeId == 9224601490 then
+            local marco = npcsFolder:FindFirstChild("Marco")
+            if marco then
+                print("[Marco] Đã xuất hiện")
+                shared.forceUnlock = true
                 task.wait(1)
+                shared.bienCaoCap = true
+                task.wait(1)
+                followBoss(marco)
             end
-        end)
+
+        elseif placeId == 16190471004 then
+            for _, name in ipairs({ "Cake Queen", "Katakuri" }) do
+                local boss = npcsFolder:FindFirstChild(name)
+                if boss then
+                    print("[" .. name .. "] Đã xuất hiện")
+                    shared.forceUnlock = true
+                    task.wait(1)
+                    shared.bienCaoCap = true
+                    task.wait(1)
+                    followBoss(boss)
+                end
+            end
+
+        elseif placeId == 12413901502 then
+            local kaido = npcsFolder:FindFirstChild("Kaido")
+            if kaido then
+                print("[Kaido] Đã xuất hiện")
+                shared.forceUnlock = true
+                task.wait(1)
+                shared.bienCaoCap = true
+                task.wait(1)
+                followBoss(kaido)
+            end
+
+        else
+            warn("Không hỗ trợ map này. PlaceId:", placeId)
+        end
+
+        task.wait(1)
     end
-})
+end)
 
 --Fly Script
 Tabs.Player:AddButton({
