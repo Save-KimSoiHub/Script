@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -185,11 +185,18 @@ local function assignPlayerPositions()
     if not coords then return end
 
     GlobalPlayerPositions = {}
+    
     for i, combo in ipairs(sorted) do
         local username = extractUsername(combo)
         GlobalPlayerPositions[username] = coords[i]
+
+        -- Gán tọa độ của chính LocalPlayer vào shared.myPos
+        if username == Players.LocalPlayer.Name then
+            shared.myPos = coords[i]
+        end
     end
 end
+
 
 assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
@@ -450,9 +457,8 @@ local function fastTeleport()
     local character = player.Character or player.CharacterAdded:Wait()
     local hrp = character:WaitForChild("HumanoidRootPart", 5)
     if not hrp then return end
-    local myPos = GlobalPlayerPositions[player.Name]
-    if not myPos then return end
-    hrp.CFrame = CFrame.new(myPos)
+    if not shared.myPos then return end
+    hrp.CFrame = CFrame.new(shared.myPos)
     isTeleported = true
 end
 
@@ -693,7 +699,7 @@ startSkillLoop()
         end
     end
 })
-
+-- Auto Boss
 shared.autoBoss = false
 autoBossEnabled = false
 
@@ -724,27 +730,25 @@ shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoBossToggle", {
                 task.wait(0.1)
             end
 
-            print("[Boss] Đã bị tiêu diệt")
-
             -- Sau khi boss chết → về farm
-            if shared.autoFarm and shared.MyFarmPosition then
+            if shared.autoFarm and shared.myPos then
                 shared.forceUnlock = false
                 shared.bienCaoCap = false
                 isTeleported = false
 
-                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart", 5)
                 if hrp then
-                    hrp.CFrame = CFrame.new(shared.MyFarmPosition)
-                    repeat task.wait(0.1) until (hrp.Position - shared.MyFarmPosition).Magnitude < 5
+                    hrp.CFrame = CFrame.new(shared.myPos)
+                    repeat task.wait(0.1) until (hrp.Position - shared.myPos).Magnitude < 5
                 end
 
+                -- Restart Auto Farm
                 shared.autoFarm = false
                 shared.autoFarmToggleRef:SetValue(false)
                 task.wait(0.3)
                 shared.autoFarm = true
                 shared.autoFarmToggleRef:SetValue(true)
-            else
-                print("Không Gọi Hàm Teleport")
             end
         end
 
@@ -757,56 +761,44 @@ shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoBossToggle", {
                 if placeId == 9224601490 then
                     local marco = npcsFolder:FindFirstChild("Marco")
                     if marco then
-                        print("[Marco] Đã xuất hiện")
                         shared.forceUnlock = true
                         task.wait(1)
                         shared.bienCaoCap = true
                         task.wait(1)
                         followBoss(marco)
                         repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Marco") or not shared.autoBoss
-                    else
-                        print("[Marco] Chưa xuất hiện")
                     end
 
                 elseif placeId == 16190471004 then
                     local cakeQueen = npcsFolder:FindFirstChild("Cake Queen")
                     if cakeQueen then
-                        print("[Cake Queen] Đã xuất hiện")
                         shared.forceUnlock = true
                         task.wait(1)
                         shared.bienCaoCap = true
                         task.wait(1)
                         followBoss(cakeQueen)
                         repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Cake Queen") or not shared.autoBoss
-                    else
-                        print("[Cake Queen] Chưa xuất hiện")
                     end
 
                     local katakuri = npcsFolder:FindFirstChild("Katakuri")
                     if katakuri then
-                        print("[Katakuri] Đã xuất hiện")
                         shared.forceUnlock = true
                         task.wait(1)
                         shared.bienCaoCap = true
                         task.wait(1)
                         followBoss(katakuri)
                         repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Katakuri") or not shared.autoBoss
-                    else
-                        print("[Katakuri] Chưa xuất hiện")
                     end
 
                 elseif placeId == 12413901502 then
                     local kaido = npcsFolder:FindFirstChild("Kaido")
                     if kaido then
-                        print("[Kaido] Đã xuất hiện")
                         shared.forceUnlock = true
                         task.wait(1)
                         shared.bienCaoCap = true
                         task.wait(1)
                         followBoss(kaido)
                         repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Kaido") or not shared.autoBoss
-                    else
-                        print("[Kaido] Chưa xuất hiện")
                     end
 
                 else
