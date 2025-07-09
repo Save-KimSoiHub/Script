@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -451,6 +451,7 @@ local function fastTeleport()
     local hrp = character:WaitForChild("HumanoidRootPart", 5)
     if not hrp then return end
     shared.myPos = GlobalPlayerPositions[player.Name]
+    print(shared.myPos)
     if not shared.myPos then return end
     hrp.CFrame = CFrame.new(myPos)
     isTeleported = true
