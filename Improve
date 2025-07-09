@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -194,8 +194,7 @@ end
 assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
-shared.autoFarmPos = GlobalPlayerPositions[player.Name]
-print(shared.autoFarmPos)
+
 Tabs.Main:AddParagraph({
     Title = "Turn On Auto Load Last Used Config In Setting !",
     Content = ""
@@ -451,8 +450,8 @@ local function fastTeleport()
     local character = player.Character or player.CharacterAdded:Wait()
     local hrp = character:WaitForChild("HumanoidRootPart", 5)
     if not hrp then return end
-    local myPos = GlobalPlayerPositions[player.Name]
-    if not myPos then return end
+    shared.myPos = GlobalPlayerPositions[player.Name]
+    if not shared.myPos then return end
     hrp.CFrame = CFrame.new(myPos)
     isTeleported = true
 end
