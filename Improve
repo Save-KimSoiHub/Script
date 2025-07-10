@@ -748,6 +748,7 @@ local function followBoss(bossModel)
 	    hrp.CFrame = CFrame.new(shared.myPos)
 	    task.wait()
 	until (hrp.Position - shared.myPos).Magnitude < 5
+	task.wait(1)
         shared.autoFarmToggleRef:SetValue(false)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
