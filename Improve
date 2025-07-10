@@ -1791,7 +1791,7 @@ function AutoFindBossFunction()
 
     -- Kiểm tra thời gian server
     local minute = getServerMinute()
-    if minute and minute < (60 - shared.timeToWait) and not (minute >= 0 and minute <= 5) then
+    if minute and minute < (60 - shared.timeToWait) and not (minute >= 0 and minute <= 3) then
         print("✅ Tiến hành hop server")
         local serverId = getServer()
         if serverId then
@@ -1900,7 +1900,7 @@ function AutoFindKatakuriFunction()
 
     -- Kiểm tra và hop server nếu cần
     local minute = getServerMinute()
-    if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
+    if minute and (minute < (30 - shared.timeToWait) or minute > 33) then
         print("✅ Tiến hành hop server.")
         local serverId = getServer()
         if serverId then
