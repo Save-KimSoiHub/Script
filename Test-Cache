@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -734,7 +734,20 @@ local function followBoss(bossModel)
         isTeleported = false
         shared.bienCaoCap = false
         task.wait(1)
-
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local player = Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+	local hrp = character:WaitForChild("HumanoidRootPart")
+	
+	if not shared.myPos then return end
+	
+	local finished = false
+	repeat
+	    if not hrp or not hrp.Parent then break end
+	    hrp.CFrame = CFrame.new(shared.myPos)
+	    task.wait()
+	until (hrp.Position - shared.myPos).Magnitude < 5
         shared.autoFarmToggleRef:SetValue(false)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
