@@ -1,5 +1,5 @@
 --// CONFIG
-local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd"
+local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd" -- Thay webhook của bạn ở đây
 local intervalSeconds = 60
 
 --// SERVICES
@@ -23,6 +23,7 @@ end
 --// LOOP
 task.spawn(function()
     while true do
+        -- Lấy dữ liệu
         local gems = mainData:FindFirstChild("Gems") and mainData.Gems.Value or "N/A"
         local bossKills = mainData:FindFirstChild("BossKills") and mainData.BossKills.Value or "N/A"
         local titlesFolder = mainData:FindFirstChild("Titles")
@@ -30,21 +31,25 @@ task.spawn(function()
         local expText = hud:FindFirstChild("EXP") and hud.EXP:FindFirstChild("Shadow") and hud.EXP.Shadow.Text or "?"
         local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
 
-        -- Gửi Embed
+        -- Build description (giống ảnh mẫu)
+        local description = string.format([[
+🧑 Username: **%s**
+
+📊 **Stats**
+💎 Gems: [ %s ]
+☠️ Boss Kills: [ %s ]
+🏷️ Titles: [ %s ]
+📈 Level: [ %s ]
+🧪 EXP: [ %s ]
+        ]],
+        displayName, gems, bossKills, titleCount, levelText, expText)
+
+        -- Embed format
         local embedData = {
             title = "👑 KimSoi Hub Stats Report 👑",
-            description = "🧑 Username: **" .. displayName .. "**",
-            color = 0x00ff00,
-            fields = {
-                { name = "💎 Gems", value = "`" .. tostring(gems) .. "`", inline = true },
-                { name = "☠️ Boss Kills", value = "`" .. tostring(bossKills) .. "`", inline = true },
-                { name = "🏷️ Titles", value = "`" .. tostring(titleCount) .. "`", inline = true },
-                { name = "📈 Level", value = "`" .. tostring(levelText) .. "`", inline = true },
-                { name = "🧪 EXP", value = "`" .. tostring(expText) .. "`", inline = true },
-            },
-            footer = {
-                text = "⏰ Updated every " .. tostring(intervalSeconds) .. " seconds"
-            }
+            description = description,
+            color = 0x2F3136, -- Dark grey like your image
+            footer = { text = "⏰ Updated every " .. intervalSeconds .. " seconds" }
         }
 
         local body = HttpService:JSONEncode({
