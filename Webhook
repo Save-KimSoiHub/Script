@@ -36,17 +36,17 @@ task.spawn(function()
 🧑 Username: **%s**
 
 📊 **Stats**
-💎 Gems: [ %s ]
-☠️ Boss Kills: [ %s ]
-🏷️ Titles: [ %s ]
-📈 Level: [ %s ]
-🧪 EXP: [ %s ]
+💎 Gems:  %s 
+☠️ Boss Kills:  %s 
+🏷️ Titles:  %s 
+📈 Level:  %s 
+🧪 EXP:  %s 
         ]],
         displayName, gems, bossKills, titleCount, levelText, expText)
 
         -- Embed format
         local embedData = {
-            title = "👑 KimSoi Hub Stats Report 👑",
+            title = "👑 KimSoi Hub Stats 👑",
             description = description,
             color = 0x2F3136, -- Dark grey like your image
             footer = { text = "⏰ Updated every " .. intervalSeconds .. " seconds" }
