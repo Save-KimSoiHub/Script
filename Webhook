@@ -9,6 +9,7 @@ local HttpService = game:GetService("HttpService")
 --// GET PLAYER & MAIN DATA
 local player = Players.LocalPlayer
 local mainData = player:WaitForChild("MAIN_DATA")
+local displayName = player.DisplayName
 local playerGui = player:WaitForChild("PlayerGui")
 local ui = playerGui:WaitForChild("UI")
 local hud = ui:WaitForChild("HUD")
@@ -22,27 +23,33 @@ end
 --// LOOP
 task.spawn(function()
     while true do
-        --// Lấy dữ liệu từ MAIN_DATA
         local gems = mainData:FindFirstChild("Gems") and mainData.Gems.Value or "N/A"
         local bossKills = mainData:FindFirstChild("BossKills") and mainData.BossKills.Value or "N/A"
-
-        -- Đếm số lượng Titles
         local titlesFolder = mainData:FindFirstChild("Titles")
         local titleCount = titlesFolder and #titlesFolder:GetChildren() or 0
-
-        -- Lấy EXP
         local expText = hud:FindFirstChild("EXP") and hud.EXP:FindFirstChild("Shadow") and hud.EXP.Shadow.Text or "?"
-
-        -- Lấy LEVEL (từ HUD.Level.Shadow.Text)
         local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
 
-        -- Gửi Webhook
+        -- Gửi Embed
+        local embedData = {
+            title = "👑 KimSoi Hub Stats Report 👑",
+            description = "🧑 Username: **" .. displayName .. "**",
+            color = 0x00ff00,
+            fields = {
+                { name = "💎 Gems", value = "`" .. tostring(gems) .. "`", inline = true },
+                { name = "☠️ Boss Kills", value = "`" .. tostring(bossKills) .. "`", inline = true },
+                { name = "🏷️ Titles", value = "`" .. tostring(titleCount) .. "`", inline = true },
+                { name = "📈 Level", value = "`" .. tostring(levelText) .. "`", inline = true },
+                { name = "🧪 EXP", value = "`" .. tostring(expText) .. "`", inline = true },
+            },
+            footer = {
+                text = "⏰ Updated every " .. tostring(intervalSeconds) .. " seconds"
+            }
+        }
+
         local body = HttpService:JSONEncode({
-            content = string.format(
-                "📊 **Thống kê tự động**\n> 💎 Gems: `%s`\n> ☠️ Boss Kills: `%s`\n> 🏷️ Titles: `%s`\n> 📈 Level: `%s`\n> 🧪 EXP: `%s`",
-                gems, bossKills, titleCount, levelText, expText
-            ),
-            username = "Roblox Stats Reporter",
+            username = "KimSoi Hub Webhook",
+            embeds = { embedData }
         })
 
         local response = request({
@@ -52,7 +59,7 @@ task.spawn(function()
             Body = body
         })
 
-        print("✅ Đã gửi webhook - Status:", response.StatusCode)
+        print("✅ Gửi embed thành công - Status:", response.StatusCode)
         task.wait(intervalSeconds)
     end
 end)
