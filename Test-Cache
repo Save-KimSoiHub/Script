@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -719,7 +719,11 @@ local function followBoss(bossModel)
     local humanoid = bossModel:FindFirstChild("Humanoid")
     if not hrp or not humanoid then return end
 
-    while humanoid.Health > 0 and shared.autoBoss do
+    print("[Boss] Bắt đầu follow...")
+
+    local bossDied = false
+
+    while shared.autoBoss and humanoid.Parent and bossModel:IsDescendantOf(workspace) and humanoid.Health > 0 do
         local character = LocalPlayer.Character
         if character and character:FindFirstChild("HumanoidRootPart") then
             character.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
@@ -727,32 +731,38 @@ local function followBoss(bossModel)
         task.wait(0.1)
     end
 
-    print("[Boss] Đã bị tiêu diệt")
+    -- Boss thực sự chết
+    if humanoid and humanoid.Health <= 0 then
+        bossDied = true
+    end
 
-    if shared.autoFarm then
+    print("[Boss] Kết thúc follow. BossDied =", bossDied)
+
+    -- ✅ Chỉ teleport nếu boss chết
+    if bossDied and shared.autoFarm then
         shared.forceUnlock = false
         isTeleported = false
         shared.bienCaoCap = false
         task.wait(1)
-	local Players = game:GetService("Players")
-	local RunService = game:GetService("RunService")
-	local player = Players.LocalPlayer
-	local character = player.Character or player.CharacterAdded:Wait()
-	local hrp = character:WaitForChild("HumanoidRootPart")
-	
-	if not shared.myPos then return end
-	
-	local finished = false
-	repeat
-	    if not hrp or not hrp.Parent then break end
-	    hrp.CFrame = CFrame.new(shared.myPos)
-	    task.wait()
-	until (hrp.Position - shared.myPos).Magnitude < 5
+
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+
+        if not shared.myPos then return end
+
+        repeat
+            character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            hrp = character:FindFirstChild("HumanoidRootPart")
+            if not hrp or not hrp.Parent then break end
+            hrp.CFrame = CFrame.new(shared.myPos)
+            task.wait()
+        until (hrp.Position - shared.myPos).Magnitude < 5
+
         shared.autoFarmToggleRef:SetValue(false)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
     else
-        print("Không Gọi Hàm Teleport")
+        print("Không teleport vì boss chưa chết")
     end
 end
 
