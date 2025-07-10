@@ -1,0 +1,58 @@
+--// CONFIG
+local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd"
+local intervalSeconds = 60
+
+--// SERVICES
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+--// GET PLAYER & MAIN DATA
+local player = Players.LocalPlayer
+local mainData = player:WaitForChild("MAIN_DATA")
+local playerGui = player:WaitForChild("PlayerGui")
+local ui = playerGui:WaitForChild("UI")
+local hud = ui:WaitForChild("HUD")
+
+--// HTTP Request function
+local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
+if not request then
+    return warn("❌ Executor không hỗ trợ HTTP Request!")
+end
+
+--// LOOP
+task.spawn(function()
+    while true do
+        --// Lấy dữ liệu từ MAIN_DATA
+        local gems = mainData:FindFirstChild("Gems") and mainData.Gems.Value or "N/A"
+        local bossKills = mainData:FindFirstChild("BossKills") and mainData.BossKills.Value or "N/A"
+
+        -- Đếm số lượng Titles
+        local titlesFolder = mainData:FindFirstChild("Titles")
+        local titleCount = titlesFolder and #titlesFolder:GetChildren() or 0
+
+        -- Lấy EXP
+        local expText = hud:FindFirstChild("EXP") and hud.EXP:FindFirstChild("Shadow") and hud.EXP.Shadow.Text or "?"
+
+        -- Lấy LEVEL (từ HUD.Level.Shadow.Text)
+        local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
+
+        -- Gửi Webhook
+        local body = HttpService:JSONEncode({
+            content = string.format(
+                "📊 **Thống kê tự động**\n> 💎 Gems: `%s`\n> ☠️ Boss Kills: `%s`\n> 🏷️ Titles: `%s`\n> 📈 Level: `%s`\n> 🧪 EXP: `%s`",
+                gems, bossKills, titleCount, levelText, expText
+            ),
+            username = "Roblox Stats Reporter",
+        })
+
+        local response = request({
+            Url = webhookUrl,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = body
+        })
+
+        print("✅ Đã gửi webhook - Status:", response.StatusCode)
+        task.wait(intervalSeconds)
+    end
+end)
