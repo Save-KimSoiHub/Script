@@ -23,7 +23,7 @@ task.spawn(function()
         local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
 
 local description = string.format([[
-🧑 Name: **@%s** (**%s**)
+👤 Name: **@%s** (**%s**)
 💎 Gems:  %s 
 🔪 Boss Kills:  %s 
 🏆 Titles:  %s 
