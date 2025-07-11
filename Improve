@@ -38,6 +38,7 @@ local Tabs = {
     Player = Window:AddTab({ Title = "Player", Icon = "" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
     Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
+    Webhook = Window:AddTab({ Title = "Webhook", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
     Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
