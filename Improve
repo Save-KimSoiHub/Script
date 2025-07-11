@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1343,6 +1343,7 @@ end)
     end
 })
 
+-- Input webhook link
 local WebhookInputBox = Tabs.Webhook:AddInput("JobIdInput", {
     Title = "Enter Webhook Link Here!",
     Default = "",
@@ -1352,13 +1353,97 @@ local WebhookInputBox = Tabs.Webhook:AddInput("JobIdInput", {
     end
 })
 
--- Nút Clear Input
+-- Clear nút
 Tabs.Webhook:AddButton({
     Title = "Clear Fast Webhook Link Entered !",
-    Description = "",
     Callback = function()
-         shared.WebhookInput = ""
+        shared.WebhookInput = ""
         WebhookInputBox:SetValue("")
+    end
+})
+
+-- Nhập thời gian gửi (phút)
+Tabs.Webhook:AddInput("TimeToSend", {
+    Title = "Enter Number of Minutes Between Each Send",
+    Default = "5",
+    Placeholder = "5",
+    Numeric = true,
+    Callback = function(value)
+        TimeToSendWebHook = tonumber(value) or 5
+    end
+})
+
+-- ✅ Toggle gửi webhook
+Tabs.Webhook:AddToggle("SendWebhookToggle", {
+    Title = "Send Stats To Webhook With Minutes Entered !",
+    Default = false,
+    Callback = function(state)
+        shared.WebhookEnabled = state
+        print("📡 Webhook Enabled:", state)
+
+        if state then
+            -- ✅ Nếu bật lần đầu -> khởi động vòng gửi
+            task.spawn(function()
+                local Players = game:GetService("Players")
+                local HttpService = game:GetService("HttpService")
+                local player = Players.LocalPlayer
+                local mainData = player:WaitForChild("MAIN_DATA")
+                local username = player.Name
+                local displayName = player.DisplayName
+                local playerGui = player:WaitForChild("PlayerGui")
+                local ui = playerGui:WaitForChild("UI")
+                local hud = ui:WaitForChild("HUD")
+                local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
+                if not request then
+                    return warn("❌ Executor không hỗ trợ HTTP Request!")
+                end
+
+                while shared.WebhookEnabled do
+                    local webhookUrl = shared.WebhookInput
+                    if webhookUrl == "" or not webhookUrl:find("discord.com/api/webhooks") then
+                        warn("❌ Webhook URL không hợp lệ hoặc chưa nhập!")
+                        break
+                    end
+
+                    local gems = mainData:FindFirstChild("Gems") and mainData.Gems.Value or "N/A"
+                    local bossKills = mainData:FindFirstChild("BossKills") and mainData.BossKills.Value or "N/A"
+                    local titlesFolder = mainData:FindFirstChild("Titles")
+                    local titleCount = titlesFolder and #titlesFolder:GetChildren() or 0
+                    local expText = hud:FindFirstChild("EXP") and hud.EXP:FindFirstChild("Shadow") and hud.EXP.Shadow.Text or "?"
+                    local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
+
+                    local description = string.format([[
+👤 Name: **@%s** (**%s**)
+💎 Gems:  %s 
+🔪 Boss Kills:  %s 
+🏆 Titles:  %s 
+📈 Level:  %s (%s)
+]], username, displayName, gems, bossKills, titleCount, levelText, expText)
+
+                    local embedData = {
+                        title = "👑 KimSoi Hub Stats Notify 👑",
+                        description = description,
+                        color = 0x00ff00,
+                        footer = { text = "⏰ Updated every " .. TimeToSendWebHook .. " Minutes" }
+                    }
+
+                    local body = HttpService:JSONEncode({
+                        username = "KimSoi Hub Webhook",
+                        embeds = { embedData }
+                    })
+
+                    local response = request({
+                        Url = webhookUrl,
+                        Method = "POST",
+                        Headers = {["Content-Type"] = "application/json"},
+                        Body = body
+                    })
+
+                    print("✅ Đã gửi Webhook Stats - Status:", response.StatusCode)
+                    task.wait((TimeToSendWebHook or 5) * 60)
+                end
+            end)
+        end
     end
 })
 
