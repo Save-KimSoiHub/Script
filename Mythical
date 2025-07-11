@@ -1,30 +1,35 @@
+-- Nhận kiểu spin từ bên ngoài
 local spinType = getgenv().spinType or "Normal"
+if spinType ~= "Fast" and spinType ~= "Normal" then
+    warn("❌ spinType không hợp lệ! Mặc định là 'Normal'")
+    spinType = "Normal"
+end
 
-
+--// AUTO REDEEM CODE TRƯỚC
 task.spawn(function()
     pcall(function()
-        --// AUTO REDEEM CODE TRƯỚC
-local codes = {
-    "WOW850", "860KHYPEE", "870OMG!", "LOLX880K!", "IAMLEOPARD",
-    "BIGUPDATE20", "ANTICIPATION", "BIGDAY", "MAGNIFICENT890K!!",
-    "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY", "940KHAPPYDAYZ", "950KOMGGG!", "LOL960K!"
-}
+        local codes = {
+            "WOW850", "860KHYPEE", "870OMG!", "LOLX880K!", "IAMLEOPARD",
+            "BIGUPDATE20", "ANTICIPATION", "BIGDAY", "MAGNIFICENT890K!!",
+            "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY",
+            "940KHAPPYDAYZ", "950KOMGGG!", "LOL960K!"
+        }
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Replicator = ReplicatedStorage:WaitForChild("Replicator")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Replicator = ReplicatedStorage:WaitForChild("Replicator")
 
-for _, code in ipairs(codes) do
-    local args = {"Codes", "Redeem", {["Code"] = code}}
-    local success, result = pcall(function()
-        return Replicator:InvokeServer(unpack(args))
-    end)
-    if success then
-        print("Đã thử code:", code, "=>", result)
-    else
-        print("Lỗi code:", code)
-    end
-    task.wait(1)
-end
+        for _, code in ipairs(codes) do
+            local args = {"Codes", "Redeem", {["Code"] = code}}
+            local success, result = pcall(function()
+                return Replicator:InvokeServer(unpack(args))
+            end)
+            if success then
+                print("✅ Đã thử code:", code, "=>", result)
+            else
+                print("❌ Lỗi code:", code)
+            end
+            task.wait(1)
+        end
     end)
 end)
 
@@ -59,11 +64,14 @@ end
 
 task.wait(10)
 
---Auto Spin + Thông Báo
+--// AUTO SPIN + THÔNG BÁO
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Replicator = ReplicatedStorage:WaitForChild("Replicator")
 
 local rareFruits = {
     "DarkXQuake", "Soul", "DragonV2", "DoughV2", "Nika", "LeopardV2",
-    "Ope", "Okuchi", "Soul", "Lightning"
+    "Ope", "Okuchi", "Lightning"
 }
 
 local function isRare(fruitName)
@@ -75,7 +83,6 @@ local function isRare(fruitName)
     return false
 end
 
-local player = game.Players.LocalPlayer
 local username = player.Name
 local currentSlot = 1
 local maxSlot = 4
@@ -83,7 +90,6 @@ local autoSpin = true
 
 -- Tạo GUI hiện vĩnh viễn thông tin trái hiếm
 local function showRareFruitNotification(fruitName)
-    -- Kiểm tra nếu GUI đã tồn tại
     local gui = player:WaitForChild("PlayerGui"):FindFirstChild("RareFruitNotifier")
     if not gui then
         gui = Instance.new("ScreenGui")
@@ -117,9 +123,7 @@ local function showRareFruitNotification(fruitName)
         label.Text = "🎯 " .. username .. " Got Good Fruit: " .. fruitName
         label.Parent = scroll
 
-        -- Cập nhật canvas
-        local total = #scroll:GetChildren() * 30
-        scroll.CanvasSize = UDim2.new(0, 0, 0, total + 10)
+        scroll.CanvasSize = UDim2.new(0, 0, 0, #scroll:GetChildren() * 30 + 10)
     end
 end
 
@@ -128,6 +132,7 @@ local function getEquippedFruit()
     return slot and slot.Value or nil
 end
 
+-- Bắt đầu vòng lặp auto spin
 while autoSpin do
     local equipped = getEquippedFruit()
     print("Slot", currentSlot, "cầm:", equipped)
@@ -147,7 +152,10 @@ while autoSpin do
         end
     else
         print("🔄 Spin tiếp...")
-        Replicator:InvokeServer("FruitsHandler", "Spin", {Type = spinType})
+
+        local spinArgs = spinType == "Fast" and {Type = "Fast"} or {}
+        Replicator:InvokeServer("FruitsHandler", "Spin", spinArgs)
+
         task.wait(2.5)
     end
 
