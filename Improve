@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2047,7 +2047,7 @@ function startAutoSpin()
                 print("🔁 Spin tiếp...")
             end
 
-            task.wait(3.5)
+            task.wait(1)
         end
     end)
 end
