@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1400,7 +1400,7 @@ Tabs.Webhook:AddToggle("SendWebhookToggle", {
 })
 
 Tabs.Webhook:AddToggle("SendRareFruitToggle", {
-    Title = "Send to webhook when auto spin got good fruit",
+    Title = "Send To Webhook When Auto Spin Got Good Fruit",
     Default = false,
     Callback = function(state)
         shared.EnableSendWebhook = state
@@ -2201,7 +2201,7 @@ function startAutoSpin()
 
             if result and isRare(result) then
                 print("🎉 DỪNG! Gặp trái hiếm:", result)
-		sendRareFruitToDiscord(result)
+		if shared.EnableSendWebhook and sendRareFruitToDiscord then sendRareFruitToDiscord(result) end
                 _G.autoSpinEnabled = false
                 if autoSpinToggleRef and autoSpinToggleRef.SetValue then
                     autoSpinToggleRef:SetValue(false)
