@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -202,54 +202,6 @@ end
 assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
-
--- Đặt đoạn này ở đầu script chính của bạn, hoặc ngay sau khi load UI xong là tốt nhất
-local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd"
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local username = player.Name
-local displayName = player.DisplayName
-local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
-
-if not request then
-    return warn("❌ Executor không hỗ trợ HTTP Request!")
-end
-
--- Gán hàm vào getgenv để dùng ở mọi nơi
-getgenv().sendRareFruitToDiscord = function(result)
-    local embedData = {
-        title = "👑 KimSoi Hub Auto Spin Notify 👑",
-        description = string.format("👤 **Name:** @%s (**%s**)", username, displayName),
-        color = 0x00ff00,
-        fields = {
-            {
-                name = "🍀 Got Good Fruit: **" .. result .. "**",
-                value = " ",
-                inline = false
-            }
-        },
-        footer = {
-            text = "🎯 Auto Spin Notify - KimSoi Hub"
-        }
-    }
-
-    local body = HttpService:JSONEncode({
-        username = "KimSoi Hub Webhook",
-        embeds = { embedData }
-    })
-
-    local response = request({
-        Url = webhookUrl,
-        Method = "POST",
-        Headers = {["Content-Type"] = "application/json"},
-        Body = body
-    })
-
-    if response then
-        print("✅ Đã gửi thông báo trái hiếm:", result)
-    end
-end
 
 Tabs.Main:AddParagraph({
     Title = "Turn On Auto Load Last Used Config In Setting !",
@@ -1443,6 +1395,64 @@ Tabs.Webhook:AddToggle("SendWebhookToggle", {
                     task.wait((TimeToSendWebHook or 5) * 60)
                 end
             end)
+        end
+    end
+})
+
+Tabs.Webhook:AddToggle("SendRareFruitToggle", {
+    Title = "Send to webhook when auto spin got good fruit",
+    Default = false,
+    Callback = function(state)
+        shared.EnableSendWebhook = state
+        print("🍍 SendRareFruitWebhook Enabled:", state)
+
+        if state and not getgenv().sendRareFruitToDiscord then
+            -- ✅ Tạo hàm webhook nếu chưa tồn tại
+            local HttpService = game:GetService("HttpService")
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local username = player.Name
+            local displayName = player.DisplayName
+            local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
+
+            if not request then
+                return warn("❌ Executor không hỗ trợ HTTP Request!")
+            end
+
+            -- Gán hàm vào getgenv
+            getgenv().sendRareFruitToDiscord = function(result)
+                local embedData = {
+                    title = "👑 KimSoi Hub Auto Spin Notify 👑",
+                    description = string.format("👤 **Name:** @%s (**%s**)", username, displayName),
+                    color = 0x00ff00,
+                    fields = {
+                        {
+                            name = "🍀 Got Good Fruit: **" .. result .. "**",
+                            value = " ",
+                            inline = false
+                        }
+                    },
+                    footer = {
+                        text = "🎯 Auto Spin Notify - KimSoi Hub"
+                    }
+                }
+
+                local body = HttpService:JSONEncode({
+                    username = "KimSoi Hub Webhook",
+                    embeds = { embedData }
+                })
+
+                local response = request({
+                    Url = shared.WebhookInput,
+                    Method = "POST",
+                    Headers = {["Content-Type"] = "application/json"},
+                    Body = body
+                })
+
+                if response then
+                    print("✅ Đã gửi thông báo trái hiếm:", result)
+                end
+            end
         end
     end
 })
