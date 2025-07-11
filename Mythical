@@ -1,5 +1,9 @@
 local spinType = getgenv().spinType or "Normal"
---// AUTO REDEEM CODE TRƯỚC
+
+
+task.spawn(function()
+    pcall(function()
+        --// AUTO REDEEM CODE TRƯỚC
 local codes = {
     "WOW850", "860KHYPEE", "870OMG!", "LOLX880K!", "IAMLEOPARD",
     "BIGUPDATE20", "ANTICIPATION", "BIGDAY", "MAGNIFICENT890K!!",
@@ -21,6 +25,8 @@ for _, code in ipairs(codes) do
     end
     task.wait(1)
 end
+    end)
+end)
 
 --// AUTO NHẤN NÚT SPIN + ENTER
 local GuiService = game:GetService("GuiService")
