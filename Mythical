@@ -155,8 +155,6 @@ while autoSpin do
 
         local spinArgs = spinType == "Fast" and {Type = "Fast"} or {}
         Replicator:InvokeServer("FruitsHandler", "Spin", spinArgs)
-
-        task.wait(1)
     end
 
     task.wait(1)
