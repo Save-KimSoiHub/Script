@@ -218,18 +218,18 @@ end
 -- Gán hàm vào getgenv để dùng ở mọi nơi
 getgenv().sendRareFruitToDiscord = function(result)
     local embedData = {
-        title = "👑 KimSoi Hub Stats Notify 👑",
-        description = string.format("🙂 **Name:** @%s (**%s**)", username, displayName),
+        title = "👑 KimSoi Hub Auto Spin Notify 👑",
+        description = string.format("👤 **Name:** @%s (**%s**)", username, displayName),
         color = 0x00ff00,
         fields = {
             {
-                name = "🍉 Got Good Fruit",
-                value = "**" .. result .. "**",
+                name = "🍀 Got Good Fruit: **" .. result .. "**",
+                value = " ",
                 inline = false
             }
         },
         footer = {
-            text = "🎯 Auto Spin - KimSoi Hub"
+            text = "🎯 Auto Spin Notify - KimSoi Hub"
         }
     }
 
