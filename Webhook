@@ -1,4 +1,4 @@
-local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd" -- Thay webhook của bạn ở đây
+local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd"
 local intervalSeconds = 1 --Nhập Phút 
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -24,8 +24,6 @@ task.spawn(function()
 
 local description = string.format([[
 🧑 Name: **@%s** (**%s**)
-
-📊 **Stats**
 💎 Gems:  %s 
 🔪 Boss Kills:  %s 
 🏆 Titles:  %s 
