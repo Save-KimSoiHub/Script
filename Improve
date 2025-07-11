@@ -1157,7 +1157,7 @@ local jobIdInputBox = Tabs.Sever:AddInput("JobIdInput", {
 
 -- Nút Clear Input
 Tabs.Sever:AddButton({
-    Title = "Clear Job ID Input",
+    Title = "Clear Fast Job ID Entered !",
     Description = "",
     Callback = function()
         shared.jobIdInput = ""
@@ -1340,6 +1340,25 @@ game:GetService("Players").LocalPlayer.Idled:Connect(function()
     vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
         end
+    end
+})
+
+local WebhookInputBox = Tabs.Webhook:AddInput("JobIdInput", {
+    Title = "Enter Webhook Link Here!",
+    Default = "",
+    Placeholder = "Enter Webhook Link",
+    Callback = function(value)
+        shared.WebhookInput = value
+    end
+})
+
+-- Nút Clear Input
+Tabs.Webhook:AddButton({
+    Title = "Clear Fast Webhook Link Entered !",
+    Description = "",
+    Callback = function()
+         shared.WebhookInput = ""
+        WebhookInputBox:SetValue("")
     end
 })
 
