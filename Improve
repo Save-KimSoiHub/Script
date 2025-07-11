@@ -1316,7 +1316,7 @@ Tabs.Webhook:AddButton({
 
 -- Nhập thời gian gửi (phút)
 Tabs.Webhook:AddInput("TimeToSend", {
-    Title = "Enter Time To Send Again (Minutes)",
+    Title = "Enter Minutes To Send Again",
     Default = "5",
     Placeholder = "5",
     Numeric = true,
