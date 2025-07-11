@@ -1,6 +1,6 @@
 --// CONFIG
 local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd" -- Thay webhook của bạn ở đây
-local intervalSeconds = 60
+local intervalSeconds = 1 --Nhập Phút 
 
 --// SERVICES
 local Players = game:GetService("Players")
@@ -9,6 +9,7 @@ local HttpService = game:GetService("HttpService")
 --// GET PLAYER & MAIN DATA
 local player = Players.LocalPlayer
 local mainData = player:WaitForChild("MAIN_DATA")
+local username = player.Name
 local displayName = player.DisplayName
 local playerGui = player:WaitForChild("PlayerGui")
 local ui = playerGui:WaitForChild("UI")
@@ -32,24 +33,22 @@ task.spawn(function()
         local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
 
         -- Build description (giống ảnh mẫu)
-        local description = string.format([[
-🧑 Username: **%s**
+local description = string.format([[
+🧑 Name: **@%s** (%s)
 
 📊 **Stats**
 💎 Gems:  %s 
-☠️ Boss Kills:  %s 
-🏷️ Titles:  %s 
-📈 Level:  %s 
-🧪 EXP:  %s 
-        ]],
-        displayName, gems, bossKills, titleCount, levelText, expText)
+🔪 Boss Kills:  %s 
+🏆 Titles:  %s 
+📈 Level:  %s (%s)
+]], username, displayName, gems, bossKills, titleCount, levelText, expText)
 
         -- Embed format
         local embedData = {
-            title = "👑 KimSoi Hub Stats 👑",
+            title = "👑 KimSoi Hub Stats Notify 👑",
             description = description,
-            color = 0x2F3136, -- Dark grey like your image
-            footer = { text = "⏰ Updated every " .. intervalSeconds .. " seconds" }
+            color = 0x00ff00,
+            footer = { text = "⏰ Updated every " .. intervalSeconds .. " Minutes" }
         }
 
         local body = HttpService:JSONEncode({
@@ -65,6 +64,6 @@ task.spawn(function()
         })
 
         print("✅ Gửi embed thành công - Status:", response.StatusCode)
-        task.wait(intervalSeconds)
+        task.wait(intervalSeconds * 60)
     end
 end)
