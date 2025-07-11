@@ -1,12 +1,7 @@
---// CONFIG
 local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd" -- Thay webhook của bạn ở đây
 local intervalSeconds = 1 --Nhập Phút 
-
---// SERVICES
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-
---// GET PLAYER & MAIN DATA
 local player = Players.LocalPlayer
 local mainData = player:WaitForChild("MAIN_DATA")
 local username = player.Name
@@ -14,17 +9,12 @@ local displayName = player.DisplayName
 local playerGui = player:WaitForChild("PlayerGui")
 local ui = playerGui:WaitForChild("UI")
 local hud = ui:WaitForChild("HUD")
-
---// HTTP Request function
 local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
 if not request then
     return warn("❌ Executor không hỗ trợ HTTP Request!")
 end
-
---// LOOP
 task.spawn(function()
     while true do
-        -- Lấy dữ liệu
         local gems = mainData:FindFirstChild("Gems") and mainData.Gems.Value or "N/A"
         local bossKills = mainData:FindFirstChild("BossKills") and mainData.BossKills.Value or "N/A"
         local titlesFolder = mainData:FindFirstChild("Titles")
@@ -32,9 +22,8 @@ task.spawn(function()
         local expText = hud:FindFirstChild("EXP") and hud.EXP:FindFirstChild("Shadow") and hud.EXP.Shadow.Text or "?"
         local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
 
-        -- Build description (giống ảnh mẫu)
 local description = string.format([[
-🧑 Name: **@%s** (%s)
+🧑 Name: **@%s** (**%s**)
 
 📊 **Stats**
 💎 Gems:  %s 
@@ -43,7 +32,6 @@ local description = string.format([[
 📈 Level:  %s (%s)
 ]], username, displayName, gems, bossKills, titleCount, levelText, expText)
 
-        -- Embed format
         local embedData = {
             title = "👑 KimSoi Hub Stats Notify 👑",
             description = description,
