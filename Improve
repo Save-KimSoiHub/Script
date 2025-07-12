@@ -40,7 +40,7 @@ local Tabs = {
     Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
     Webhook = Window:AddTab({ Title = "Webhook", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
-    Setting = Window:AddTab({ Title = "Setting-Auto Load Configzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",Icon = ""}),
+    Setting = Window:AddTab({ Title = "Setting-Auto Load Config",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
 }
 InterfaceManager:SetLibrary(Fluent)
