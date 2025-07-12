@@ -5,8 +5,8 @@ if spinType ~= "Fast" and spinType ~= "Normal" then
     spinType = "Normal"
 end
 
-shared.WebhookKaitunMythic = getgenv().Webhook or " "
-if #shared.WebhookKaitunMythic > 30 then
+shared.WebhookKaitun = getgenv().Webhook or " "
+if #shared.WebhookKaitun > 30 then
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -42,7 +42,7 @@ getgenv().sendRareFruitToDiscord = function(result)
     })
 
     local response = request({
-        Url = webhookUrl,
+        Url = shared.WebhookKaitun,
         Method = "POST",
         Headers = {["Content-Type"] = "application/json"},
         Body = body
