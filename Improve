@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -753,16 +753,23 @@ local function followBoss(bossModel)
 
     -- ✅ Chỉ teleport nếu boss chết
     if bossDied and shared.autoFarm then
+	if shared.SelectedBoss == "None" then return end
+	if shared.SelectedBoss == shared.BossName then
+	    shared.autoBossToggleRef:SetValue(true)
+	elseif shared.SelectedBoss == "Katakuri" then
+	    shared.autoKatakuriToggleRef:SetValue(true)
+	elseif shared.SelectedBoss == ("Katakuri + " .. shared.BossName) then
+	    shared.autoBossToggleRef:SetValue(true)
+	    shared.autoKatakuriToggleRef:SetValue(true)
+	end
+	task.wait(1)
         shared.forceUnlock = false
         isTeleported = false
         shared.bienCaoCap = false
         task.wait(1)
-
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:WaitForChild("HumanoidRootPart")
-
         if not shared.myPos then return end
-
         repeat
             character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
             hrp = character:FindFirstChild("HumanoidRootPart")
@@ -770,7 +777,6 @@ local function followBoss(bossModel)
             hrp.CFrame = CFrame.new(shared.myPos)
             task.wait()
         until (hrp.Position - shared.myPos).Magnitude < 5
-
         shared.autoFarmToggleRef:SetValue(false)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
@@ -1883,11 +1889,32 @@ Tabs.Main:AddInput("TimeToWaitInput", {
         shared.timeToWait = tonumber(value) or 20
     end
 })
+local bossDropdownOptions = {
+    "None",
+    shared.BossName
+}
+if game.PlaceId == 16190471004 then
+    table.insert(bossDropdownOptions, "Katakuri")
+    table.insert(bossDropdownOptions, "Katakuri + " .. shared.BossName)
+end
+
+-- Tạo dropdown trong tab Main
+Tabs.Main:AddDropdown("Select Boss", {
+    Title = "Auto Find Boss Again When Boss Dead",
+    Values = bossDropdownOptions,
+    Multi = false,
+    Default = "None",
+    Callback = function(selected)
+        shared.SelectedBoss = selected
+    end
+})
+
+
 -- Auto Find Boss
 local autoBossToggleRef = nil
 
 shared.autoBossToggleRef = Tabs.Main:AddToggle("Auto Find Boss", {
-    Title = "Auto Find Boss" .. shared.BossName,
+    Title = "Auto Find Boss " .. shared.BossName,
     Default = false,
     Callback = function(value)
         shared.AutoFindBoss = value
