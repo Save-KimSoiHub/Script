@@ -22,7 +22,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "KimSoi Hub [Basic]",
-    SubTitle = "By KimSoi   Turn On Auto Load Last Used Config In Setting Tab !",
+    SubTitle = "By KimSoi",
     TabWidth = 160,
     Size = UDim2.fromOffset(540, 450),
     Acrylic = false,
@@ -40,7 +40,7 @@ local Tabs = {
     Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
     Webhook = Window:AddTab({ Title = "Webhook", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
-    Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
+    Setting = Window:AddTab({ Title = "Setting-Auto Load Config",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
 }
 InterfaceManager:SetLibrary(Fluent)
@@ -1896,7 +1896,7 @@ end
 
 -- Tạo dropdown trong tab Main
 Tabs.Main:AddDropdown("Select Boss", {
-    Title = "Select Boss Re-Find If Boss Death",
+    Title = "Select Boss Re-Find If Boss Die",
     Values = bossDropdownOptions,
     Multi = false,
     Default = "None",
