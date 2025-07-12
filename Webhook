@@ -1,55 +1,209 @@
-local webhookUrl = "https://discord.com/api/webhooks/1392855897461751829/rMyqsqnlcKtuBi2HYGTeEpCsgqVnS0RdEEjDmiaDJCYL6tJyKkHjXixULRNOHe2MWHSd"
-local intervalSeconds = 1 --Nhập Phút 
-local Players = game:GetService("Players")
+-- Nhận kiểu spin từ bên ngoài
+local spinType = getgenv().spinType or "Normal"
+if spinType ~= "Fast" and spinType ~= "Normal" then
+    warn("❌ spinType không hợp lệ! Mặc định là 'Normal'")
+    spinType = "Normal"
+end
+
+shared.WebhookKaitunMythic = getgenv().Webhook or " "
+if #shared.WebhookKaitunMythic > 30 then
 local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-local mainData = player:WaitForChild("MAIN_DATA")
 local username = player.Name
 local displayName = player.DisplayName
-local playerGui = player:WaitForChild("PlayerGui")
-local ui = playerGui:WaitForChild("UI")
-local hud = ui:WaitForChild("HUD")
 local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
+
 if not request then
     return warn("❌ Executor không hỗ trợ HTTP Request!")
 end
+
+-- Gán hàm vào getgenv để dùng ở mọi nơi
+getgenv().sendRareFruitToDiscord = function(result)
+    local embedData = {
+        title = "👑 KimSoi Hub Stats Notify 👑",
+        description = string.format("🙂 **Name:** @%s (**%s**)", username, displayName),
+        color = 0x00ff00,
+        fields = {
+            {
+                name = "🍀 Got Good Fruit: " .. result,
+                value = "⠀",
+                inline = false
+            }
+        },
+        footer = {
+            text = "🎯 Auto Spin - KimSoi Hub"
+        }
+    }
+
+    local body = HttpService:JSONEncode({
+        username = "KimSoi Hub Webhook",
+        embeds = { embedData }
+    })
+
+    local response = request({
+        Url = webhookUrl,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = body
+    })
+
+    if response then
+        print("✅ Đã gửi thông báo trái hiếm:", result)
+    end
+end
+end
+--// AUTO REDEEM CODE TRƯỚC
 task.spawn(function()
-    while true do
-        local gems = mainData:FindFirstChild("Gems") and mainData.Gems.Value or "N/A"
-        local bossKills = mainData:FindFirstChild("BossKills") and mainData.BossKills.Value or "N/A"
-        local titlesFolder = mainData:FindFirstChild("Titles")
-        local titleCount = titlesFolder and #titlesFolder:GetChildren() or 0
-        local expText = hud:FindFirstChild("EXP") and hud.EXP:FindFirstChild("Shadow") and hud.EXP.Shadow.Text or "?"
-        local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
-
-local description = string.format([[
-👤 Name: **@%s** (**%s**)
-💎 Gems:  %s 
-🔪 Boss Kills:  %s 
-🏆 Titles:  %s 
-📈 Level:  %s (%s)
-]], username, displayName, gems, bossKills, titleCount, levelText, expText)
-
-        local embedData = {
-            title = "👑 KimSoi Hub Stats Notify 👑",
-            description = description,
-            color = 0x00ff00,
-            footer = { text = "⏰ Updated every " .. intervalSeconds .. " Minutes" }
+    pcall(function()
+        local codes = {
+            "WOW850", "860KHYPEE", "870OMG!", "LOLX880K!", "IAMLEOPARD",
+            "BIGUPDATE20", "ANTICIPATION", "BIGDAY", "MAGNIFICENT890K!!",
+            "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY",
+            "940KHAPPYDAYZ", "950KOMGGG!", "LOL960K!"
         }
 
-        local body = HttpService:JSONEncode({
-            username = "KimSoi Hub Webhook",
-            embeds = { embedData }
-        })
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Replicator = ReplicatedStorage:WaitForChild("Replicator")
 
-        local response = request({
-            Url = webhookUrl,
-            Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = body
-        })
-
-        print("✅ Gửi embed thành công - Status:", response.StatusCode)
-        task.wait(intervalSeconds * 60)
-    end
+        for _, code in ipairs(codes) do
+            local args = {"Codes", "Redeem", {["Code"] = code}}
+            local success, result = pcall(function()
+                return Replicator:InvokeServer(unpack(args))
+            end)
+            if success then
+                print("✅ Đã thử code:", code, "=>", result)
+            else
+                print("❌ Lỗi code:", code)
+            end
+            task.wait(1)
+        end
+    end)
 end)
+
+--// AUTO NHẤN NÚT SPIN + ENTER
+local GuiService = game:GetService("GuiService")
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local player = Players.LocalPlayer
+local gui = player:WaitForChild("PlayerGui")
+local spinButton = nil
+
+while not spinButton do
+    local success, result = pcall(function()
+        return gui:WaitForChild("UI"):WaitForChild("MainMenu")
+            :WaitForChild("Buttons"):FindFirstChild("Spin")
+    end)
+    if success and result and result:IsA("GuiButton") and result.Visible then
+        spinButton = result
+    end
+    task.wait(0.2)
+end
+
+spinButton.Selectable = true
+GuiService.SelectedObject = spinButton
+task.wait(0.5)
+
+for i = 1, 3 do
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+    task.wait(0.5)
+end
+
+task.wait(1)
+
+--// AUTO SPIN + THÔNG BÁO
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Replicator = ReplicatedStorage:WaitForChild("Replicator")
+
+local rareFruits = {
+    "DarkXQuake", "Soul", "DragonV2", "DoughV2", "Nika", "LeopardV2",
+    "Ope", "Okuchi", "Lightning", "Chop"
+}
+
+local function isRare(fruitName)
+    for _, v in ipairs(rareFruits) do
+        if string.lower(v) == string.lower(fruitName) then
+            return true
+        end
+    end
+    return false
+end
+
+local username = player.Name
+local currentSlot = 1
+local maxSlot = 4
+local autoSpin = true
+
+-- Tạo GUI hiện vĩnh viễn thông tin trái hiếm
+local function showRareFruitNotification(fruitName)
+    local gui = player:WaitForChild("PlayerGui"):FindFirstChild("RareFruitNotifier")
+    if not gui then
+        gui = Instance.new("ScreenGui")
+        gui.Name = "RareFruitNotifier"
+        gui.ResetOnSpawn = false
+        gui.IgnoreGuiInset = true
+        gui.Parent = player:WaitForChild("PlayerGui")
+
+        local scroll = Instance.new("ScrollingFrame")
+        scroll.Name = "Scroll"
+        scroll.Size = UDim2.new(0.6, 0, 0.4, 0)
+        scroll.Position = UDim2.new(0.2, 0, 0.3, 0)
+        scroll.CanvasSize = UDim2.new(0, 0, 5, 0)
+        scroll.ScrollBarThickness = 6
+        scroll.BackgroundTransparency = 0.2
+        scroll.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        scroll.BorderSizePixel = 0
+        scroll.Parent = gui
+    end
+
+    local scroll = gui:FindFirstChild("Scroll")
+    if scroll then
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, -10, 0, 30)
+        label.Position = UDim2.new(0, 5, 0, #scroll:GetChildren() * 30)
+        label.BackgroundTransparency = 1
+        label.TextColor3 = Color3.fromRGB(255, 255, 0)
+        label.TextStrokeTransparency = 0
+        label.Font = Enum.Font.FredokaOne
+        label.TextScaled = true
+        label.Text = "🎯 " .. username .. " Got Good Fruit: " .. fruitName
+        label.Parent = scroll
+
+        scroll.CanvasSize = UDim2.new(0, 0, 0, #scroll:GetChildren() * 30 + 10)
+    end
+end
+
+local function getEquippedFruit()
+    local slot = player:FindFirstChild("MAIN_DATA") and player.MAIN_DATA.Slots[tostring(currentSlot)]
+    return slot and slot.Value or nil
+end
+
+-- Bắt đầu vòng lặp auto spin
+while autoSpin do
+    local equipped = getEquippedFruit()
+    print("Slot", currentSlot, "cầm:", equipped)
+
+    if equipped and isRare(equipped) then
+        print("🎯", username, "quay ra trái hiếm:", equipped)
+        showRareFruitNotification(equipped)
+
+        if currentSlot < maxSlot then
+            currentSlot += 1
+            Replicator:InvokeServer("FruitsHandler", "SwitchSlot", {Slot = currentSlot})
+            task.wait(1.5)
+        else
+            print("✅ Dừng spin, đã dùng hết slot.")
+            autoSpin = false
+            break
+        end
+    else
+        print("🔄 Spin tiếp...")
+
+        local spinArgs = spinType == "Fast" and {Type = "Fast"} or {}
+        Replicator:InvokeServer("FruitsHandler", "Spin", spinArgs)
+    end
+
+    task.wait(1)
+end
