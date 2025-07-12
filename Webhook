@@ -1,4 +1,4 @@
--- Nhận kiểu spin từ bên ngoài
+-- Nhận kiểu spin từ bên ngoài !
 local spinType = getgenv().spinType or "Normal"
 if spinType ~= "Fast" and spinType ~= "Normal" then
     warn("❌ spinType không hợp lệ! Mặc định là 'Normal'")
@@ -155,20 +155,23 @@ local function showRareFruitNotification(fruitName)
         scroll.BackgroundTransparency = 0.2
         scroll.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
         scroll.BorderSizePixel = 0
+        scroll.ClipsDescendants = true
         scroll.Parent = gui
 
-        -- Nút ❌ để tắt GUI
+        -- Nút ❌ nằm ở góc phải trên của khung scroll
         local closeButton = Instance.new("TextButton")
         closeButton.Name = "CloseButton"
         closeButton.Size = UDim2.new(0, 30, 0, 30)
-        closeButton.Position = UDim2.new(1, -35, 0, 5)
+        closeButton.Position = UDim2.new(1, -35, 0, 5) -- nằm ở góc phải scroll
+        closeButton.AnchorPoint = Vector2.new(0, 0)
         closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         closeButton.BorderSizePixel = 0
         closeButton.Text = "❌"
         closeButton.TextColor3 = Color3.new(1, 1, 1)
         closeButton.TextScaled = true
         closeButton.Font = Enum.Font.FredokaOne
-        closeButton.Parent = gui
+        closeButton.ZIndex = 2
+        closeButton.Parent = scroll
 
         closeButton.MouseButton1Click:Connect(function()
             gui:Destroy()
@@ -186,6 +189,7 @@ local function showRareFruitNotification(fruitName)
         label.Font = Enum.Font.FredokaOne
         label.TextScaled = true
         label.Text = "🎯 " .. username .. " Got Good Fruit: " .. fruitName
+        label.ZIndex = 1
         label.Parent = scroll
 
         scroll.CanvasSize = UDim2.new(0, 0, 0, #scroll:GetChildren() * 30 + 10)
