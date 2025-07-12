@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1887,7 +1887,7 @@ Tabs.Main:AddInput("TimeToWaitInput", {
 local autoFindToggle
 
 autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
-    Title = "Auto Find " .. shared.BossName .. "
+    Title = "Auto Find " .. shared.BossName .. ",
     Default = false,
     Callback = function(value)
         shared.AutoFindBoss = value
@@ -1981,6 +1981,7 @@ function AutoFindBossFunction()
     end
 end
 -- Auto Find Katakuri
+if game.PlaceId == 16190471004 then
 local autoFindKatakuriToggle
 
 autoFindKatakuriToggle = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
@@ -2089,6 +2090,7 @@ function AutoFindKatakuriFunction()
             autoFindKatakuriToggle:SetValue(false)
         end)
     end
+end
 end
 --Auto Spin
 local player = game:GetService("Players").LocalPlayer
