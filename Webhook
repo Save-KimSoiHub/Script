@@ -105,10 +105,9 @@ spinButton.Selectable = true
 GuiService.SelectedObject = spinButton
 task.wait(0.5)
 
-for i = 1, 3 do
+for i = 1, 1 do
     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-    task.wait(5)
 end
 
 task.wait(1)
