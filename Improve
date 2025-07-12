@@ -1887,7 +1887,7 @@ Tabs.Main:AddInput("TimeToWaitInput", {
 local autoFindToggle
 
 autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
-    Title = "Auto Find " .. shared.BossName,
+    Title = "Auto Find Boss" .. shared.BossName,
     Default = false,
     Callback = function(value)
         shared.AutoFindBoss = value
@@ -1985,7 +1985,7 @@ if game.PlaceId == 16190471004 then
 local autoFindKatakuriToggle
 
 autoFindKatakuriToggle = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
-    Title = "Auto Find Katakuri",
+    Title = "Auto Find Boss Katakuri",
     Default = false,
     Callback = function(value)
         shared.AutoFindKatakuri = value
