@@ -1901,7 +1901,7 @@ end
 
 -- Tạo dropdown trong tab Main
 Tabs.Main:AddDropdown("Select Boss", {
-    Title = "Select Auto Find Boss When Boss Dead",
+    Title = "Select Boss Re-Find When Boss Death",
     Values = bossDropdownOptions,
     Multi = false,
     Default = "None",
