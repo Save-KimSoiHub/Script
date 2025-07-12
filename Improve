@@ -1,4 +1,4 @@
---Main !!!
+--Main
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -40,7 +40,7 @@ local Tabs = {
     Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
     Webhook = Window:AddTab({ Title = "Webhook", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
-    Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
+    Setting = Window:AddTab({ Title = "Setting-Auto Load Config",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
 }
 InterfaceManager:SetLibrary(Fluent)
@@ -760,6 +760,7 @@ local function followBoss(bossModel)
 	    shared.autoKatakuriToggleRef:SetValue(true)
 	elseif shared.SelectedBoss == ("Katakuri + " .. shared.BossName) then
 	    shared.autoBossToggleRef:SetValue(true)
+	    task.wait(1)
 	    shared.autoKatakuriToggleRef:SetValue(true)
 	end
 	task.wait(1)
@@ -1900,7 +1901,7 @@ end
 
 -- Tạo dropdown trong tab Main
 Tabs.Main:AddDropdown("Select Boss", {
-    Title = "Auto Find Boss Again When Boss Dead",
+    Title = "Select Auto Find Boss When Boss Dead",
     Values = bossDropdownOptions,
     Multi = false,
     Default = "None",
