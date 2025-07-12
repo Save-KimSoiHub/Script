@@ -1,4 +1,4 @@
--- Nhận kiểu spin từ bên ngoài !!!
+-- Nhận kiểu spin từ bên ngoài !
 local spinType = getgenv().spinType or "Normal"
 if spinType ~= "Fast" and spinType ~= "Normal" then
     warn("❌ spinType không hợp lệ! Mặc định là 'Normal'")
