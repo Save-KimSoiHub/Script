@@ -22,7 +22,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "KimSoi Hub [Basic]",
-    SubTitle = "By KimSoi",
+    SubTitle = "By KimSoi         Turn On Auto Load Last Used Config In Setting Tab !",
     TabWidth = 160,
     Size = UDim2.fromOffset(540, 450),
     Acrylic = false,
