@@ -7,6 +7,7 @@ end
 
 shared.WebhookKaitun = getgenv().Webhook or " "
 if #shared.WebhookKaitun > 30 then
+shared.kimsoihub = true
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -136,7 +137,6 @@ local currentSlot = 1
 local maxSlot = 4
 local autoSpin = true
 
--- Tạo GUI hiện vĩnh viễn thông tin trái hiếm
 local function showRareFruitNotification(fruitName)
     local gui = player:WaitForChild("PlayerGui"):FindFirstChild("RareFruitNotifier")
     if not gui then
@@ -156,6 +156,23 @@ local function showRareFruitNotification(fruitName)
         scroll.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
         scroll.BorderSizePixel = 0
         scroll.Parent = gui
+
+        -- Nút ❌ để tắt GUI
+        local closeButton = Instance.new("TextButton")
+        closeButton.Name = "CloseButton"
+        closeButton.Size = UDim2.new(0, 30, 0, 30)
+        closeButton.Position = UDim2.new(1, -35, 0, 5)
+        closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        closeButton.BorderSizePixel = 0
+        closeButton.Text = "❌"
+        closeButton.TextColor3 = Color3.new(1, 1, 1)
+        closeButton.TextScaled = true
+        closeButton.Font = Enum.Font.FredokaOne
+        closeButton.Parent = gui
+
+        closeButton.MouseButton1Click:Connect(function()
+            gui:Destroy()
+        end)
     end
 
     local scroll = gui:FindFirstChild("Scroll")
@@ -186,9 +203,8 @@ while autoSpin do
     print("Slot", currentSlot, "cầm:", equipped)
 
     if equipped and isRare(equipped) then
-        print("🎯", username, "quay ra trái hiếm:", equipped)
-        showRareFruitNotification(equipped)
-
+        if shared.kimsoihub then sendRareFruitToDiscord(equipped) end
+        if not shared.kimsoihub then showRareFruitNotification(equipped) end
         if currentSlot < maxSlot then
             currentSlot += 1
             Replicator:InvokeServer("FruitsHandler", "SwitchSlot", {Slot = currentSlot})
