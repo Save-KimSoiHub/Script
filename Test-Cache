@@ -38,8 +38,9 @@ local Tabs = {
     Player = Window:AddTab({ Title = "Player", Icon = "" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "" }),
     Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
+    Webhook = Window:AddTab({ Title = "Webhook", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
-    Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
+    Setting = Window:AddTab({ Title = "Setting-Auto Load Config",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
 }
 InterfaceManager:SetLibrary(Fluent)
@@ -202,10 +203,17 @@ assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
 
-Tabs.Main:AddParagraph({
-    Title = "Turn On Auto Load Last Used Config In Setting !",
-    Content = ""
-})
+-- Gán tên boss vào biến toàn cục shared.BossName theo PlaceId
+shared.BossName = "Unknown"
+
+local placeId = game.PlaceId
+if placeId == 16190471004 then
+    shared.BossName = "Bigmom"
+elseif placeId == 12413901502 then
+    shared.BossName = "Kaido"
+elseif placeId == 9224601490 then
+    shared.BossName = "Macro"
+end
 
 local teleportLockPriority = 0
 local autoFarmEnabled = false
@@ -740,16 +748,24 @@ local function followBoss(bossModel)
 
     -- ✅ Chỉ teleport nếu boss chết
     if bossDied and shared.autoFarm then
+	if shared.SelectedBoss == "None" then return end
+	if shared.SelectedBoss == shared.BossName then
+	    shared.autoBossToggleRef:SetValue(true)
+	elseif shared.SelectedBoss == "Katakuri" then
+	    shared.autoKatakuriToggleRef:SetValue(true)
+	elseif shared.SelectedBoss == ("Katakuri + " .. shared.BossName) then
+	    shared.autoBossToggleRef:SetValue(true)
+	    task.wait(1)
+	    shared.autoKatakuriToggleRef:SetValue(true)
+	end
+	task.wait(1)
         shared.forceUnlock = false
         isTeleported = false
         shared.bienCaoCap = false
         task.wait(1)
-
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:WaitForChild("HumanoidRootPart")
-
         if not shared.myPos then return end
-
         repeat
             character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
             hrp = character:FindFirstChild("HumanoidRootPart")
@@ -757,7 +773,6 @@ local function followBoss(bossModel)
             hrp.CFrame = CFrame.new(shared.myPos)
             task.wait()
         until (hrp.Position - shared.myPos).Magnitude < 5
-
         shared.autoFarmToggleRef:SetValue(false)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
@@ -1108,7 +1123,7 @@ local jobIdInputBox = Tabs.Sever:AddInput("JobIdInput", {
 
 -- Nút Clear Input
 Tabs.Sever:AddButton({
-    Title = "Clear Job ID Input",
+    Title = "Clear Fast Job ID Entered !",
     Description = "",
     Callback = function()
         shared.jobIdInput = ""
@@ -1290,6 +1305,168 @@ game:GetService("Players").LocalPlayer.Idled:Connect(function()
     task.wait(1)
     vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
 end)
+        end
+    end
+})
+
+-- Input webhook link
+local WebhookInputBox = Tabs.Webhook:AddInput("JobIdInput", {
+    Title = "Enter Webhook Link Here!",
+    Default = "",
+    Placeholder = "Enter Webhook Link",
+    Callback = function(value)
+        shared.WebhookInput = value
+    end
+})
+
+-- Clear nút
+Tabs.Webhook:AddButton({
+    Title = "Clear Fast Webhook Link Entered !",
+    Callback = function()
+        shared.WebhookInput = ""
+        WebhookInputBox:SetValue("")
+    end
+})
+
+-- Nhập thời gian gửi (phút)
+Tabs.Webhook:AddInput("TimeToSend", {
+    Title = "Enter Minutes To Resend",
+    Default = "5",
+    Placeholder = "5",
+    Numeric = true,
+    Callback = function(value)
+        TimeToSendWebHook = tonumber(value) or 5
+    end
+})
+
+-- ✅ Toggle gửi webhook
+Tabs.Webhook:AddToggle("SendWebhookToggle", {
+    Title = "Send Stats To Webhook With Minutes Entered !",
+    Default = false,
+    Callback = function(state)
+        shared.WebhookEnabled = state
+        print("📡 Webhook Enabled:", state)
+
+        if state then
+            -- ✅ Nếu bật lần đầu -> khởi động vòng gửi
+            task.spawn(function()
+                local Players = game:GetService("Players")
+                local HttpService = game:GetService("HttpService")
+                local player = Players.LocalPlayer
+                local mainData = player:WaitForChild("MAIN_DATA")
+                local username = player.Name
+                local displayName = player.DisplayName
+                local playerGui = player:WaitForChild("PlayerGui")
+                local ui = playerGui:WaitForChild("UI")
+                local hud = ui:WaitForChild("HUD")
+                local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
+                if not request then
+                    return warn("❌ Executor không hỗ trợ HTTP Request!")
+                end
+
+                while shared.WebhookEnabled do
+                    local webhookUrl = shared.WebhookInput
+                    if webhookUrl == "" or not webhookUrl:find("discord.com/api/webhooks") then
+                        warn("❌ Webhook URL không hợp lệ hoặc chưa nhập!")
+                        break
+                    end
+
+                    local gems = mainData:FindFirstChild("Gems") and mainData.Gems.Value or "N/A"
+                    local bossKills = mainData:FindFirstChild("BossKills") and mainData.BossKills.Value or "N/A"
+                    local titlesFolder = mainData:FindFirstChild("Titles")
+                    local titleCount = titlesFolder and #titlesFolder:GetChildren() or 0
+                    local expText = hud:FindFirstChild("EXP") and hud.EXP:FindFirstChild("Shadow") and hud.EXP.Shadow.Text or "?"
+                    local levelText = hud:FindFirstChild("Level") and hud.Level:FindFirstChild("Shadow") and hud.Level.Shadow.Text or "?"
+
+                    local description = string.format([[
+👤 Name: **@%s** (**%s**)
+💎 Gems:  %s 
+🔪 Boss Kills:  %s 
+🏆 Titles:  %s 
+📈 Level:  %s (%s)
+]], username, displayName, gems, bossKills, titleCount, levelText, expText)
+
+                    local embedData = {
+                        title = "👑 KimSoi Hub Stats Notify 👑",
+                        description = description,
+                        color = 0x00ff00,
+                        footer = { text = "⏰ Updated every " .. TimeToSendWebHook .. " Minutes" }
+                    }
+
+                    local body = HttpService:JSONEncode({
+                        username = "KimSoi Hub Webhook",
+                        embeds = { embedData }
+                    })
+
+                    local response = request({
+                        Url = webhookUrl,
+                        Method = "POST",
+                        Headers = {["Content-Type"] = "application/json"},
+                        Body = body
+                    })
+
+                    print("✅ Đã gửi Webhook Stats - Status:", response.StatusCode)
+                    task.wait((TimeToSendWebHook or 5) * 60)
+                end
+            end)
+        end
+    end
+})
+
+Tabs.Webhook:AddToggle("SendRareFruitToggle", {
+    Title = "Send To Webhook When Auto Spin Got Good Fruit",
+    Default = false,
+    Callback = function(state)
+        shared.EnableSendWebhook = state
+        print("🍍 SendRareFruitWebhook Enabled:", state)
+
+        if state and not getgenv().sendRareFruitToDiscord then
+            -- ✅ Tạo hàm webhook nếu chưa tồn tại
+            local HttpService = game:GetService("HttpService")
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local username = player.Name
+            local displayName = player.DisplayName
+            local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request)
+
+            if not request then
+                return warn("❌ Executor không hỗ trợ HTTP Request!")
+            end
+
+            -- Gán hàm vào getgenv
+            getgenv().sendRareFruitToDiscord = function(result)
+                local embedData = {
+                    title = "👑 KimSoi Hub Auto Spin Notify 👑",
+                    description = string.format("👤 **Name:** @%s (**%s**)", username, displayName),
+                    color = 0x00ff00,
+                    fields = {
+                        {
+                            name = "🍀 Got Good Fruit: **" .. result .. "**",
+                            value = " ",
+                            inline = false
+                        }
+                    },
+                    footer = {
+                        text = "🎯 Auto Spin Notify - KimSoi Hub"
+                    }
+                }
+
+                local body = HttpService:JSONEncode({
+                    username = "KimSoi Hub Webhook",
+                    embeds = { embedData }
+                })
+
+                local response = request({
+                    Url = shared.WebhookInput,
+                    Method = "POST",
+                    Headers = {["Content-Type"] = "application/json"},
+                    Body = body
+                })
+
+                if response then
+                    print("✅ Đã gửi thông báo trái hiếm:", result)
+                end
+            end
         end
     end
 })
@@ -1708,11 +1885,32 @@ Tabs.Main:AddInput("TimeToWaitInput", {
         shared.timeToWait = tonumber(value) or 20
     end
 })
--- Auto Find Boss
-local autoFindToggle
+local bossDropdownOptions = {
+    "None",
+    shared.BossName
+}
+if game.PlaceId == 16190471004 then
+    table.insert(bossDropdownOptions, "Katakuri")
+    table.insert(bossDropdownOptions, "Katakuri + " .. shared.BossName)
+end
 
-autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
-    Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
+-- Tạo dropdown trong tab Main
+Tabs.Main:AddDropdown("Select Boss", {
+    Title = "ReFind Boss If Boss Die",
+    Values = bossDropdownOptions,
+    Multi = false,
+    Default = "None",
+    Callback = function(selected)
+        shared.SelectedBoss = selected
+    end
+})
+
+
+-- Auto Find Boss
+local autoBossToggleRef = nil
+
+shared.autoBossToggleRef = Tabs.Main:AddToggle("Auto Find Boss", {
+    Title = "Auto Find Boss " .. shared.BossName,
     Default = false,
     Callback = function(value)
         shared.AutoFindBoss = value
@@ -1791,7 +1989,7 @@ function AutoFindBossFunction()
 
     -- Kiểm tra thời gian server
     local minute = getServerMinute()
-    if minute and minute < (60 - shared.timeToWait) then
+    if minute and minute < (60 - shared.timeToWait) and not (minute >= 0 and minute <= 3) then
         print("✅ Tiến hành hop server")
         local serverId = getServer()
         if serverId then
@@ -1802,14 +2000,15 @@ function AutoFindBossFunction()
     else
         print("⛔ Không hop vì đã đến giờ boss. Tắt toggle.")
         -- Lúc này đã ở ngoài callback nên SetValue an toàn
-        autoFindToggle:SetValue(false)
+        shared.autoBossToggleRef:SetValue(false)
     end
 end
 -- Auto Find Katakuri
-local autoFindKatakuriToggle
+if game.PlaceId == 16190471004 then
+local autoKatakuriToggleRef = nil
 
-autoFindKatakuriToggle = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
-    Title = "Auto Find Boss (Katakuri)",
+shared.autoKatakuriToggleRef = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
+    Title = "Auto Find Boss Katakuri",
     Default = false,
     Callback = function(value)
         shared.AutoFindKatakuri = value
@@ -1900,7 +2099,7 @@ function AutoFindKatakuriFunction()
 
     -- Kiểm tra và hop server nếu cần
     local minute = getServerMinute()
-    if minute and (minute < (30 - shared.timeToWait) or minute > 35) then
+    if minute and (minute < (30 - shared.timeToWait) or minute > 33) then
         print("✅ Tiến hành hop server.")
         local serverId = getServer()
         if serverId then
@@ -1911,9 +2110,10 @@ function AutoFindKatakuriFunction()
     else
         print("⛔ Trong khoảng thời gian boss. Tắt toggle.")
         task.delay(0.1, function()
-            autoFindKatakuriToggle:SetValue(false)
+            shared.autoKatakuriToggleRef:SetValue(false)
         end)
     end
+end
 end
 --Auto Spin
 local player = game:GetService("Players").LocalPlayer
@@ -2038,6 +2238,7 @@ function startAutoSpin()
 
             if result and isRare(result) then
                 print("🎉 DỪNG! Gặp trái hiếm:", result)
+		if shared.EnableSendWebhook and sendRareFruitToDiscord then sendRareFruitToDiscord(result) end
                 _G.autoSpinEnabled = false
                 if autoSpinToggleRef and autoSpinToggleRef.SetValue then
                     autoSpinToggleRef:SetValue(false)
@@ -2047,7 +2248,7 @@ function startAutoSpin()
                 print("🔁 Spin tiếp...")
             end
 
-            task.wait(3.5)
+            task.wait(1)
         end
     end)
 end
