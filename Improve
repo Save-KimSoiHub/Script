@@ -22,7 +22,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "KimSoi Hub [Basic]",
-    SubTitle = "By KimSoi         Turn On Auto Load Last Used Config In Setting Tab !",
+    SubTitle = "By KimSoi   Turn On Auto Load Last Used Config In Setting Tab !",
     TabWidth = 160,
     Size = UDim2.fromOffset(540, 450),
     Acrylic = false,
@@ -40,7 +40,7 @@ local Tabs = {
     Sever = Window:AddTab({ Title = "Server-Job ID", Icon = "" }),
     Webhook = Window:AddTab({ Title = "Webhook", Icon = "" }),
     Rejoin = Window:AddTab({ Title = "Rejoin", Icon = "" }),
-    Setting = Window:AddTab({ Title = "Setting-Auto Load Config",Icon = ""}),
+    Setting = Window:AddTab({ Title = "Setting",Icon = ""}),
     Discord = Window:AddTab({ Title = "Discord",Icon = ""})
 }
 InterfaceManager:SetLibrary(Fluent)
@@ -214,11 +214,6 @@ elseif placeId == 12413901502 then
 elseif placeId == 9224601490 then
     shared.BossName = "Macro"
 end
-
-Tabs.Main:AddParagraph({
-    Title = "Turn On Auto Load Last Used Config In Setting !",
-    Content = ""
-})
 
 local teleportLockPriority = 0
 local autoFarmEnabled = false
