@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1977,7 +1977,7 @@ function AutoFindBossFunction()
     else
         print("⛔ Không hop vì đã đến giờ boss. Tắt toggle.")
         -- Lúc này đã ở ngoài callback nên SetValue an toàn
-        autoFindToggle:SetValue(false)
+        shared.autoBossToggleRef:SetValue(false)
     end
 end
 -- Auto Find Katakuri
@@ -2087,7 +2087,7 @@ function AutoFindKatakuriFunction()
     else
         print("⛔ Trong khoảng thời gian boss. Tắt toggle.")
         task.delay(0.1, function()
-            autoFindKatakuriToggle:SetValue(false)
+            shared.autoKatakuriToggleRef:SetValue(false)
         end)
     end
 end
@@ -2408,9 +2408,6 @@ Tabs.Discord:AddButton({
        setclipboard("https://discord.gg/9DnNZqUS4E")
     end
 })
-
-shared.autoBossToggleRef:SetValue(false)
-shared.autoKatakuriToggleRef:SetValue(false)
 
 task.defer(function()
     -- Nếu chưa có file, tạo AutoSave
