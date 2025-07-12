@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -202,6 +202,18 @@ end
 assignPlayerPositions()
 Players.PlayerAdded:Connect(assignPlayerPositions)
 Players.PlayerRemoving:Connect(assignPlayerPositions)
+
+-- Gán tên boss vào biến toàn cục shared.BossName theo PlaceId
+shared.BossName = "Unknown"
+
+local placeId = game.PlaceId
+if placeId == 16190471004 then
+    shared.BossName = "Bigmom"
+elseif placeId == 12413901502 then
+    shared.BossName = "Kaido"
+elseif placeId == 9224601490 then
+    shared.BossName = "Macro"
+end
 
 Tabs.Main:AddParagraph({
     Title = "Turn On Auto Load Last Used Config In Setting !",
@@ -1875,7 +1887,7 @@ Tabs.Main:AddInput("TimeToWaitInput", {
 local autoFindToggle
 
 autoFindToggle = Tabs.Main:AddToggle("Auto Find Boss", {
-    Title = "Auto Find Boss (Macro, Big Mom, Kaido)",
+    Title = "Auto Find " .. shared.BossName .. "
     Default = false,
     Callback = function(value)
         shared.AutoFindBoss = value
