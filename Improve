@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -429,18 +429,25 @@ local transformSkills = {
 
 local function isTransformed()
     local chars = workspace:FindFirstChild("Characters")
-    if not chars then return false end
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
 
-    local playerChars = chars:FindFirstChild("Players")
-    if not playerChars then return false end
-
-    local myChar = playerChars:FindFirstChild(player.Name)
     if not myChar then return false end
 
-    return myChar:FindFirstChild("Transform") ~= nil
+    return myChar:FindFirstChild("Transform") or myChar:FindFirstChild("Cloud")
 end
 
 local function isRageAbove(threshold)
+    local chars = workspace:FindFirstChild("Characters")
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
+
+    if not myChar then return false end
+
+    if myChar:FindFirstChild("Cloud") then
+        return true
+    end
+
     local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
     return rage and rage:IsA("NumberValue") and rage.Value >= threshold
 end
