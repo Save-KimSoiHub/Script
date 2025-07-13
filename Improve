@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -420,6 +420,12 @@ local skills = {
     DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
+
+local transformStates = {
+    "Transform",
+    "Cloud",
+}
+
 local transformSkills = {
     ["Transform"] = true,
     ["Transformation"] = true,
@@ -427,29 +433,38 @@ local transformSkills = {
     ["Gear5"] = true,
 }
 
-local function isTransformed()
+local function isCurrentlyTransformed()
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
     local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
     if not myChar then return false end
 
-    return myChar:FindFirstChild("Transform") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
-end
-
-local function isRageAbove(threshold)
-    local chars = workspace:FindFirstChild("Characters")
-    local playerChars = chars and chars:FindFirstChild("Players")
-    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
-    if not myChar then return false end
-
-    if myChar:FindFirstChild("Cloud") then
-        return true
+    for _, state in ipairs(transformStates) do
+        if myChar:FindFirstChild(state) then
+            return true
+        end
     end
 
-    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
-    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+    return false
+end
+
+local rageRequiredSkills = {
+    ["Transform"] = true,
+    ["Transformation"] = true,
+}
+
+local function canUseTransformSkill(skillName, rageThreshold)
+    if isCurrentlyTransformed() then
+        return false
+    end
+
+    -- Nếu là Transform → cần Rage
+    if rageRequiredSkills[skillName] then
+        local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
+        return rage and rage:IsA("NumberValue") and rage.Value >= rageThreshold
+    end
+
+    return true
 end
 
 local function isSkillReady(skillName)
@@ -526,12 +541,7 @@ local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
 
-    -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
-    if transformSkills[skill] then
-        if isTransformed() and not isRageAbove(99) then
-            return
-        end
-    end
+ if transformSkills[skill] and not canUseTransformSkill(skill, 80) then return end
 
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
