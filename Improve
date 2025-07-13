@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -428,10 +428,7 @@ local transformSkills = {
 }
 
 local function isTransformed()
-    local assets = workspace:FindFirstChild("Assets")
-    if not assets then return false end
-
-    local chars = assets:FindFirstChild("Characters")
+    local chars = workspace:FindFirstChild("Characters")
     if not chars then return false end
 
     local playerChars = chars:FindFirstChild("Players")
