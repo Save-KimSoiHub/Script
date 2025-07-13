@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -420,12 +420,6 @@ local skills = {
     DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
-
-local transformStates = {
-    "Transform",
-    "Cloud",
-}
-
 local transformSkills = {
     ["Transform"] = true,
     ["Transformation"] = true,
@@ -433,40 +427,29 @@ local transformSkills = {
     ["Gear5"] = true,
 }
 
-local function isCurrentlyTransformed()
+local function isTransformed()
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
     local myChar = playerChars and playerChars:FindFirstChild(player.Name)
+
     if not myChar then return false end
 
-    for _, state in ipairs(transformStates) do
-        if myChar:FindFirstChild(state) then
-            return true
-        end
-    end
-
-    return false
+    return myChar:FindFirstChild("Transform") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
 end
 
-local rageRequiredSkills = {
-    ["Transform"] = true,
-    ["Transformation"] = true,
-    ["Gear4"] = true,
-}
+local function isRageAbove(threshold)
+    local chars = workspace:FindFirstChild("Characters")
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
 
-local function canUseTransformSkill(skillName, rageThreshold)
-    local transformed = isCurrentlyTransformed()
+    if not myChar then return false end
 
-    if rageRequiredSkills[skillName] then
-        -- Nếu skill yêu cầu Rage như Transform
-        if transformed then return false end
-
-        local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
-        return rage and rage:IsA("NumberValue") and rage.Value >= rageThreshold
-    else
-        -- Nếu là skill như Gear4, Gear5 → chỉ cần chưa biến hình
-        return not transformed
+    if myChar:FindFirstChild("Cloud") then
+        return true
     end
+
+    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
+    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
 end
 
 local function isSkillReady(skillName)
@@ -539,11 +522,48 @@ local function createFakeMouseRay(origin)
     }
 end
 
+local transformSkills = {
+    ["Transform"] = true,
+    ["Transformation"] = true,
+    ["Gear4"] = true,
+    ["Gear5"] = true,
+}
+
+local function isTransformed()
+    local chars = workspace:FindFirstChild("Characters")
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
+
+    if not myChar then return false end
+
+    return myChar:FindFirstChild("Transform") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
+end
+
+local function isRageAbove(threshold)
+    local chars = workspace:FindFirstChild("Characters")
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
+
+    if not myChar then return false end
+
+    if myChar:FindFirstChild("Cloud") then
+        return true
+    end
+
+    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
+    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+end
+
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
 
- if transformSkills[skill] and not canUseTransformSkill(skill, 80) then return end
+    -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
+    if transformSkills[skill] then
+        if isTransformed() or not isRageAbove(99) then
+            return
+        end
+    end
 
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -589,9 +609,9 @@ local function castSkill(fruit, skill)
         return
     end
 
-    -- Mặc định
-    local success, err = pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
+            -- Mặc định
+            local success, err = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
             Ground = {Position = hrp.Position},
             MouseRay = ray
         })
