@@ -441,9 +441,6 @@ local skills = {
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
 -- Danh sách chiêu cần kiểm tra biến hình
 local transformSkills = {
     ["Transform"] = true,
