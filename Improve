@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -106,34 +106,14 @@ local function getEquippedFruit()
     return slotValue.Value or nil
 end
 
-shared.NeedToFind = nil
-
-local fruitTransformMap = {
-    ["Nika"] = "Cloud",
-    ["LeopardV2"] = "LeopardV2Rig",
-    -- Thêm các trái khác sau này tại đây
-    -- ["Dragon"] = "DragonForm",
-    -- ["Phoenix"] = "PhoenixAura",
-}
-
-local function updateNeedToFind(fruit)
-    local transformObject = fruitTransformMap[fruit]
-    if transformObject then
-        shared.NeedToFind = transformObject
-    else
-        shared.NeedToFind = nil
-    end
-end
-
+-- Cập nhật vào biến shared mỗi giây (chạy ngầm)
 task.spawn(function()
     while true do
         local success, fruit = pcall(getEquippedFruit)
         if success and fruit then
             shared.CurrentFruit = fruit
-            updateNeedToFind(fruit)
         else
             shared.CurrentFruit = "Unknown"
-            shared.NeedToFind = nil
         end
         task.wait(1)
     end
@@ -434,14 +414,13 @@ local skills = {
     Ope = {"Room", "Takt", "Wreckage", "HurricaneShock", "GammaKnife", "Mes", "Shambles"},
     LeopardV2 = {"FingerPistolBarrage", "SonicKick", "InfinityDrive", "UnrelentingAssault", "Transform", "HeavensDemise"},
     Lightning = {"VoltageUp", "LightningPalm", "CrashingThunder", "ProjectedBurst", "CrushingJudgment", "Raigo"},
-    Nika = {"RocGun", "NeoRedHawk", "RocGatling", "RedRoc", "DrumsofLiberation", "Gear5", "SpinningTop", "DawnRocket", "MolePistolCombo", "RisingBolt", "GigantStamp", "BajrangGun"},
+    Nika = {"RocGun", "NeoRedHawk", "RocGatling", "RedRoc", "DrumsOfLiberation", "Gear5", "SpinningTop", "DawnRocket", "MolePistolCombo", "RisingBolt", "GigantStamp", "BajrangGun"},
     DragonV2 = {"InfernoBreath", "ThunderBagua", "DragonTwister", "BeastsBellow", "Transform", "BoloFrenzy", "FlamingTorch", "Demolition", "Transformation"},
     Soul = {"EnthralGrasp", "ScorchingSickle", "ZeusMeadow", "CrimsonPillar", "Transform", "MaserCannon"},
     DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
 
--- Danh sách chiêu cần kiểm tra biến hình
 local transformSkills = {
     ["Transform"] = true,
     ["Transformation"] = true,
@@ -449,12 +428,6 @@ local transformSkills = {
     ["Gear5"] = true,
 }
 
--- Danh sách chiêu KHÔNG cần Rage, chỉ cần Cloud là đủ
-local noRageRequiredSkills = {
-    ["Gear5"] = true, -- Ví dụ: Gear5 là của Nika, không cần check Rage
-}
-
--- Kiểm tra đã biến hình hay chưa (có Cloud hoặc các dạng khác)
 local function isTransformed()
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
@@ -465,7 +438,6 @@ local function isTransformed()
     return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
 end
 
--- Kiểm tra Rage có đủ để biến hình không
 local function isRageAbove(threshold)
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
@@ -473,46 +445,9 @@ local function isRageAbove(threshold)
 
     if not myChar then return false end
 
-    local backpack = player:FindFirstChild("Backpack")
-    if not backpack then return false end
-
     if myChar:FindFirstChild("Cloud") then
-        -- Nika: Rage nằm trong Backpack > Drum of Liberation > Rage
-        local drum = backpack:FindFirstChild("Drum of Liberation")
-        local rage = drum and drum:FindFirstChild("Rage")
-        return rage and rage:IsA("NumberValue") and rage.Value >= threshold
-    else
-        -- Trái thường: Rage nằm trực tiếp trong Backpack
-        local rage = backpack:FindFirstChild("Rage")
-        return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+        return true
     end
-end
-
--- ✅ Hàm quyết định có chặn chiêu biến hình hay không
-local function shouldBlockTransformSkill(skillName, rageThreshold)
-    if not transformSkills[skillName] then
-        return false -- Không phải chiêu biến hình → không chặn
-    end
-
-    local chars = workspace:FindFirstChild("Characters")
-    local playerChars = chars and chars:FindFirstChild("Players")
-    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
-    if not myChar then return true end -- không có nhân vật → chặn an toàn
-
-    -- Nếu có Cloud (Nika) → luôn cho dùng
-    if myChar:FindFirstChild("Cloud") then
-        return false
-    end
-
-    -- Nếu chiêu không yêu cầu Rage → không chặn
-    if noRageRequiredSkills[skillName] then
-        return false
-    end
-
-    -- Các chiêu còn lại → cần kiểm tra Rage
-    return not isRageAbove(rageThreshold)
-end
 
 local function isSkillReady(skillName)
     local cdFolder = player:FindFirstChild("Cooldowns")
@@ -584,11 +519,48 @@ local function createFakeMouseRay(origin)
     }
 end
 
+local transformSkills = {
+    ["Transform"] = true,
+    ["Transformation"] = true,
+    ["Gear4"] = true,
+    ["Gear5"] = true,
+}
+
+local function isTransformed()
+    local chars = workspace:FindFirstChild("Characters")
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
+
+    if not myChar then return false end
+
+    return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
+end
+
+local function isRageAbove(threshold)
+    local chars = workspace:FindFirstChild("Characters")
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
+
+    if not myChar then return false end
+
+    if myChar:FindFirstChild("Cloud") then
+        return true
+    end
+
+    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
+    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+end
+
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
 
-    if shouldBlockTransformSkill(skillName, 40) then return end
+    -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
+    if transformSkills[skill] then
+        if isTransformed() or not isRageAbove(40) then
+            return
+        end
+    end
 
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -634,9 +606,9 @@ local function castSkill(fruit, skill)
         return
     end
 
-	    -- Mặc định
-	    local success, err = pcall(function()
-	game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
+    -- Mặc định
+    local success, err = pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
             Ground = {Position = hrp.Position},
             MouseRay = ray
         })
@@ -648,6 +620,7 @@ local function castSkill(fruit, skill)
     end)
     if not success then warn("[castSkill - mặc định] Lỗi:", err) end
 end
+
 local skillLoopRunning = false
 local function startSkillLoop()
     if skillLoopRunning then return end
