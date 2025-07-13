@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -449,6 +449,10 @@ local function isRageAbove(threshold)
         return true
     end
 
+    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
+    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+end
+
 local function isSkillReady(skillName)
     local cdFolder = player:FindFirstChild("Cooldowns")
     if not cdFolder then return true end
@@ -565,7 +569,7 @@ local function isTransformed()
 
     if not myChar then return false end
 
-    return myChar:FindFirstChild("Transform") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
+    return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
 end
 
 local function isRageAbove(threshold)
