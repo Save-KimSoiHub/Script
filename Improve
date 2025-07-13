@@ -1,4 +1,4 @@
---Main
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -421,6 +421,24 @@ local skills = {
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
 
+-- Danh sách skill biến hình và cooldown (tính bằng giây)
+local transformCooldowns = {
+    ["Transform"] = 610,
+    ["Transformation"] = 610,
+    ["Gear5"] = 610,
+}
+
+-- Lưu thời điểm cast mỗi skill biến hình
+shared.lastTransformCasted = shared.lastTransformCasted or {}
+
+local function canCastTransform(skill)
+    local cooldown = transformCooldowns[skill]
+    if not cooldown then return true end -- không phải skill biến hình → luôn cho phép
+
+    local lastTime = shared.lastTransformCasted[skill] or 0
+    return (tick() - lastTime) >= cooldown
+end
+
 local function isSkillReady(skillName)
     local cdFolder = player:FindFirstChild("Cooldowns")
     if not cdFolder then return true end
@@ -495,6 +513,13 @@ local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
 
+    -- Kiểm tra cooldown nếu là skill biến hình
+    if transformCooldowns[skill] then
+        if not canCastTransform(skill) then
+            return
+        end
+    end
+
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
@@ -521,37 +546,40 @@ local function castSkill(fruit, skill)
             game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
         end)
         if not success then warn("[castSkill - dạng 2] Lỗi:", err) end
-        return
+    else
+        -- Dạng 3: Gửi MouseRay khác
+        if table.find(skillType3, skill) then
+            local args = {
+                fruit,
+                skill,
+                { MouseRay = ray }
+            }
+
+            local success, err = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
+            end)
+            if not success then warn("[castSkill - dạng 3] Lỗi:", err) end
+        else
+            -- Dạng mặc định
+            local success, err = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
+                    Ground = {Position = hrp.Position},
+                    MouseRay = ray
+                })
+
+                game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer("ClientData", "UpdateData", {
+                    RootCF = hrp.CFrame,
+                    MouseRay = ray
+                })
+            end)
+            if not success then warn("[castSkill - mặc định] Lỗi:", err) end
+        end
     end
 
-    -- Dạng 3: Gửi MouseRay dạng khác
-    if table.find(skillType3, skill) then
-        local args = {
-            fruit,
-            skill,
-            { MouseRay = ray }
-        }
-
-        local success, err = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-        end)
-        if not success then warn("[castSkill - dạng 3] Lỗi:", err) end
-        return
+    -- Nếu là skill biến hình → ghi lại thời điểm dùng
+    if transformCooldowns[skill] then
+        shared.lastTransformCasted[skill] = tick()
     end
-
-    -- Mặc định
-    local success, err = pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
-            Ground = {Position = hrp.Position},
-            MouseRay = ray
-        })
-
-        game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer("ClientData", "UpdateData", {
-            RootCF = hrp.CFrame,
-            MouseRay = ray
-        })
-    end)
-    if not success then warn("[castSkill - mặc định] Lỗi:", err) end
 end
 
 local skillLoopRunning = false
