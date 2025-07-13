@@ -1,4 +1,4 @@
---Main !
+--Main 
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -414,7 +414,7 @@ local skills = {
     Ope = {"Room", "Takt", "Wreckage", "HurricaneShock", "GammaKnife", "Mes", "Shambles"},
     LeopardV2 = {"FingerPistolBarrage", "SonicKick", "InfinityDrive", "UnrelentingAssault", "Transform", "HeavensDemise"},
     Lightning = {"VoltageUp", "LightningPalm", "CrashingThunder", "ProjectedBurst", "CrushingJudgment", "Raigo"},
-    Nika = {"RocGun", "DrumsOfLiberation", "RocGatling", "RedRoc", "Gear5", "SpinningTop", "DawnRocket", "MolePistolCombo", "RisingBolt", "GigantStamp", "BajrangGun"},
+    Nika = {"RocGun", "NeoRedHawk", "RocGatling", "RedRoc", "DrumsofLiberation", "Gear5", "SpinningTop", "DawnRocket", "MolePistolCombo", "RisingBolt", "GigantStamp", "BajrangGun"},
     DragonV2 = {"InfernoBreath", "ThunderBagua", "DragonTwister", "BeastsBellow", "Transform", "BoloFrenzy", "FlamingTorch", "Demolition", "Transformation"},
     Soul = {"EnthralGrasp", "ScorchingSickle", "ZeusMeadow", "CrimsonPillar", "Transform", "MaserCannon"},
     DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
