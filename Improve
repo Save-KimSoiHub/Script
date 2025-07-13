@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -106,14 +106,34 @@ local function getEquippedFruit()
     return slotValue.Value or nil
 end
 
--- Cập nhật vào biến shared mỗi giây (chạy ngầm)
+shared.NeedToFind = nil
+
+local fruitTransformMap = {
+    ["Nika"] = "Cloud",
+    ["LeopardV2"] = "LeopardV2Rig",
+    -- Thêm các trái khác sau này tại đây
+    -- ["Dragon"] = "DragonForm",
+    -- ["Phoenix"] = "PhoenixAura",
+}
+
+local function updateNeedToFind(fruit)
+    local transformObject = fruitTransformMap[fruit]
+    if transformObject then
+        shared.NeedToFind = transformObject
+    else
+        shared.NeedToFind = nil
+    end
+end
+
 task.spawn(function()
     while true do
         local success, fruit = pcall(getEquippedFruit)
         if success and fruit then
             shared.CurrentFruit = fruit
+            updateNeedToFind(fruit)
         else
             shared.CurrentFruit = "Unknown"
+            shared.NeedToFind = nil
         end
         task.wait(1)
     end
@@ -429,12 +449,12 @@ local transformSkills = {
     ["Gear5"] = true,
 }
 
--- Danh sách chiêu KHÔNG cần Rage, chỉ cần Cloud là đủ
+-- Danh sách chiêu KHÔNG cần Rage, chỉ cần đã biến hình đặc biệt
 local noRageRequiredSkills = {
-    ["Gear5"] = true, -- Ví dụ: Gear5 là của Nika, không cần check Rage
+    ["Gear5"] = true,
 }
 
--- Kiểm tra đã biến hình hay chưa (có Cloud hoặc các dạng khác)
+-- Kiểm tra đã biến hình hay chưa (dựa theo shared.NeedToFind)
 local function isTransformed()
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
@@ -442,33 +462,20 @@ local function isTransformed()
 
     if not myChar then return false end
 
-    return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
+    local need = shared.NeedToFind
+    return myChar:FindFirstChild(need) ~= nil
 end
 
--- Kiểm tra Rage có đủ để biến hình không
+-- Kiểm tra Rage có đủ để biến hình không (luôn kiểm tra Backpack > Rage)
 local function isRageAbove(threshold)
-    local chars = workspace:FindFirstChild("Characters")
-    local playerChars = chars and chars:FindFirstChild("Players")
-    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
-    if not myChar then return false end
-
     local backpack = player:FindFirstChild("Backpack")
     if not backpack then return false end
 
-    if myChar:FindFirstChild("Cloud") then
-        -- Nika: Rage nằm trong Backpack > Drum of Liberation > Rage
-        local drum = backpack:FindFirstChild("Drum of Liberation")
-        local rage = drum and drum:FindFirstChild("Rage")
-        return rage and rage:IsA("NumberValue") and rage.Value >= threshold
-    else
-        -- Trái thường: Rage nằm trực tiếp trong Backpack
-        local rage = backpack:FindFirstChild("Rage")
-        return rage and rage:IsA("NumberValue") and rage.Value >= threshold
-    end
+    local rage = backpack:FindFirstChild("Rage")
+    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
 end
 
--- ✅ Hàm quyết định có chặn chiêu biến hình hay không
+-- ✅ Hàm quyết định có chặn chiêu biến hình không
 local function shouldBlockTransformSkill(skillName, rageThreshold)
     if not transformSkills[skillName] then
         return false -- Không phải chiêu biến hình → không chặn
@@ -477,11 +484,10 @@ local function shouldBlockTransformSkill(skillName, rageThreshold)
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
     local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
     if not myChar then return true end -- không có nhân vật → chặn an toàn
 
-    -- Nếu có Cloud (Nika) → luôn cho dùng
-    if myChar:FindFirstChild("Cloud") then
+    -- Nếu đã biến hình đặc biệt → không chặn
+    if isTransformed() then
         return false
     end
 
