@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -593,7 +593,7 @@ local function castSkill(fruit, skill)
 
     -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
     if transformSkills[skill] then
-        if isTransformed() or not isRageAbove(40) then
+        if isTransformed() or not isRageAbove(20) then
             return
         end
     end
