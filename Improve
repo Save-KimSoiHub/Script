@@ -435,7 +435,7 @@ local function isTransformed()
 
     if not myChar then return false end
 
-    return myChar:FindFirstChild("Transform") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
+    return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
 end
 
 local function isRageAbove(threshold)
@@ -521,70 +521,6 @@ local function createFakeMouseRay(origin)
         Material = Enum.Material.Slate,
         Position = origin + dir
     }
-end
-
-local transformSkills = {
-    ["Transform"] = true,
-    ["Transformation"] = true,
-    ["Gear4"] = true,
-    ["Gear5"] = true,
-}
-
-local function isTransformed()
-    local chars = workspace:FindFirstChild("Characters")
-    local playerChars = chars and chars:FindFirstChild("Players")
-    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
-    if not myChar then return false end
-
-    return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
-end
-
-local function isRageAbove(threshold)
-    local chars = workspace:FindFirstChild("Characters")
-    local playerChars = chars and chars:FindFirstChild("Players")
-    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
-    if not myChar then return false end
-
-    if myChar:FindFirstChild("Cloud") then
-        return true
-    end
-
-    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
-    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
-end
-
-local transformSkills = {
-    ["Transform"] = true,
-    ["Transformation"] = true,
-    ["Gear4"] = true,
-    ["Gear5"] = true,
-}
-
-local function isTransformed()
-    local chars = workspace:FindFirstChild("Characters")
-    local playerChars = chars and chars:FindFirstChild("Players")
-    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
-    if not myChar then return false end
-
-    return myChar:FindFirstChild("Transform") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
-end
-
-local function isRageAbove(threshold)
-    local chars = workspace:FindFirstChild("Characters")
-    local playerChars = chars and chars:FindFirstChild("Players")
-    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
-    if not myChar then return false end
-
-    if myChar:FindFirstChild("Cloud") then
-        return true
-    end
-
-    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
-    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
 end
 
 local function castSkill(fruit, skill)
