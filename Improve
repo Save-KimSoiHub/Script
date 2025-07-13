@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -451,20 +451,22 @@ end
 local rageRequiredSkills = {
     ["Transform"] = true,
     ["Transformation"] = true,
+    ["Gear4"] = true,
 }
 
 local function canUseTransformSkill(skillName, rageThreshold)
-    if isCurrentlyTransformed() then
-        return false
-    end
+    local transformed = isCurrentlyTransformed()
 
-    -- Nếu là Transform → cần Rage
     if rageRequiredSkills[skillName] then
+        -- Nếu skill yêu cầu Rage như Transform
+        if transformed then return false end
+
         local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
         return rage and rage:IsA("NumberValue") and rage.Value >= rageThreshold
+    else
+        -- Nếu là skill như Gear4, Gear5 → chỉ cần chưa biến hình
+        return not transformed
     end
-
-    return true
 end
 
 local function isSkillReady(skillName)
