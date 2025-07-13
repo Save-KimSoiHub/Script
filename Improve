@@ -420,6 +420,33 @@ local skills = {
     DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
+local transformSkills = {
+    ["Transform"] = true,
+    ["Transformation"] = true,
+    ["Gear4"] = true,
+    ["Gear5"] = true,
+}
+
+local function isTransformed()
+    local assets = workspace:FindFirstChild("Assets")
+    if not assets then return false end
+
+    local chars = assets:FindFirstChild("Characters")
+    if not chars then return false end
+
+    local playerChars = chars:FindFirstChild("Players")
+    if not playerChars then return false end
+
+    local myChar = playerChars:FindFirstChild(player.Name)
+    if not myChar then return false end
+
+    return myChar:FindFirstChild("Transform") ~= nil
+end
+
+local function isRageAbove(threshold)
+    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
+    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+end
 
 local function isSkillReady(skillName)
     local cdFolder = player:FindFirstChild("Cooldowns")
@@ -494,6 +521,13 @@ end
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
+
+    -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
+    if transformSkills[skill] then
+        if isTransformed() or not isRageAbove(40) then
+            return
+        end
+    end
 
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
