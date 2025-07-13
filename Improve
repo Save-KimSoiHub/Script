@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -428,6 +428,7 @@ local transformSkills = {
     ["Gear5"] = true,
 }
 
+-- Kiểm tra đã biến hình hay chưa (gồm cả Nika - Cloud)
 local function isTransformed()
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
@@ -438,6 +439,7 @@ local function isTransformed()
     return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
 end
 
+-- Kiểm tra Rage có đủ để biến hình hay không
 local function isRageAbove(threshold)
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
@@ -445,12 +447,19 @@ local function isRageAbove(threshold)
 
     if not myChar then return false end
 
-    if myChar:FindFirstChild("Cloud") then
-        return true
-    end
+    local backpack = player:FindFirstChild("Backpack")
+    if not backpack then return false end
 
-    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
-    return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+    if myChar:FindFirstChild("Cloud") then
+        -- Nika: Rage nằm trong Backpack > Drum of Liberation > Rage
+        local drum = backpack:FindFirstChild("Drum of Liberation")
+        local rage = drum and drum:FindFirstChild("Rage")
+        return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+    else
+        -- Các trái khác: Rage nằm trực tiếp trong Backpack
+        local rage = backpack:FindFirstChild("Rage")
+        return rage and rage:IsA("NumberValue") and rage.Value >= threshold
+    end
 end
 
 local function isSkillReady(skillName)
