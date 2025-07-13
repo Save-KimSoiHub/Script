@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -421,6 +421,7 @@ local skills = {
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
 
+-- Danh sách chiêu cần kiểm tra biến hình
 local transformSkills = {
     ["Transform"] = true,
     ["Transformation"] = true,
@@ -428,7 +429,12 @@ local transformSkills = {
     ["Gear5"] = true,
 }
 
--- Kiểm tra đã biến hình hay chưa (gồm cả Nika - Cloud)
+-- Danh sách chiêu KHÔNG cần Rage, chỉ cần Cloud là đủ
+local noRageRequiredSkills = {
+    ["Gear5"] = true, -- Ví dụ: Gear5 là của Nika, không cần check Rage
+}
+
+-- Kiểm tra đã biến hình hay chưa (có Cloud hoặc các dạng khác)
 local function isTransformed()
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
@@ -439,7 +445,7 @@ local function isTransformed()
     return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
 end
 
--- Kiểm tra Rage có đủ để biến hình hay không
+-- Kiểm tra Rage có đủ để biến hình không
 local function isRageAbove(threshold)
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
@@ -456,10 +462,36 @@ local function isRageAbove(threshold)
         local rage = drum and drum:FindFirstChild("Rage")
         return rage and rage:IsA("NumberValue") and rage.Value >= threshold
     else
-        -- Các trái khác: Rage nằm trực tiếp trong Backpack
+        -- Trái thường: Rage nằm trực tiếp trong Backpack
         local rage = backpack:FindFirstChild("Rage")
         return rage and rage:IsA("NumberValue") and rage.Value >= threshold
     end
+end
+
+-- ✅ Hàm quyết định có chặn chiêu biến hình hay không
+local function shouldBlockTransformSkill(skillName, rageThreshold)
+    if not transformSkills[skillName] then
+        return false -- Không phải chiêu biến hình → không chặn
+    end
+
+    local chars = workspace:FindFirstChild("Characters")
+    local playerChars = chars and chars:FindFirstChild("Players")
+    local myChar = playerChars and playerChars:FindFirstChild(player.Name)
+
+    if not myChar then return true end -- không có nhân vật → chặn an toàn
+
+    -- Nếu có Cloud (Nika) → luôn cho dùng
+    if myChar:FindFirstChild("Cloud") then
+        return false
+    end
+
+    -- Nếu chiêu không yêu cầu Rage → không chặn
+    if noRageRequiredSkills[skillName] then
+        return false
+    end
+
+    -- Các chiêu còn lại → cần kiểm tra Rage
+    return not isRageAbove(rageThreshold)
 end
 
 local function isSkillReady(skillName)
@@ -600,12 +632,7 @@ local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
 
-    -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
-    if transformSkills[skill] then
-        if isTransformed() or not isRageAbove(20) then
-            return
-        end
-    end
+    if shouldBlockTransformSkill(skillName, 40) then return end
 
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
