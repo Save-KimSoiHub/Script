@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -477,7 +477,7 @@ local function isRageAbove(threshold)
     if not myChar then return false end
 
     -- Nếu dạng biến hình không yêu cầu Rage → cho phép luôn
-    if shared.NeedToFind and noRageRequiredForms[shared.NeedToFind] then
+    if shared.NeedToFind and noRageRequiredFruits[shared.NeedToFind] then
         return true
     end
 
