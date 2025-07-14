@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -106,14 +106,37 @@ local function getEquippedFruit()
     return slotValue.Value or nil
 end
 
--- Cập nhật vào biến shared mỗi giây (chạy ngầm)
+shared.NeedToFind = nil
+
+-- Danh sách map trái → object biến hình
+local fruitTransformMap = {
+    ["Nika"] = "Cloud",
+    ["LeopardV2"] = "LeopardV2Rig",
+    -- Thêm các trái khác sau này tại đây
+    -- ["Dragon"] = "DragonForm",
+    -- ["Phoenix"] = "PhoenixAura",
+}
+
+-- Hàm cập nhật shared.NeedToFind theo shared.CurrentFruit
+local function updateNeedToFind(fruit)
+    local transformObject = fruitTransformMap[fruit]
+    if transformObject then
+        shared.NeedToFind = transformObject
+    else
+        shared.NeedToFind = nil
+    end
+end
+
+-- Cập nhật shared.CurrentFruit và shared.NeedToFind mỗi giây
 task.spawn(function()
     while true do
         local success, fruit = pcall(getEquippedFruit)
         if success and fruit then
             shared.CurrentFruit = fruit
+            updateNeedToFind(fruit)
         else
             shared.CurrentFruit = "Unknown"
+            shared.NeedToFind = nil
         end
         task.wait(1)
     end
@@ -420,12 +443,18 @@ local skills = {
     DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
 }
-
 local transformSkills = {
     ["Transform"] = true,
     ["Transformation"] = true,
     ["Gear4"] = true,
     ["Gear5"] = true,
+}
+
+local noRageRequiredFruits = {
+    ["Cloud"] = true,
+    -- Thêm các trái khác ở đây:
+    -- ["Dragon"] = true,
+    -- ["Phoenix"] = true,
 }
 
 local function isTransformed()
@@ -435,23 +464,31 @@ local function isTransformed()
 
     if not myChar then return false end
 
-    return myChar:FindFirstChild("LeopardV2Rig") ~= nil or myChar:FindFirstChild("Cloud") ~= nil
+    local target = shared.NeedToFind
+    if not target then return false end
+
+    return myChar:FindFirstChild(target) ~= nil
 end
 
 local function isRageAbove(threshold)
     local chars = workspace:FindFirstChild("Characters")
     local playerChars = chars and chars:FindFirstChild("Players")
     local myChar = playerChars and playerChars:FindFirstChild(player.Name)
-
     if not myChar then return false end
 
-    if myChar:FindFirstChild("Cloud") then
+    -- Nếu dạng biến hình không yêu cầu Rage → cho phép luôn
+    if shared.NeedToFind and noRageRequiredForms[shared.NeedToFind] then
         return true
     end
 
-    local rage = player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Rage")
+    -- Còn lại thì kiểm tra Rage bình thường
+    local backpack = player:FindFirstChild("Backpack")
+    if not backpack then return false end
+
+    local rage = backpack:FindFirstChild("Rage")
     return rage and rage:IsA("NumberValue") and rage.Value >= threshold
 end
+
 
 local function isSkillReady(skillName)
     local cdFolder = player:FindFirstChild("Cooldowns")
