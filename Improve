@@ -552,7 +552,7 @@ local skillType2 = {
 }
 
 local skillType3 = {
-    "MajorEruption","MeteorVolcano","HellHound"
+    "MajorEruption","MeteorVolcano","HellHound","UnrelentingAssault"
 }
 
 local function createFakeMouseRay(origin)
