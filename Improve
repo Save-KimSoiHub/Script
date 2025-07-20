@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -552,7 +552,11 @@ local skillType2 = {
 }
 
 local skillType3 = {
-    "MajorEruption","MeteorVolcano","HellHound","UnrelentingAssault"
+    "MajorEruption", "MeteorVolcano", "HellHound", "UnrelentingAssault"
+}
+
+local skillType4 = {
+    "UnrelentingAssault"
 }
 
 local function createFakeMouseRay(origin)
@@ -584,7 +588,7 @@ local function castSkill(fruit, skill)
 
     local ray = createFakeMouseRay(hrp.Position)
 
-    -- Dạng 2: Gửi MouseRay đơn giản
+    -- Dạng 2: Gửi Raycast đơn giản
     if table.find(skillType2, skill) then
         local args = {
             fruit,
@@ -607,7 +611,7 @@ local function castSkill(fruit, skill)
         return
     end
 
-    -- Dạng 3: Gửi MouseRay dạng khác
+    -- Dạng 3: Gửi MouseRay chuẩn
     if table.find(skillType3, skill) then
         local args = {
             fruit,
@@ -622,10 +626,23 @@ local function castSkill(fruit, skill)
         return
     end
 
+    -- Dạng 4: Dùng FireServer (NoYield) + chỉ có MouseRay
+    if table.find(skillType4, skill) then
+        local args = {
+            fruit,
+            skill,
+            { MouseRay = ray }
+        }
+
+        -- Không cần pcall vì FireServer không trả về lỗi invoke
+        game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer(unpack(args))
+        return
+    end
+
     -- Mặc định
     local success, err = pcall(function()
-game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
-            Ground = {Position = hrp.Position},
+        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
+            Ground = { Position = hrp.Position },
             MouseRay = ray
         })
 
@@ -635,7 +652,6 @@ game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fru
         })
     end)
     if not success then warn("[castSkill - mặc định] Lỗi:", err) end
-    print(skill)
 end
 
 local skillLoopRunning = false
