@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -8,11 +8,19 @@ game.StarterGui:SetCore("SendNotification", {
     Icon = "rbxassetid://93005671600086"
 })
 
-task.spawn(function()
-pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
-end)
-end)
+shared.allowedPlaceIds = {
+    [12413901502] = true, -- Dressrosa
+    [9224601490] = true, -- Whole Cake
+    [16190471004] = true, -- Wano
+}
+
+if shared.allowedPlaceIds[game.PlaceId] then
+    task.spawn(function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
+        end)
+    end)
+end
 
 task.wait(1.5)
 
@@ -1896,6 +1904,7 @@ else
 end
     end
 })
+if shared.allowedPlaceIds[game.PlaceId] then
 --Auto Play
 shared.AutoFindBoss = shared.AutoFindBoss or false
 shared.AutoFindKatakuri = shared.AutoFindKatakuri or false
@@ -1967,7 +1976,6 @@ _G.AutoPressPlay_Find = _G.AutoPressPlay_Find or function()
 		_G._pressingPlay_Find = false
 	end)
 end
-
 --Nhập Time
 shared.timeToWait = 20
 Tabs.Main:AddInput("TimeToWaitInput", {
@@ -2207,6 +2215,7 @@ function AutoFindKatakuriFunction()
             shared.autoKatakuriToggleRef:SetValue(false)
         end)
     end
+end
 end
 end
 --Auto Spin
