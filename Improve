@@ -1921,6 +1921,12 @@ else
 end
     end
 })
+if not shared.allowedPlaceIds[game.PlaceId] then
+Tabs.Main:AddParagraph({
+    Title = "This Sever Dont Have Boss !",
+    Content = ""
+})
+end
 if shared.allowedPlaceIds[game.PlaceId] then
 --Auto Play
 shared.AutoFindBoss = shared.AutoFindBoss or false
