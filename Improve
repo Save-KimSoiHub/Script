@@ -8,19 +8,11 @@ game.StarterGui:SetCore("SendNotification", {
     Icon = "rbxassetid://93005671600086"
 })
 
-local allowedPlaceIds = {
-    [12413901502] = true, -- Dressrosa
-    [9224601490] = true, -- Whole Cake
-    [16190471004] = true, -- Wano
-}
-
-if allowedPlaceIds[game.PlaceId] then
-    task.spawn(function()
-        pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
-        end)
-    end)
-end
+task.spawn(function()
+pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
+end)
+end)
 
 task.wait(1.5)
 
