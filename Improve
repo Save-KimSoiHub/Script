@@ -571,7 +571,6 @@ end
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
-    print(skill)
     -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
     if transformSkills[skill] then
         if isTransformed() or not isRageAbove(40) then
@@ -636,6 +635,7 @@ game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fru
         })
     end)
     if not success then warn("[castSkill - mặc định] Lỗi:", err) end
+    print(skill)
 end
 
 local skillLoopRunning = false
