@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -847,8 +847,8 @@ local function followBoss(bossModel)
     print("[Boss] Kết thúc follow. BossDied =", bossDied)
 
     -- ✅ Chỉ teleport nếu boss chết
-    if bossDied and shared.autoFarm then
-	if shared.SelectedBoss == "None" then return end
+    if bossDied then
+	if shared.SelectedBoss == "None" then print("Blocked Turn On Auto Find Boss !")
 	if shared.SelectedBoss == shared.BossName then
 	    shared.autoBossToggleRef:SetValue(true)
 	elseif shared.SelectedBoss == "Katakuri" then
@@ -859,6 +859,7 @@ local function followBoss(bossModel)
 	    shared.autoKatakuriToggleRef:SetValue(true)
 	end
 	task.wait(1)
+	if shared.autoFarm then
         shared.forceUnlock = false
         isTeleported = false
         shared.bienCaoCap = false
@@ -876,6 +877,7 @@ local function followBoss(bossModel)
         shared.autoFarmToggleRef:SetValue(false)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
+	end
     else
         print("Không teleport vì boss chưa chết")
     end
