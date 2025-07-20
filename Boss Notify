@@ -11,6 +11,12 @@ local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("Loc
 repeat RunService.RenderStepped:Wait() until LocalPlayer:FindFirstChild("PlayerGui")
 local gui = LocalPlayer:WaitForChild("PlayerGui")
 
+local function formatTime(seconds)
+    local m = math.floor(seconds / 60)
+    local s = math.floor(seconds % 60)
+    return string.format("%d(m):%02d(s)", m, s)
+end
+
 -- 📌 Lấy phút và giây từ Servertime
 local function getServerMinuteAndSecond()
     while true do
@@ -51,10 +57,10 @@ if placeId == 16190471004 then
     end
 
     if delayTime and becomeAround then
-        local bossUrl = string.format(
-            "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=true&becomearound=%.1f",
-            jobId, placeId, delayTime, becomeAround
-        )
+    local bossUrl = string.format(
+        "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=true&becomearound=%s",
+        jobId, placeId, delayTime, formatTime(becomeAround)
+    )
 
         local success, response = pcall(function()
             return a({ Url = bossUrl, Method = "GET" })
@@ -81,8 +87,8 @@ do
     end
 
     local defaultUrl = string.format(
-        "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=false&becomearound=%.1f",
-        jobId, placeId, delayTime, becomeAround
+        "https://script.google.com/macros/s/AKfycbxyCIRzSoA7yqrEbD4ugjSIbquMVRsEqmZB4BahbnK3XshyxQaOdXZOC6yYQ6LrvDw/exec?jobid=%s&placeid=%s&delay=%d&boss=false&becomearound=%s",
+        jobId, placeId, delayTime, formatTime(becomeAround)
     )
 
     local success1, response1 = pcall(function()
