@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -973,6 +973,78 @@ Tabs.Player:AddButton({
 loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\40\40\39\104\116\116\112\115\58\47\47\103\105\115\116\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\109\101\111\122\111\110\101\89\84\47\98\102\48\51\55\100\102\102\57\102\48\97\55\48\48\49\55\51\48\52\100\100\100\54\55\102\100\99\100\51\55\48\47\114\97\119\47\101\49\52\101\55\52\102\52\50\53\98\48\54\48\100\102\53\50\51\51\52\51\99\102\51\48\98\55\56\55\48\55\52\101\98\51\99\53\100\50\47\97\114\99\101\117\115\37\50\53\50\48\120\37\50\53\50\48\102\108\121\37\50\53\50\48\50\37\50\53\50\48\111\98\102\108\117\99\97\116\111\114\39\41\44\116\114\117\101\41\41\40\41\10\10")()
     end
 })
+
+-- Nhập Số Mana
+shared.THRESHOLD = 50
+shared.autoCheckMana = false
+
+Tabs.Main:AddInput("ManaToReset", {
+    Title = "Enter Mana To Reset",
+    Default = "50",
+    Placeholder = "50",
+    Numeric = true,
+    Callback = function(value)
+        shared.THRESHOLD = tonumber(value) or 50
+    end
+})
+
+Tabs.Main:AddToggle("AutoCheckManaToggle", {
+    Title = "Auto Reset If Mana Is Low",
+    Default = false,
+    Callback = function(value)
+        shared.autoCheckMana = value
+        print(value and "🟩 [ManaCheck] Đã bật." or "⛔ [ManaCheck] Đã tắt.")
+    end
+})
+
+-- ✅ Script chạy riêng, toggle không ảnh hưởng
+task.spawn(function()
+    local RunService = game:GetService("RunService")
+    local player = game:GetService("Players").LocalPlayer
+
+    local function waitForManaLabel()
+        local gui = player:WaitForChild("PlayerGui", 10)
+        local ui = gui:WaitForChild("UI", 10)
+        local hud = ui:WaitForChild("HUD", 10)
+        local bars = hud:WaitForChild("Bars", 10)
+        local label = bars:WaitForChild("ProgressStamina", 10)
+        return label
+    end
+
+    local manaLabel = nil
+    pcall(function()
+        manaLabel = waitForManaLabel()
+    end)
+
+    if not manaLabel then
+        warn("❌ [ManaCheck] Không tìm thấy mana label.")
+        return
+    end
+
+    print("✅ [ManaCheck] Đã phát hiện mana label, bắt đầu kiểm tra.")
+    local canAct = true
+
+    RunService:BindToRenderStep("ManaChecker", Enum.RenderPriority.Last.Value, function()
+        if not shared.autoCheckMana or not canAct then return end
+
+        local char = player.Character
+        local humanoid = char and char:FindFirstChild("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then return end
+
+        local text = manaLabel.Text or ""
+        local current = tonumber(text:match("(%d+)%s*/%s*%d+"))
+
+        if current and current < shared.THRESHOLD then
+            print("🟥 [ManaCheck] Mana thấp, reset!")
+            humanoid.Health = 0
+            canAct = false
+            task.delay(20, function()
+                canAct = true
+                print("🟢 [ManaCheck] Tiếp tục kiểm tra sau 20s.")
+            end)
+        end
+    end)
+end)
 
 -- Chọn Slot
 local selectedSlot = 1
