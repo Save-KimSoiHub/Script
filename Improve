@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -560,6 +560,19 @@ local skillType4 = {
     "UnrelentingAssault"
 }
 
+local function createRaycastMouse(origin, dir, instance)
+    local distance = (origin - (origin + dir)).Magnitude
+    return {
+        Normal = Vector3.yAxis,
+        Direction = dir,
+        Origin = origin,
+        Instance = instance or workspace.Terrain,
+        Distance = distance,
+        Material = Enum.Material.Plastic,
+        Position = origin + dir
+    }
+end
+
 local function createFakeMouseRay(origin)
     local dir = Vector3.new(-1, 0.5, 2).Unit * 30
     return {
@@ -576,7 +589,7 @@ end
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
-    -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
+
     if transformSkills[skill] then
         if isTransformed() or not isRageAbove(40) then
             return
@@ -589,7 +602,7 @@ local function castSkill(fruit, skill)
 
     local ray = createFakeMouseRay(hrp.Position)
 
-    -- Dạng 2: Gửi Raycast đơn giản
+    -- Dạng 2
     if table.find(skillType2, skill) then
         local args = {
             fruit,
@@ -604,7 +617,6 @@ local function castSkill(fruit, skill)
                 Position = hrp.Position
             }}
         }
-
         local success, err = pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
         end)
@@ -612,14 +624,13 @@ local function castSkill(fruit, skill)
         return
     end
 
-    -- Dạng 3: Gửi MouseRay chuẩn
+    -- Dạng 3
     if table.find(skillType3, skill) then
         local args = {
             fruit,
             skill,
             { MouseRay = ray }
         }
-
         local success, err = pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
         end)
@@ -627,15 +638,23 @@ local function castSkill(fruit, skill)
         return
     end
 
-    -- Dạng 4: Dùng FireServer (NoYield) + chỉ có MouseRay
+    -- Dạng 4 - dùng đúng định dạng từ rspy
     if table.find(skillType4, skill) then
+        local colosseum = workspace:FindFirstChild("SafeZones")
+            and workspace.SafeZones:FindFirstChild("Colloseum1")
+            and workspace.SafeZones.Colloseum1:FindFirstChild("SpawnLocation")
+
+        local customRay = createRaycastMouse(
+            hrp.Position + Vector3.new(0, 10, 0),
+            Vector3.new(-33.73, -195.6, 24.53),
+            colosseum
+        )
+
         local args = {
             fruit,
             skill,
-            { MouseRay = ray }
+            { MouseRay = customRay }
         }
-
-        -- Không cần pcall vì FireServer không trả về lỗi invoke
         game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer(unpack(args))
         return
     end
