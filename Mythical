@@ -57,12 +57,25 @@ end
 --// AUTO REDEEM CODE TRƯỚC
 task.spawn(function()
     pcall(function()
-        local codes = {
-            "WOW850", "860KHYPEE", "870OMG!", "LOLX880K!", "IAMLEOPARD",
-            "BIGUPDATE20", "ANTICIPATION", "BIGDAY", "MAGNIFICENT890K!!",
-            "OMG9HUNDRED!", "WOWZER910", "HYPEE920K!", "930KINS4NITY",
-            "940KHAPPYDAYZ", "950KOMGGG!", "LOL960K!"
-        }
+            local codes = {
+                "WOW850",
+                "860KHYPEE",
+                "870OMG!",
+                "LOLX880K!",
+                "IAMLEOPARD",
+                "BIGUPDATE20",
+                "ANTICIPATION",
+                "BIGDAY",
+                "MAGNIFICENT890K!!",
+                "OMG9HUNDRED!",
+                "WOWZER910",
+                "HYPEE920K!",
+                "930KINS4NITY",
+		        "940KHAPPYDAYZ",
+		        "950KOMGGG!",
+                "LOL960K!",
+		        "POW970K"
+            }
 
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local Replicator = ReplicatedStorage:WaitForChild("Replicator")
