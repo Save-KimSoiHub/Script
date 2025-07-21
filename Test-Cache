@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -8,13 +8,13 @@ game.StarterGui:SetCore("SendNotification", {
     Icon = "rbxassetid://93005671600086"
 })
 
-local allowedPlaceIds = {
+shared.allowedPlaceIds = {
     [12413901502] = true, -- Dressrosa
     [9224601490] = true, -- Whole Cake
     [16190471004] = true, -- Wano
 }
 
-if allowedPlaceIds[game.PlaceId] then
+if shared.allowedPlaceIds[game.PlaceId] then
     task.spawn(function()
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
@@ -96,6 +96,7 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
+if shared.allowedPlaceIds[game.PlaceId] then
 local Players = game:GetService("Players")
 
 local Player = game.Players.LocalPlayer
@@ -245,7 +246,7 @@ elseif placeId == 12413901502 then
 elseif placeId == 9224601490 then
     shared.BossName = "Macro"
 end
-
+end
 local teleportLockPriority = 0
 local autoFarmEnabled = false
 local autoFarmToggleRef = nil
@@ -552,13 +553,27 @@ local skillType2 = {
 }
 
 local skillType3 = {
-    "MajorEruption", "MeteorVolcano", "HellHound", "UnrelentingAssault"
+    "MajorEruption", "MeteorVolcano", "HellHound"
 }
 
 local skillType4 = {
     "UnrelentingAssault"
 }
 
+-- MouseRay chuẩn từ RSpy
+local function createRaycastMouse(origin, dir, instance)
+    return {
+        Normal = Vector3.yAxis,
+        Direction = dir,
+        Origin = origin,
+        Instance = instance or workspace.Terrain,
+        Distance = dir.Magnitude,
+        Material = Enum.Material.Plastic,
+        Position = origin + dir
+    }
+end
+
+-- MouseRay mặc định
 local function createFakeMouseRay(origin)
     local dir = Vector3.new(-1, 0.5, 2).Unit * 30
     return {
@@ -572,10 +587,12 @@ local function createFakeMouseRay(origin)
     }
 end
 
+-- Cast chiêu
 local function castSkill(fruit, skill)
     if not fruit or not skill then return end
     if not isSkillReady(skill) then return end
-    -- Ngăn dùng chiêu biến hình nếu đang biến hình hoặc Rage < 40
+
+    -- Nếu là skill biến hình thì chặn khi đang hóa hoặc Rage thấp
     if transformSkills[skill] then
         if isTransformed() or not isRageAbove(40) then
             return
@@ -588,7 +605,7 @@ local function castSkill(fruit, skill)
 
     local ray = createFakeMouseRay(hrp.Position)
 
-    -- Dạng 2: Gửi Raycast đơn giản
+    -- Dạng 2: Raycast đơn giản
     if table.find(skillType2, skill) then
         local args = {
             fruit,
@@ -611,7 +628,7 @@ local function castSkill(fruit, skill)
         return
     end
 
-    -- Dạng 3: Gửi MouseRay chuẩn
+    -- Dạng 3: MouseRay + InvokeServer
     if table.find(skillType3, skill) then
         local args = {
             fruit,
@@ -626,15 +643,26 @@ local function castSkill(fruit, skill)
         return
     end
 
-    -- Dạng 4: Dùng FireServer (NoYield) + chỉ có MouseRay
+    -- Dạng 4: MouseRay dạng đặc biệt (FireServer, Ray từ RSpy)
     if table.find(skillType4, skill) then
+        local instance =
+            workspace:FindFirstChild("SafeZones")
+            and workspace.SafeZones:FindFirstChild("Colloseum1")
+            and workspace.SafeZones.Colloseum1:FindFirstChild("SpawnLocation")
+            or workspace:FindFirstChildWhichIsA("BasePart", true)
+
+        local raySpecial = createRaycastMouse(
+            hrp.Position + Vector3.new(0, 10, 0),
+            Vector3.new(-33.73, -195.6, 24.53),
+            instance
+        )
+
         local args = {
             fruit,
             skill,
-            { MouseRay = ray }
+            { MouseRay = raySpecial }
         }
 
-        -- Không cần pcall vì FireServer không trả về lỗi invoke
         game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer(unpack(args))
         return
     end
@@ -972,8 +1000,11 @@ Tabs.Player:AddButton({
 loadstring("\108\111\97\100\115\116\114\105\110\103\40\103\97\109\101\58\72\116\116\112\71\101\116\40\40\39\104\116\116\112\115\58\47\47\103\105\115\116\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\109\101\111\122\111\110\101\89\84\47\98\102\48\51\55\100\102\102\57\102\48\97\55\48\48\49\55\51\48\52\100\100\100\54\55\102\100\99\100\51\55\48\47\114\97\119\47\101\49\52\101\55\52\102\52\50\53\98\48\54\48\100\102\53\50\51\51\52\51\99\102\51\48\98\55\56\55\48\55\52\101\98\51\99\53\100\50\47\97\114\99\101\117\115\37\50\53\50\48\120\37\50\53\50\48\102\108\121\37\50\53\50\48\50\37\50\53\50\48\111\98\102\108\117\99\97\116\111\114\39\41\44\116\114\117\101\41\41\40\41\10\10")()
     end
 })
+
 -- Nhập Số Mana
 shared.THRESHOLD = 50
+shared.autoCheckMana = false
+
 Tabs.Main:AddInput("ManaToReset", {
     Title = "Enter Mana To Reset",
     Default = "50",
@@ -984,55 +1015,63 @@ Tabs.Main:AddInput("ManaToReset", {
     end
 })
 
--- Auto Check Mana (reset xong chờ 20 giây rồi mới tiếp tục)
-do
+Tabs.Main:AddToggle("AutoCheckManaToggle", {
+    Title = "Auto Reset If Mana Is Low",
+    Default = false,
+    Callback = function(value)
+        shared.autoCheckMana = value
+        print(value and "🟩 [ManaCheck] Đã bật." or "⛔ [ManaCheck] Đã tắt.")
+    end
+})
+
+-- ✅ Script chạy riêng, toggle không ảnh hưởng
+task.spawn(function()
     local RunService = game:GetService("RunService")
     local player = game:GetService("Players").LocalPlayer
-    local canAct = false
-    local manaTextLabel = player.PlayerGui.UI.HUD.Bars.ProgressStamina
 
-    local function waitAfterReset()
-        canAct = false
-        task.delay(20, function()
-            canAct = true
-            print("🟢 [ManaCheck] Đã sẵn sàng kiểm tra lại sau 20 giây.")
-        end)
+    local function waitForManaLabel()
+        local gui = player:WaitForChild("PlayerGui", 10)
+        local ui = gui:WaitForChild("UI", 10)
+        local hud = ui:WaitForChild("HUD", 10)
+        local bars = hud:WaitForChild("Bars", 10)
+        local label = bars:WaitForChild("ProgressStamina", 10)
+        return label
     end
 
-    local function checkMana()
+    local manaLabel = nil
+    pcall(function()
+        manaLabel = waitForManaLabel()
+    end)
+
+    if not manaLabel then
+        warn("❌ [ManaCheck] Không tìm thấy mana label.")
+        return
+    end
+
+    print("✅ [ManaCheck] Đã phát hiện mana label, bắt đầu kiểm tra.")
+    local canAct = true
+
+    RunService:BindToRenderStep("ManaChecker", Enum.RenderPriority.Last.Value, function()
         if not shared.autoCheckMana or not canAct then return end
 
         local char = player.Character
         local humanoid = char and char:FindFirstChild("Humanoid")
         if not humanoid or humanoid.Health <= 0 then return end
 
-        local manaText = manaTextLabel.Text or ""
-        local currentMana = tonumber(manaText:match("(%d+)%s*/%s*%d+"))
+        local text = manaLabel.Text or ""
+        local current = tonumber(text:match("(%d+)%s*/%s*%d+"))
 
-        if currentMana and currentMana < shared.THRESHOLD then
-            print("🟥 [ManaCheck] Mana thấp, reset nhân vật!")
+        if current and current < shared.THRESHOLD then
+            print("🟥 [ManaCheck] Mana thấp, reset!")
             humanoid.Health = 0
-            waitAfterReset()
+            canAct = false
+            task.delay(20, function()
+                canAct = true
+                print("🟢 [ManaCheck] Tiếp tục kiểm tra sau 20s.")
+            end)
         end
-    end
-
-    Tabs.Main:AddToggle("AutoCheckManaToggle", {
-        Title = "Auto Reset If Mana Is Low",
-        Default = false,
-        Callback = function(value)
-            shared.autoCheckMana = value
-            RunService:UnbindFromRenderStep("ManaChecker")
-
-            if value then
-                print("🟩 [ManaCheck] Đang bật kiểm tra mana... (chờ 20s đầu)")
-                waitAfterReset()
-                RunService:BindToRenderStep("ManaChecker", Enum.RenderPriority.Last.Value, checkMana)
-            else
-                print("⛔ [ManaCheck] Đã tắt kiểm tra mana.")
-            end
-        end
-    })
-end
+    end)
+end)
 
 -- Chọn Slot
 local selectedSlot = 1
@@ -1261,7 +1300,10 @@ Tabs.Misc:AddToggle("RedeemAllCodeToggle", {
                 "WOWZER910",
                 "HYPEE920K!",
                 "930KINS4NITY",
-                "LOL960K!"
+		"940KHAPPYDAYZ",
+		"950KOMGGG!",
+                "LOL960K!",
+		"POW970K"
             }
 
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1904,6 +1946,13 @@ else
 end
     end
 })
+if not shared.allowedPlaceIds[game.PlaceId] then
+Tabs.Main:AddParagraph({
+    Title = "This Sever Dont Have Boss !",
+    Content = ""
+})
+end
+if shared.allowedPlaceIds[game.PlaceId] then
 --Auto Play
 shared.AutoFindBoss = shared.AutoFindBoss or false
 shared.AutoFindKatakuri = shared.AutoFindKatakuri or false
@@ -1975,7 +2024,6 @@ _G.AutoPressPlay_Find = _G.AutoPressPlay_Find or function()
 		_G._pressingPlay_Find = false
 	end)
 end
-
 --Nhập Time
 shared.timeToWait = 20
 Tabs.Main:AddInput("TimeToWaitInput", {
@@ -2215,6 +2263,7 @@ function AutoFindKatakuriFunction()
             shared.autoKatakuriToggleRef:SetValue(false)
         end)
     end
+end
 end
 end
 --Auto Spin
