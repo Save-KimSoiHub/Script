@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -1300,7 +1300,10 @@ Tabs.Misc:AddToggle("RedeemAllCodeToggle", {
                 "WOWZER910",
                 "HYPEE920K!",
                 "930KINS4NITY",
-                "LOL960K!"
+		"940KHAPPYDAYZ",
+		"950KOMGGG!",
+                "LOL960K!",
+		"POW970K"
             }
 
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
