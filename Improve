@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -553,7 +553,7 @@ local skillType2 = {
 }
 
 local skillType3 = {
-    "MajorEruption", "MeteorVolcano", "HellHound", "UnrelentingAssault"
+    "MajorEruption", "MeteorVolcano", "HellHound"
 }
 
 local skillType4 = {
