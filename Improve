@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -549,6 +549,11 @@ local function fastTeleport()
     isTeleported = true
 end
 
+local specialServerFruits = {
+    LightV2 = true,
+    -- Các trái khác cần gọi bằng Loader.Server
+}
+
 function castSkill(fruitName, skillName)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Players = game:GetService("Players")
@@ -566,11 +571,17 @@ function castSkill(fruitName, skillName)
         end
     end
 
-    -- Gọi chiêu
-    Loader.ServerEvent(fruitName, skillName, {
-        MouseRay = MouseRay,
-        RootCF = RootPart.CFrame
-    })
+    -- Nếu là dạng đặc biệt thì gọi Loader.Server
+    if specialServerFruits[fruitName] then
+        task.spawn(Loader.Server, fruitName, skillName, {
+            Raycast = MouseRay
+        })
+    else
+        Loader.ServerEvent(fruitName, skillName, {
+            MouseRay = MouseRay,
+            RootCF = RootPart.CFrame
+        })
+    end
 end
 
 local skillLoopRunning = false
