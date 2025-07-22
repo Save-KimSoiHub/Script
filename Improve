@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -548,144 +548,21 @@ local function fastTeleport()
     isTeleported = true
 end
 
-local skillType2 = {
-    "PiercingShine"
-}
+function castSkill(fruitName, skillName)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
-local skillType3 = {
-    "MajorEruption", "MeteorVolcano", "HellHound"
-}
+    local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
+    local MouseRay = Loader.Main:GetMouseRay(300)
+    local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-local skillType4 = {
-    "UnrelentingAssault"
-}
-
--- Ray theo định dạng chuẩn
-local function createRaycastMouse(origin, dir, instance)
-    return {
-        Normal = dir.Unit,
-        Direction = dir,
-        Origin = origin,
-        Instance = instance or workspace.Terrain,
-        Distance = dir.Magnitude,
-        Material = Enum.Material.Plastic,
-        Position = origin + dir
-    }
-end
-
--- Ray đơn giản (default)
-local function createFakeMouseRay(origin)
-    local dir = Vector3.new(-1, 0.5, 2).Unit * 30
-    return {
-        Normal = dir.Unit,
-        Direction = dir * 10,
-        Origin = origin,
-        Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("4") or workspace.Terrain,
-        Distance = 15,
-        Material = Enum.Material.Slate,
-        Position = origin + dir
-    }
-end
-
--- Gửi gói UpdateData chuẩn
-local function sendUpdateData(cf, ray)
-    local args = {
-        "ClientData",
-        "UpdateData",
-        {
-            RootCF = cf,
-            MouseRay = ray
-        }
-    }
-    game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer(unpack(args))
-end
-
--- Cast Skill
-local function castSkill(fruit, skill)
-    if not fruit or not skill then return end
-    if not isSkillReady(skill) then return end
-
-    -- Chặn biến hình khi chưa đủ điều kiện
-    if transformSkills[skill] then
-        if isTransformed() or not isRageAbove(40) then return end
-    end
-
-    local char = player.Character or player.CharacterAdded:Wait()
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    local ray = createFakeMouseRay(hrp.Position)
-
-    -- Dạng 2: Raycast đơn giản
-    if table.find(skillType2, skill) then
-        local args = {
-            fruit,
-            skill,
-            {
-                Raycast = {
-                    Normal = Vector3.yAxis,
-                    Direction = Vector3.new(0, -1, 0),
-                    Origin = hrp.Position,
-                    Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChildWhichIsA("BasePart") or workspace.Terrain,
-                    Distance = 30,
-                    Material = Enum.Material.Grass,
-                    Position = hrp.Position
-                }
-            }
-        }
-        local success, err = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-        end)
-        if not success then warn("[castSkill - type 2] Lỗi:", err) end
-        return
-    end
-
-    -- Dạng 3: Ray bình thường
-    if table.find(skillType3, skill) then
-        local args = {
-            fruit,
-            skill,
-            { MouseRay = ray }
-        }
-        local success, err = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
-        end)
-        if not success then warn("[castSkill - type 3] Lỗi:", err) end
-        return
-    end
-
-    -- Dạng 4: Ray đặc biệt + bắt buộc gửi UpdateData để tránh bị reset
-    if table.find(skillType4, skill) then
-        local instance = workspace:FindFirstChild("SafeZones")
-            and workspace.SafeZones:FindFirstChild("Colloseum1")
-            and workspace.SafeZones.Colloseum1:FindFirstChild("SpawnLocation")
-            or workspace:FindFirstChildWhichIsA("BasePart", true)
-
-        local specialRay = createRaycastMouse(
-            hrp.Position + Vector3.new(0, 10, 0),
-            Vector3.new(-33.73, -195.6, 24.53),
-            instance
-        )
-
-        -- Gửi chiêu
-        game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer(fruit, skill, {
-            MouseRay = specialRay
-        })
-
-        -- Gửi update đi kèm (bắt buộc)
-        sendUpdateData(hrp.CFrame, specialRay)
-        return
-    end
-
-    -- Dạng mặc định
-    local success, err = pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
-            Ground = { Position = hrp.Position },
-            MouseRay = ray
-        })
-        sendUpdateData(hrp.CFrame, ray)
-    end)
-    if not success then warn("[castSkill - default] Lỗi:", err) end
+    -- Gọi chiêu
+    Loader.ServerEvent(fruitName, skillName, {
+        MouseRay = MouseRay,
+        RootCF = RootPart.CFrame
+    })
 end
 
 local skillLoopRunning = false
