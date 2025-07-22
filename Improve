@@ -121,6 +121,7 @@ shared.NeedToFind = nil
 local fruitTransformMap = {
     ["Nika"] = "Cloud",
     ["LeopardV2"] = "LeopardV2Rig",
+    ["DragonV2"] = "HybridDragon"
     -- Thêm các trái khác sau này tại đây
     -- ["Dragon"] = "DragonForm",
     -- ["Phoenix"] = "PhoenixAura",
