@@ -96,7 +96,6 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
-if shared.allowedPlaceIds[game.PlaceId] then
 local Players = game:GetService("Players")
 
 local Player = game.Players.LocalPlayer
@@ -246,7 +245,6 @@ elseif placeId == 12413901502 then
     shared.BossName = "Kaido"
 elseif placeId == 9224601490 then
     shared.BossName = "Macro"
-end
 end
 local teleportLockPriority = 0
 local autoFarmEnabled = false
