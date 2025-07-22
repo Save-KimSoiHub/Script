@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -557,7 +557,11 @@ function castSkill(fruitName, skillName)
     local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
-
+    if transformSkills[skill] then
+        if isTransformed() or not isRageAbove(40) then
+            return
+        end
+    end
     -- Gọi chiêu
     Loader.ServerEvent(fruitName, skillName, {
         MouseRay = MouseRay,
