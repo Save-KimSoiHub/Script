@@ -4,7 +4,7 @@ if not a then
 end
 
 local b = getgenv().Key
-local c = "https://api-pbqa.onrender.com/check"
+local c = "https://keysystem-1mxn.onrender.com/check"
 local d = game.Players.LocalPlayer
 local e
 pcall(function()
