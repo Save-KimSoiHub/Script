@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -16,7 +16,7 @@ shared.allowedPlaceIds = {
 
 if shared.allowedPlaceIds[game.PlaceId] then
     task.spawn(function()
-	pcall(function()
+        pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Boss%20Notify"))()
         end)
     end)
@@ -99,156 +99,153 @@ end)
 local Players = game:GetService("Players")
 local Player = game.Players.LocalPlayer
 local mainData = Player:WaitForChild("MAIN_DATA", 10)
-task.spawn(function()
-    pcall(function()
-	-- Hàm lấy trái đang trang bị
-	local function getEquippedFruit()
-	    if not mainData then return nil end
-	
-	    local currentSlot = mainData:FindFirstChild("Slot")
-	    if not currentSlot then return nil end
-	
-	    local slotValue = mainData:FindFirstChild("Slots"):FindFirstChild(tostring(currentSlot.Value))
-	    if not slotValue then return nil end
-	
-	    return slotValue.Value or nil
-	end
-	
-	shared.NeedToFind = nil
-	
-	-- Danh sách map trái → object biến hình
-	local fruitTransformMap = {
-	    ["Nika"] = "Cloud",
-	    ["LeopardV2"] = "LeopardV2Rig",
-	    ["DragonV2"] = "HybridDragon"
-	    -- Thêm các trái khác sau này tại đây
-	    -- ["Dragon"] = "DragonForm",
-	    -- ["Phoenix"] = "PhoenixAura",
-	}
-	
-	-- Hàm cập nhật shared.NeedToFind theo shared.CurrentFruit
-	local function updateNeedToFind(fruit)
-	    local transformObject = fruitTransformMap[fruit]
-	    if transformObject then
-	        shared.NeedToFind = transformObject
-	    else
-	        shared.NeedToFind = nil
-	    end
-	end
-	
-	-- Cập nhật shared.CurrentFruit và shared.NeedToFind mỗi giây
-	task.spawn(function()
-	    while true do
-	        local success, fruit = pcall(getEquippedFruit)
-	        if success and fruit then
-	            shared.CurrentFruit = fruit
-	            updateNeedToFind(fruit)
-	        else
-	            shared.CurrentFruit = "Unknown"
-	            shared.NeedToFind = nil
-	        end
-	        task.wait(1)
-	    end
-	end)
-	
-	-- 🌐 Dữ liệu toạ độ theo map (PlaceId)
-	local PositionData = {
-	    [9224601490] = {
-	        Vector3.new(-1447.30, 798.57, 135.07), Vector3.new(-1384.71, 798.68, 308.28),
-	        Vector3.new(-1268.20, 773.92, 784.15), Vector3.new(-1355.85, 774.04, 925.66),
-	        Vector3.new(-1153.03, 740.81, 1038.60), Vector3.new(-799.09, 800.90, 1492.20),
-	        Vector3.new(-704.09, 696.17, 1655.30), Vector3.new(-501.26, 696.04, 1638.57),
-	        Vector3.new(-621.38, 801.04, 1486.79), Vector3.new(-333.86, 696.05, 1568.03),
-	        Vector3.new(-234.05, 696.02, 1653.19), Vector3.new(-38.80, 696.44, 1656.71),
-	        Vector3.new(66.45, 822.25, 1617.01), Vector3.new(387.60, 761.34, 1524.28),
-	        Vector3.new(595.67, 734.15, 1493.14), Vector3.new(864.09, 734.19, 1464.05),
-	        Vector3.new(715.51, 734.84, 1498.93), Vector3.new(1020.73, 733.59, 1335.98),
-	        Vector3.new(1190.75, 734.95, 1285.10), Vector3.new(1350.64, 733.38, 1075.17),
-	    },
-	    [12413901502] = {
-	        Vector3.new(-4765.79, 1125.53, 398.81), Vector3.new(-5475.12, 1138.52, 694.03),
-	        Vector3.new(-5372.89, 809.52, 330.33), Vector3.new(-5336.56, 1175.52, -248.54),
-	        Vector3.new(-5054.07, 1275.02, -366.31), Vector3.new(-4656.35, 1275.02, -366.83),
-	        Vector3.new(-4494.37, 1514.52, -200.73), Vector3.new(-4260.62, 1514.52, -190.89),
-	        Vector3.new(-3629.31, 1488.51, 0.77), Vector3.new(-3638.80, 1562.21, 372.09),
-	        Vector3.new(-3587.73, 1532.35, 614.15), Vector3.new(-4037.96, 1461.62, 792.76),
-	        Vector3.new(-4271.91, 1312.59, 901.19), Vector3.new(-3859.99, 1359.75, 945.52),
-	        Vector3.new(-3886.48, 1191.89, 1156.49), Vector3.new(-3826.80, 1131.49, 1511.94),
-	        Vector3.new(-3764.19, 1266.04, 1847.50), Vector3.new(-3755.58, 1775.08, 1942.76),
-	        Vector3.new(-3726.79, 2036.17, 1502.03), Vector3.new(-3745.94, 2270.67, 1252.67),
-	    },
-	    [16190471004] = {
-	        Vector3.new(1528.06, -394.35, -1611.08), Vector3.new(1547.61, -394.35, -1260.45),
-	        Vector3.new(1209.22, -394.35, -1249.41), Vector3.new(1130.33, -394.35, -1539.52),
-	        Vector3.new(717.11, -394.24, -1558.24), Vector3.new(709.77, -394.35, -1281.30),
-	        Vector3.new(130.75, -394.35, -1296.25), Vector3.new(130.00, -394.35, -1717.32),
-	        Vector3.new(-247.13, -394.35, -1734.28), Vector3.new(-266.15, -394.35, -1278.93),
-	        Vector3.new(567.29, -945.93, -1368.38), Vector3.new(1154.65, -939.35, -1136.08),
-	        Vector3.new(1618.44, -947.35, -1415.32), Vector3.new(1505.39, -1000.47, -1970.25),
-	        Vector3.new(1619.98, -1025.48, -2670.52), Vector3.new(1840.31, -1021.81, -2937.07),
-	        Vector3.new(1563.28, -1011.70, -3283.04), Vector3.new(1154.99, -1002.63, -3413.99),
-	        Vector3.new(695.31, -1004.31, -3333.44), Vector3.new(270.83, -1005.94, -3257.43),
-	    }
-	}
-	
-	-- Toạ độ farm đã gán cho từng player
-	GlobalPlayerPositions = {}
-	
-	local function extractUsername(comboText)
-	    if typeof(comboText) == "string" and comboText:find("%(") and comboText:find("%)") then
-	        return comboText:match("%((.-)%)")
-	    end
-	    return "Unknown"
-	end
-	
-	-- Lấy danh sách player
-	function getPlayerList()
-	    local list = {}
-	    for _, player in ipairs(Players:GetPlayers()) do
-	        table.insert(list, player.DisplayName .. " (" .. player.Name .. ")")
-	    end
-	    table.sort(list, function(a, b) return a:lower() < b:lower() end)
-	    return list
-	end
-	
-	-- Gán toạ độ farm theo thứ tự player
-	local function assignPlayerPositions()
-	    local sorted = getPlayerList()
-	    local coords = PositionData[game.PlaceId]
-	    if not coords then return end
-	
-	    GlobalPlayerPositions = {}
-	    
-	    for i, combo in ipairs(sorted) do
-	        local username = extractUsername(combo)
-	        GlobalPlayerPositions[username] = coords[i]
-	
-	        -- Gán tọa độ của chính LocalPlayer vào shared.myPos
-	        if username == Players.LocalPlayer.Name then
-	            shared.myPos = coords[i]
-	        end
-	    end
-	end
-	
-	
-	assignPlayerPositions()
-	Players.PlayerAdded:Connect(assignPlayerPositions)
-	Players.PlayerRemoving:Connect(assignPlayerPositions)
-	
-	-- Gán tên boss vào biến toàn cục shared.BossName theo PlaceId
-	shared.BossName = "Unknown"
-	
-	local placeId = game.PlaceId
-	if placeId == 16190471004 then
-	    shared.BossName = "Bigmom"
-	elseif placeId == 12413901502 then
-	    shared.BossName = "Kaido"
-	elseif placeId == 9224601490 then
-	    shared.BossName = "Macro"
-	end
-        end)
-    end)
+
+-- Hàm lấy trái đang trang bị
+local function getEquippedFruit()
+    if not mainData then return nil end
+
+    local currentSlot = mainData:FindFirstChild("Slot")
+    if not currentSlot then return nil end
+
+    local slotValue = mainData:FindFirstChild("Slots"):FindFirstChild(tostring(currentSlot.Value))
+    if not slotValue then return nil end
+
+    return slotValue.Value or nil
 end
+
+shared.NeedToFind = nil
+
+-- Danh sách map trái → object biến hình
+local fruitTransformMap = {
+    ["Nika"] = "Cloud",
+    ["LeopardV2"] = "LeopardV2Rig",
+    ["DragonV2"] = "HybridDragon"
+    -- Thêm các trái khác sau này tại đây
+    -- ["Dragon"] = "DragonForm",
+    -- ["Phoenix"] = "PhoenixAura",
+}
+
+-- Hàm cập nhật shared.NeedToFind theo shared.CurrentFruit
+local function updateNeedToFind(fruit)
+    local transformObject = fruitTransformMap[fruit]
+    if transformObject then
+        shared.NeedToFind = transformObject
+    else
+        shared.NeedToFind = nil
+    end
+end
+
+-- Cập nhật shared.CurrentFruit và shared.NeedToFind mỗi giây
+task.spawn(function()
+    while true do
+        local success, fruit = pcall(getEquippedFruit)
+        if success and fruit then
+            shared.CurrentFruit = fruit
+            updateNeedToFind(fruit)
+        else
+            shared.CurrentFruit = "Unknown"
+            shared.NeedToFind = nil
+        end
+        task.wait(1)
+    end
+end)
+
+-- 🌐 Dữ liệu toạ độ theo map (PlaceId)
+local PositionData = {
+    [9224601490] = {
+        Vector3.new(-1447.30, 798.57, 135.07), Vector3.new(-1384.71, 798.68, 308.28),
+        Vector3.new(-1268.20, 773.92, 784.15), Vector3.new(-1355.85, 774.04, 925.66),
+        Vector3.new(-1153.03, 740.81, 1038.60), Vector3.new(-799.09, 800.90, 1492.20),
+        Vector3.new(-704.09, 696.17, 1655.30), Vector3.new(-501.26, 696.04, 1638.57),
+        Vector3.new(-621.38, 801.04, 1486.79), Vector3.new(-333.86, 696.05, 1568.03),
+        Vector3.new(-234.05, 696.02, 1653.19), Vector3.new(-38.80, 696.44, 1656.71),
+        Vector3.new(66.45, 822.25, 1617.01), Vector3.new(387.60, 761.34, 1524.28),
+        Vector3.new(595.67, 734.15, 1493.14), Vector3.new(864.09, 734.19, 1464.05),
+        Vector3.new(715.51, 734.84, 1498.93), Vector3.new(1020.73, 733.59, 1335.98),
+        Vector3.new(1190.75, 734.95, 1285.10), Vector3.new(1350.64, 733.38, 1075.17),
+    },
+    [12413901502] = {
+        Vector3.new(-4765.79, 1125.53, 398.81), Vector3.new(-5475.12, 1138.52, 694.03),
+        Vector3.new(-5372.89, 809.52, 330.33), Vector3.new(-5336.56, 1175.52, -248.54),
+        Vector3.new(-5054.07, 1275.02, -366.31), Vector3.new(-4656.35, 1275.02, -366.83),
+        Vector3.new(-4494.37, 1514.52, -200.73), Vector3.new(-4260.62, 1514.52, -190.89),
+        Vector3.new(-3629.31, 1488.51, 0.77), Vector3.new(-3638.80, 1562.21, 372.09),
+        Vector3.new(-3587.73, 1532.35, 614.15), Vector3.new(-4037.96, 1461.62, 792.76),
+        Vector3.new(-4271.91, 1312.59, 901.19), Vector3.new(-3859.99, 1359.75, 945.52),
+        Vector3.new(-3886.48, 1191.89, 1156.49), Vector3.new(-3826.80, 1131.49, 1511.94),
+        Vector3.new(-3764.19, 1266.04, 1847.50), Vector3.new(-3755.58, 1775.08, 1942.76),
+        Vector3.new(-3726.79, 2036.17, 1502.03), Vector3.new(-3745.94, 2270.67, 1252.67),
+    },
+    [16190471004] = {
+        Vector3.new(1528.06, -394.35, -1611.08), Vector3.new(1547.61, -394.35, -1260.45),
+        Vector3.new(1209.22, -394.35, -1249.41), Vector3.new(1130.33, -394.35, -1539.52),
+        Vector3.new(717.11, -394.24, -1558.24), Vector3.new(709.77, -394.35, -1281.30),
+        Vector3.new(130.75, -394.35, -1296.25), Vector3.new(130.00, -394.35, -1717.32),
+        Vector3.new(-247.13, -394.35, -1734.28), Vector3.new(-266.15, -394.35, -1278.93),
+        Vector3.new(567.29, -945.93, -1368.38), Vector3.new(1154.65, -939.35, -1136.08),
+        Vector3.new(1618.44, -947.35, -1415.32), Vector3.new(1505.39, -1000.47, -1970.25),
+        Vector3.new(1619.98, -1025.48, -2670.52), Vector3.new(1840.31, -1021.81, -2937.07),
+        Vector3.new(1563.28, -1011.70, -3283.04), Vector3.new(1154.99, -1002.63, -3413.99),
+        Vector3.new(695.31, -1004.31, -3333.44), Vector3.new(270.83, -1005.94, -3257.43),
+    }
+}
+
+-- Toạ độ farm đã gán cho từng player
+GlobalPlayerPositions = {}
+
+local function extractUsername(comboText)
+    if typeof(comboText) == "string" and comboText:find("%(") and comboText:find("%)") then
+        return comboText:match("%((.-)%)")
+    end
+    return "Unknown"
+end
+
+-- Lấy danh sách player
+function getPlayerList()
+    local list = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(list, player.DisplayName .. " (" .. player.Name .. ")")
+    end
+    table.sort(list, function(a, b) return a:lower() < b:lower() end)
+    return list
+end
+
+-- Gán toạ độ farm theo thứ tự player
+local function assignPlayerPositions()
+    local sorted = getPlayerList()
+    local coords = PositionData[game.PlaceId]
+    if not coords then return end
+
+    GlobalPlayerPositions = {}
+    
+    for i, combo in ipairs(sorted) do
+        local username = extractUsername(combo)
+        GlobalPlayerPositions[username] = coords[i]
+
+        -- Gán tọa độ của chính LocalPlayer vào shared.myPos
+        if username == Players.LocalPlayer.Name then
+            shared.myPos = coords[i]
+        end
+    end
+end
+
+
+assignPlayerPositions()
+Players.PlayerAdded:Connect(assignPlayerPositions)
+Players.PlayerRemoving:Connect(assignPlayerPositions)
+
+-- Gán tên boss vào biến toàn cục shared.BossName theo PlaceId
+shared.BossName = "Unknown"
+
+local placeId = game.PlaceId
+if placeId == 16190471004 then
+    shared.BossName = "Bigmom"
+elseif placeId == 12413901502 then
+    shared.BossName = "Kaido"
+elseif placeId == 9224601490 then
+    shared.BossName = "Macro"
+end
+
 local teleportLockPriority = 0
 local autoFarmEnabled = false
 local autoFarmToggleRef = nil
