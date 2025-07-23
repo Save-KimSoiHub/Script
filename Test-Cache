@@ -96,9 +96,7 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
-if shared.allowedPlaceIds[game.PlaceId] then
 local Players = game:GetService("Players")
-
 local Player = game.Players.LocalPlayer
 local mainData = Player:WaitForChild("MAIN_DATA", 10)
 
@@ -247,7 +245,7 @@ elseif placeId == 12413901502 then
 elseif placeId == 9224601490 then
     shared.BossName = "Macro"
 end
-end
+
 local teleportLockPriority = 0
 local autoFarmEnabled = false
 local autoFarmToggleRef = nil
@@ -446,7 +444,7 @@ local skills = {
     DoughV2 = {"GrilledLance", "ElasticLasso", "Oblivion", "PowerDough", "BlazingStorm", "ScorchingBuzzcut"},
     Ope = {"Room", "Takt", "Wreckage", "HurricaneShock", "GammaKnife", "Mes", "Shambles"},
     LeopardV2 = {"FingerPistolBarrage", "SonicKick", "InfinityDrive", "UnrelentingAssault", "Transform", "HeavensDemise"},
-    Lightning = {"LightningPalm", "CrashingThunder", "ProjectedBurst", "CrushingJudgment", "Raigo"},
+    Lightning = {"VoltageUp", "LightningPalm", "CrashingThunder", "ProjectedBurst", "CrushingJudgment", "Raigo"},
     Nika = {"RocGun", "NeoRedHawk", "RocGatling", "RedRoc", "DrumsofLiberation", "Gear5", "SpinningTop", "DawnRocket", "MolePistolCombo", "RisingBolt", "GigantStamp", "BajrangGun"},
     DragonV2 = {"InfernoBreath", "ThunderBagua", "DragonTwister", "BeastsBellow", "Transform", "BoloFrenzy", "FlamingTorch", "Demolition", "Transformation"},
     Soul = {"EnthralGrasp", "ScorchingSickle", "ZeusMeadow", "CrimsonPillar", "Transform", "MaserCannon"},
@@ -551,7 +549,19 @@ end
 
 local specialServerFruits = {
     LightV2 = true,
-    -- Các trái khác cần gọi bằng Loader.Server
+    Chop = true,
+    Sand = true,
+    Barrier = true,
+    Flame = true,
+    Rubber = true,
+    Light = true,
+    Love = true,
+    Soul = true,
+    Bomb = true,
+    Ash = true,
+    MagmaV2 = true,
+    Magma = true,
+    Quake = true,
 }
 
 function castSkill(fruitName, skillName)
