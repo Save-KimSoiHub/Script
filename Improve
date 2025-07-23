@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -550,18 +550,6 @@ end
 local specialServerFruits = {
     LightV2 = true,
     Chop = true,
-    Sand = true,
-    Barrier = true,
-    Flame = true,
-    Rubber = true,
-    Light = true,
-    Love = true,
-    Soul = true,
-    Bomb = true,
-    Ash = true,
-    MagmaV2 = true,
-    Magma = true,
-    Quake = true,
 }
 
 function castSkill(fruitName, skillName)
