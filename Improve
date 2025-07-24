@@ -564,6 +564,7 @@ local specialServerFruits = {
     Magma = true,
     Quake = true,
     Darkness = true,
+    DarkXQuake = true,
 }
 
 function castSkill(fruitName, skillName)
