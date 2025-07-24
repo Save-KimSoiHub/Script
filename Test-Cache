@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -96,6 +96,7 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
+
 local Players = game:GetService("Players")
 local Player = game.Players.LocalPlayer
 local mainData = Player:WaitForChild("MAIN_DATA", 10)
@@ -562,6 +563,9 @@ local specialServerFruits = {
     MagmaV2 = true,
     Magma = true,
     Quake = true,
+    Darkness = true,
+    DarkXQuake = true,
+    Okuchi = true,
 }
 
 function castSkill(fruitName, skillName)
@@ -569,7 +573,7 @@ function castSkill(fruitName, skillName)
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
+    
     local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
@@ -581,16 +585,24 @@ function castSkill(fruitName, skillName)
         end
     end
 
-    -- Nếu là dạng đặc biệt thì gọi Loader.Server
+    -- Gửi lệnh dùng kỹ năng một lần duy nhất, không giữ
+    local args = {
+        MouseRay = MouseRay,
+        RootCF = RootPart.CFrame
+    }
+
     if specialServerFruits[fruitName] then
-        task.spawn(Loader.Server, fruitName, skillName, {
-            Raycast = MouseRay
-        })
+        -- Nếu là dạng đặc biệt, dùng Loader.Server (gọi 1 lần, không giữ)
+        task.spawn(function()
+            Loader.Server(fruitName, skillName, {
+                Raycast = MouseRay
+            })
+        end)
     else
-        Loader.ServerEvent(fruitName, skillName, {
-            MouseRay = MouseRay,
-            RootCF = RootPart.CFrame
-        })
+        -- Dạng thường, dùng ServerEvent (gọi 1 lần)
+        task.spawn(function()
+            Loader.ServerEvent(fruitName, skillName, args)
+        end)
     end
 end
 
