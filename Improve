@@ -573,8 +573,9 @@ function castSkill(fruitName, skillName)
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
-    local MouseRay = require(ReplicatedStorage:WaitForChild("Loader")).Main:GetMouseRay(300)
+    
+    local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
+    local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
     -- Kiểm tra skill biến hình
@@ -584,22 +585,25 @@ function castSkill(fruitName, skillName)
         end
     end
 
-    -- Tìm Handler từ Backpack
-    local skillTool = LocalPlayer:FindFirstChild("Backpack") and LocalPlayer.Backpack:FindFirstChild(skillName)
-    if not skillTool then return end
+    -- Gửi lệnh dùng kỹ năng một lần duy nhất, không giữ
+    local args = {
+        MouseRay = MouseRay,
+        RootCF = RootPart.CFrame
+    }
 
-    local handler = skillTool:FindFirstChild("Handler")
-    if not handler or not handler:IsA("RemoteFunction") then return end
-
-    -- Gửi lệnh thông qua Handler để đảm bảo đúng cấu trúc của chiêu
-    task.spawn(function()
-        pcall(function()
-            handler:InvokeServer({
-                MouseRay = MouseRay,
-                RootCF = RootPart.CFrame
+    if specialServerFruits[fruitName] then
+        -- Nếu là dạng đặc biệt, dùng Loader.Server (gọi 1 lần, không giữ)
+        task.spawn(function()
+            Loader.Server(fruitName, skillName, {
+                Raycast = MouseRay
             })
         end)
-    end)
+    else
+        -- Dạng thường, dùng ServerEvent (gọi 1 lần)
+        task.spawn(function()
+            Loader.ServerEvent(fruitName, skillName, args)
+        end)
+    end
 end
 
 local skillLoopRunning = false
