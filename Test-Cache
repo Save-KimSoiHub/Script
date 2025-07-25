@@ -96,8 +96,9 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
-
+if shared.allowedPlaceIds[game.PlaceId] then
 local Players = game:GetService("Players")
+
 local Player = game.Players.LocalPlayer
 local mainData = Player:WaitForChild("MAIN_DATA", 10)
 
@@ -246,7 +247,7 @@ elseif placeId == 12413901502 then
 elseif placeId == 9224601490 then
     shared.BossName = "Macro"
 end
-
+end
 local teleportLockPriority = 0
 local autoFarmEnabled = false
 local autoFarmToggleRef = nil
@@ -550,22 +551,7 @@ end
 
 local specialServerFruits = {
     LightV2 = true,
-    Chop = true,
-    Sand = true,
-    Barrier = true,
-    Flame = true,
-    Rubber = true,
-    Light = true,
-    Love = true,
-    Soul = true,
-    Bomb = true,
-    Ash = true,
-    MagmaV2 = true,
-    Magma = true,
-    Quake = true,
-    Darkness = true,
-    DarkXQuake = true,
-    Okuchi = true,
+    -- Các trái khác cần gọi bằng Loader.Server
 }
 
 function castSkill(fruitName, skillName)
@@ -573,7 +559,7 @@ function castSkill(fruitName, skillName)
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    
+
     local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
@@ -585,24 +571,16 @@ function castSkill(fruitName, skillName)
         end
     end
 
-    -- Gửi lệnh dùng kỹ năng một lần duy nhất, không giữ
-    local args = {
-        MouseRay = MouseRay,
-        RootCF = RootPart.CFrame
-    }
-
+    -- Nếu là dạng đặc biệt thì gọi Loader.Server
     if specialServerFruits[fruitName] then
-        -- Nếu là dạng đặc biệt, dùng Loader.Server (gọi 1 lần, không giữ)
-        task.spawn(function()
-            Loader.Server(fruitName, skillName, {
-                Raycast = MouseRay
-            })
-        end)
+        task.spawn(Loader.Server, fruitName, skillName, {
+            Raycast = MouseRay
+        })
     else
-        -- Dạng thường, dùng ServerEvent (gọi 1 lần)
-        task.spawn(function()
-            Loader.ServerEvent(fruitName, skillName, args)
-        end)
+        Loader.ServerEvent(fruitName, skillName, {
+            MouseRay = MouseRay,
+            RootCF = RootPart.CFrame
+        })
     end
 end
 
