@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -2124,7 +2124,7 @@ function AutoFindBossFunction()
                 end
                 if data.nextPageCursor then
                     cursor = data.nextPageCursor
-                    task.wait(1)
+                    task.wait(2)
                 else
                     break
                 end
@@ -2229,7 +2229,7 @@ function AutoFindKatakuriFunction()
                     end
                     if data.nextPageCursor then
                         cursor = data.nextPageCursor
-                        task.wait(1)
+                        task.wait(2)
                     else
                         break
                     end
