@@ -96,8 +96,9 @@ TextButton.MouseButton1Down:Connect(function()
     task.wait(0.05)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
 end)
-
+if shared.allowedPlaceIds[game.PlaceId] then
 local Players = game:GetService("Players")
+
 local Player = game.Players.LocalPlayer
 local mainData = Player:WaitForChild("MAIN_DATA", 10)
 
@@ -120,7 +121,6 @@ shared.NeedToFind = nil
 local fruitTransformMap = {
     ["Nika"] = "Cloud",
     ["LeopardV2"] = "LeopardV2Rig",
-    ["DragonV2"] = "HybridDragon"
     -- Thêm các trái khác sau này tại đây
     -- ["Dragon"] = "DragonForm",
     -- ["Phoenix"] = "PhoenixAura",
@@ -246,7 +246,7 @@ elseif placeId == 12413901502 then
 elseif placeId == 9224601490 then
     shared.BossName = "Macro"
 end
-
+end
 local teleportLockPriority = 0
 local autoFarmEnabled = false
 local autoFarmToggleRef = nil
@@ -548,62 +548,140 @@ local function fastTeleport()
     isTeleported = true
 end
 
-local specialServerFruits = {
-    LightV2 = true,
-    Chop = true,
-    Sand = true,
-    Barrier = true,
-    Flame = true,
-    Rubber = true,
-    Light = true,
-    Love = true,
-    Soul = true,
-    Bomb = true,
-    Ash = true,
-    MagmaV2 = true,
-    Magma = true,
-    Quake = true,
-    Darkness = true,
-    DarkXQuake = true,
-    Okuchi = true,
+local skillType2 = {
+    "PiercingShine"
 }
 
-function castSkill(fruitName, skillName)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    
-    local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
-    local MouseRay = Loader.Main:GetMouseRay(300)
-    local RootPart = Character:WaitForChild("HumanoidRootPart")
+local skillType3 = {
+    "MajorEruption", "MeteorVolcano", "HellHound"
+}
 
-    -- Kiểm tra skill biến hình
-    if transformSkills[skillName] then
+local skillType4 = {
+    "UnrelentingAssault"
+}
+
+-- MouseRay chuẩn từ RSpy
+local function createRaycastMouse(origin, dir, instance)
+    return {
+        Normal = Vector3.yAxis,
+        Direction = dir,
+        Origin = origin,
+        Instance = instance or workspace.Terrain,
+        Distance = dir.Magnitude,
+        Material = Enum.Material.Plastic,
+        Position = origin + dir
+    }
+end
+
+-- MouseRay mặc định
+local function createFakeMouseRay(origin)
+    local dir = Vector3.new(-1, 0.5, 2).Unit * 30
+    return {
+        Normal = dir.Unit,
+        Direction = dir * 10,
+        Origin = origin,
+        Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("4") or workspace.Terrain,
+        Distance = 15,
+        Material = Enum.Material.Slate,
+        Position = origin + dir
+    }
+end
+
+-- Cast chiêu
+local function castSkill(fruit, skill)
+    if not fruit or not skill then return end
+    if not isSkillReady(skill) then return end
+
+    -- Nếu là skill biến hình thì chặn khi đang hóa hoặc Rage thấp
+    if transformSkills[skill] then
         if isTransformed() or not isRageAbove(40) then
             return
         end
     end
 
-    -- Gửi lệnh dùng kỹ năng một lần duy nhất, không giữ
-    local args = {
-        MouseRay = MouseRay,
-        RootCF = RootPart.CFrame
-    }
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
-    if specialServerFruits[fruitName] then
-        -- Nếu là dạng đặc biệt, dùng Loader.Server (gọi 1 lần, không giữ)
-        task.spawn(function()
-            Loader.Server(fruitName, skillName, {
-                Raycast = MouseRay
-            })
+    local ray = createFakeMouseRay(hrp.Position)
+
+    -- Dạng 2: Raycast đơn giản
+    if table.find(skillType2, skill) then
+        local args = {
+            fruit,
+            skill,
+            { Raycast = {
+                Normal = Vector3.yAxis,
+                Direction = Vector3.new(0, -1, 0),
+                Origin = hrp.Position,
+                Instance = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChildWhichIsA("BasePart") or workspace.Terrain,
+                Distance = 30,
+                Material = Enum.Material.Grass,
+                Position = hrp.Position
+            }}
+        }
+
+        local success, err = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
         end)
-    else
-        -- Dạng thường, dùng ServerEvent (gọi 1 lần)
-        task.spawn(function()
-            Loader.ServerEvent(fruitName, skillName, args)
-        end)
+        if not success then warn("[castSkill - dạng 2] Lỗi:", err) end
+        return
     end
+
+    -- Dạng 3: MouseRay + InvokeServer
+    if table.find(skillType3, skill) then
+        local args = {
+            fruit,
+            skill,
+            { MouseRay = ray }
+        }
+
+        local success, err = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(unpack(args))
+        end)
+        if not success then warn("[castSkill - dạng 3] Lỗi:", err) end
+        return
+    end
+
+	-- Dạng 4: Cast lại bằng handler chuẩn
+	if table.find(skillType4, skill) then
+	    local instance =
+	        workspace:FindFirstChild("SafeZones")
+	        and workspace.SafeZones:FindFirstChild("Colloseum1")
+	        and workspace.SafeZones.Colloseum1:FindFirstChild("SpawnLocation")
+	        or workspace:FindFirstChildWhichIsA("BasePart", true)
+	
+	    local raySpecial = createRaycastMouse(
+	        hrp.Position + Vector3.new(0, 10, 0),
+	        Vector3.new(-33.73, -195.6, 24.53),
+	        instance
+	    )
+	
+	    -- Gọi bằng handler chuẩn
+	    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	    local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
+	
+	    Loader.ServerEvent(fruit, skill, {
+	        MouseRay = raySpecial,
+	        RootCF = hrp.CFrame
+	    })
+	    return
+	end
+
+
+    -- Mặc định
+    local success, err = pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Replicator"):InvokeServer(fruit, skill, {
+            Ground = { Position = hrp.Position },
+            MouseRay = ray
+        })
+
+        game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer("ClientData", "UpdateData", {
+            RootCF = hrp.CFrame,
+            MouseRay = ray
+        })
+    end)
+    if not success then warn("[castSkill - mặc định] Lỗi:", err) end
 end
 
 local skillLoopRunning = false
