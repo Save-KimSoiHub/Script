@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -445,7 +445,7 @@ local skills = {
     DoughV2 = {"GrilledLance", "ElasticLasso", "Oblivion", "PowerDough", "BlazingStorm", "ScorchingBuzzcut"},
     Ope = {"Room", "Takt", "Wreckage", "HurricaneShock", "GammaKnife", "Mes", "Shambles"},
     LeopardV2 = {"FingerPistolBarrage", "SonicKick", "InfinityDrive", "UnrelentingAssault", "Transform", "HeavensDemise"},
-    Lightning = {"VoltageUp", "LightningPalm", "CrashingThunder", "ProjectedBurst", "CrushingJudgment", "Raigo"},
+    Lightning = {"LightningPalm", "CrashingThunder", "ProjectedBurst", "CrushingJudgment", "Raigo"},
     Nika = {"RocGun", "NeoRedHawk", "RocGatling", "RedRoc", "DrumsofLiberation", "Gear5", "SpinningTop", "DawnRocket", "MolePistolCombo", "RisingBolt", "GigantStamp", "BajrangGun"},
     DragonV2 = {"InfernoBreath", "ThunderBagua", "DragonTwister", "BeastsBellow", "Transform", "BoloFrenzy", "FlamingTorch", "Demolition", "Transformation"},
     Soul = {"EnthralGrasp", "ScorchingSickle", "ZeusMeadow", "CrimsonPillar", "Transform", "MaserCannon"},
@@ -643,29 +643,31 @@ local function castSkill(fruit, skill)
         return
     end
 
-    -- Dạng 4: MouseRay dạng đặc biệt (FireServer, Ray từ RSpy)
-    if table.find(skillType4, skill) then
-        local instance =
-            workspace:FindFirstChild("SafeZones")
-            and workspace.SafeZones:FindFirstChild("Colloseum1")
-            and workspace.SafeZones.Colloseum1:FindFirstChild("SpawnLocation")
-            or workspace:FindFirstChildWhichIsA("BasePart", true)
+	-- Dạng 4: Cast lại bằng handler chuẩn
+	if table.find(skillType4, skill) then
+	    local instance =
+	        workspace:FindFirstChild("SafeZones")
+	        and workspace.SafeZones:FindFirstChild("Colloseum1")
+	        and workspace.SafeZones.Colloseum1:FindFirstChild("SpawnLocation")
+	        or workspace:FindFirstChildWhichIsA("BasePart", true)
+	
+	    local raySpecial = createRaycastMouse(
+	        hrp.Position + Vector3.new(0, 10, 0),
+	        Vector3.new(-33.73, -195.6, 24.53),
+	        instance
+	    )
+	
+	    -- Gọi bằng handler chuẩn
+	    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	    local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
+	
+	    Loader.ServerEvent(fruit, skill, {
+	        MouseRay = raySpecial,
+	        RootCF = hrp.CFrame
+	    })
+	    return
+	end
 
-        local raySpecial = createRaycastMouse(
-            hrp.Position + Vector3.new(0, 10, 0),
-            Vector3.new(-33.73, -195.6, 24.53),
-            instance
-        )
-
-        local args = {
-            fruit,
-            skill,
-            { MouseRay = raySpecial }
-        }
-
-        game:GetService("ReplicatedStorage"):WaitForChild("ReplicatorNoYield"):FireServer(unpack(args))
-        return
-    end
 
     -- Mặc định
     local success, err = pcall(function()
@@ -2122,7 +2124,7 @@ function AutoFindBossFunction()
                 end
                 if data.nextPageCursor then
                     cursor = data.nextPageCursor
-                    task.wait(1)
+                    task.wait(2)
                 else
                     break
                 end
@@ -2227,7 +2229,7 @@ function AutoFindKatakuriFunction()
                     end
                     if data.nextPageCursor then
                         cursor = data.nextPageCursor
-                        task.wait(1)
+                        task.wait(2)
                     else
                         break
                     end
