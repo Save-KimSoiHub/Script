@@ -1303,7 +1303,11 @@ Tabs.Misc:AddToggle("RedeemAllCodeToggle", {
 		"940KHAPPYDAYZ",
 		"950KOMGGG!",
                 "LOL960K!",
-		"POW970K"
+		"POW970K",
+                "THEMARINEHERO",
+                "UPDATE21!",
+                "ALMOST980K!",
+                "CRASHL4NDING!"
             }
 
             local ReplicatedStorage = game:GetService("ReplicatedStorage")
