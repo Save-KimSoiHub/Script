@@ -449,6 +449,7 @@ local skills = {
     Soul = {"EnthralGrasp", "ScorchingSickle", "ZeusMeadow", "CrimsonPillar", "Transform", "MaserCannon"},
     DarkXQuake = {"AntiQuake", "BlackHolePath", "BlackTurret", "NeoKurouzuCombo", "AntiBody", "QuadraSeaQuake"},
     Okuchi = {"PrimalRage", "ArcticBreath", "DevastatingDrop", "HallowedCuts", "GlacialCoat", "DivineSerpent", "Transform"},
+    Impact = {"BlueHole", "GalaxyImpact", "IronCascade", "IronHurricane", "MeteorFist", "AstralBody"},
 }
 local transformSkills = {
     ["Transform"] = true,
@@ -2280,7 +2281,7 @@ _G.selectedSpinType = "Normal"
 Tabs.Fruit:AddDropdown("FruitSelector", {
     Title = "Select Fruit For Stop Spin",
     Values = {
-        "Okuchi", "Lightning", "Soul", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
+        "Okuchi", "Lightning", "Impact", "Soul", "DarkXQuake", "Nika", "DragonV2", "LeopardV2", "DoughV2", "Ope", "Leopard", "Dough",
         "Venom", "FlameV2", "LightV2", "MagmaV2", "IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix",
         "Gravity", "Quake", "Snow", "Love", "String", "Paw", "Magma", "Flame", "Light", "Ash", 
         "Darkness", "Ice", "Bomb", "Gas", "Falcon", "Rubber", "Smoke", "Sand", "Chop", "Barrier"
