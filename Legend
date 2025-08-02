@@ -136,7 +136,7 @@ local Replicator = ReplicatedStorage:WaitForChild("Replicator")
 
 local rareFruits = {
     "DarkXQuake", "Soul", "DragonV2", "DoughV2", "Nika", "LeopardV2",
-    "Ope", "Okuchi", "Soul", "Lightning","Leopard", "Dough", "Venom", "FlameV2", "LightV2", "MagmaV2","IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix", "Gravity", "Quake"
+    "Ope", "Okuchi", "Soul", "Lightning","Leopard", "Dough", "Venom", "FlameV2", "LightV2", "MagmaV2","IceV2", "Magnet", "TSRubber", "Dragon", "Phoenix", "Gravity", "Quake", "Impact"
 }
 
 local function isRare(fruitName)
