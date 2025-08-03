@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -869,33 +869,25 @@ local function followBoss(bossModel)
     end
 
     -- Boss thực sự chết
-    if humanoid and humanoid.Health <= 0 then
-        bossDied = true
-    end
+if humanoid and humanoid.Health <= 0 then
+    bossDied = true
+end
 
-    print("[Boss] Kết thúc follow. BossDied =", bossDied)
+print("[Boss] Kết thúc follow. BossDied =", bossDied)
 
-    -- ✅ Chỉ teleport nếu boss chết
-    if bossDied then
-	if shared.SelectedBoss == "None" then print("Blocked Turn On Auto Find Boss !") end
-	if shared.SelectedBoss == shared.BossName then
-	    shared.autoBossToggleRef:SetValue(true)
-	elseif shared.SelectedBoss == "Katakuri" then
-	    shared.autoKatakuriToggleRef:SetValue(true)
-	elseif shared.SelectedBoss == ("Katakuri + " .. shared.BossName) then
-	    shared.autoBossToggleRef:SetValue(true)
-	    task.wait(1)
-	    shared.autoKatakuriToggleRef:SetValue(true)
-	end
-	task.wait(1)
-	if shared.autoFarm then
-        shared.forceUnlock = false
-        isTeleported = false
-        shared.bienCaoCap = false
+-- ✅ Chỉ teleport nếu boss chết
+if bossDied then
+    -- Reset biến trước
+    shared.forceUnlock = false
+    isTeleported = false
+    shared.bienCaoCap = false
+
+    -- Teleport về vị trí ban đầu nếu đang autoFarm
+    if shared.autoFarm and shared.myPos then
         task.wait(1)
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hrp = character:WaitForChild("HumanoidRootPart")
-        if not shared.myPos then return end
+
         repeat
             character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
             hrp = character:FindFirstChild("HumanoidRootPart")
@@ -903,13 +895,28 @@ local function followBoss(bossModel)
             hrp.CFrame = CFrame.new(shared.myPos)
             task.wait()
         until (hrp.Position - shared.myPos).Magnitude < 5
+
+        -- Tắt rồi bật lại AutoFarm
         shared.autoFarmToggleRef:SetValue(false)
         task.wait(1)
         shared.autoFarmToggleRef:SetValue(true)
-	end
-    else
-        print("Không teleport vì boss chưa chết")
     end
+
+    -- ✅ Cuối cùng bật Auto Find Boss (nếu chọn)
+    if shared.SelectedBoss == "None" then 
+        print("Blocked Turn On Auto Find Boss !") 
+    elseif shared.SelectedBoss == shared.BossName then
+        shared.autoBossToggleRef:SetValue(true)
+    elseif shared.SelectedBoss == "Katakuri" then
+        shared.autoKatakuriToggleRef:SetValue(true)
+    elseif shared.SelectedBoss == ("Katakuri + " .. shared.BossName) then
+        shared.autoBossToggleRef:SetValue(true)
+        task.wait(1)
+        shared.autoKatakuriToggleRef:SetValue(true)
+    end
+
+else
+    print("Không teleport vì boss chưa chết")
 end
 
 -- Vòng lặp kiểm tra boss
