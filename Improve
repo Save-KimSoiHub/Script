@@ -567,38 +567,54 @@ local specialServerFruits = {
     Okuchi = true,
 }
 
+local specialArgsSkills = {
+    ["Elastic Lasso"] = true, -- Chiêu 2 Dough v2
+    -- ["Another Special Skill"] = true
+}
+
 function castSkill(fruitName, skillName)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    
+
     local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-    -- Kiểm tra skill biến hình
+    -- 🌀 Chiêu biến hình thì kiểm tra điều kiện Rage
     if transformSkills[skillName] then
         if isTransformed() or not isRageAbove(40) then
             return
         end
     end
 
-    -- Gửi lệnh dùng kỹ năng một lần duy nhất, không giữ
+    -- 🧠 Nếu là chiêu đặc biệt cần Target thì cast kiểu khác
+	if specialArgsSkills[skillName] then
+	    task.spawn(function()
+	        Loader.Server(fruitName, skillName, {
+	            Target = Loader.Main:GetMouseTarget({
+	                Dist = 40,
+	                RayDist = 200
+	            })
+	        })
+	    end)
+	    return
+	end
+
+    -- 🧠 Còn lại thì cast bình thường
     local args = {
         MouseRay = MouseRay,
         RootCF = RootPart.CFrame
     }
 
     if specialServerFruits[fruitName] then
-        -- Nếu là dạng đặc biệt, dùng Loader.Server (gọi 1 lần, không giữ)
         task.spawn(function()
             Loader.Server(fruitName, skillName, {
                 Raycast = MouseRay
             })
         end)
     else
-        -- Dạng thường, dùng ServerEvent (gọi 1 lần)
         task.spawn(function()
             Loader.ServerEvent(fruitName, skillName, args)
         end)
