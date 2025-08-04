@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -568,8 +568,7 @@ local specialServerFruits = {
 }
 
 local specialArgsSkills = {
-    ["Elastic Lasso"] = true, -- Chiêu 2 Dough v2
-    -- ["Another Special Skill"] = true
+    ["Elastic Lasso"] = true,
 }
 
 function castSkill(fruitName, skillName)
@@ -582,27 +581,33 @@ function castSkill(fruitName, skillName)
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
+    local InputManager = Loader.Main.InputManager
+
     -- 🌀 Chiêu biến hình thì kiểm tra điều kiện Rage
-    if transformSkills[skillName] then
+    if transformSkills and transformSkills[skillName] then
         if isTransformed() or not isRageAbove(40) then
             return
         end
     end
 
-    -- 🧠 Nếu là chiêu đặc biệt cần Target thì cast kiểu khác
-	if specialArgsSkills[skillName] then
-	    task.spawn(function()
-	        Loader.Server(fruitName, skillName, {
-	            Target = Loader.Main:GetMouseTarget({
-	                Dist = 40,
-	                RayDist = 200
-	            })
-	        })
-	    end)
-	    return
-	end
+    -- 🧠 Nếu là chiêu đặc biệt cần Target
+    if specialArgsSkills[skillName] then
+        task.spawn(function()
+            Loader.Server(fruitName, skillName, {
+                Target = Loader.Main:GetMouseTarget({
+                    Dist = 40,
+                    RayDist = 200
+                })
+            })
+            task.wait(0.25)
+            if InputManager then
+                InputManager:RemoveInput("MouseDown", "Skill")
+            end
+        end)
+        return
+    end
 
-    -- 🧠 Còn lại thì cast bình thường
+    -- 🧠 Cast thường
     local args = {
         MouseRay = MouseRay,
         RootCF = RootPart.CFrame
@@ -613,10 +618,18 @@ function castSkill(fruitName, skillName)
             Loader.Server(fruitName, skillName, {
                 Raycast = MouseRay
             })
+            task.wait(0.25)
+            if InputManager then
+                InputManager:RemoveInput("MouseDown", "Skill")
+            end
         end)
     else
         task.spawn(function()
             Loader.ServerEvent(fruitName, skillName, args)
+            task.wait(0.25)
+            if InputManager then
+                InputManager:RemoveInput("MouseDown", "Skill")
+            end
         end)
     end
 end
@@ -641,25 +654,14 @@ local function startSkillLoop()
 
             if _isInGame and characterReady and shared.CurrentFruit and skills[shared.CurrentFruit] and (shared.bienCaoCap or isTeleported) then
                 local fruitSkills = skills[shared.CurrentFruit]
-                local readySkills = {}
-
-                -- Ưu tiên chiêu đã hồi
                 for _, skill in ipairs(fruitSkills) do
                     if isSkillReady(skill) then
-                        table.insert(readySkills, skill)
+                        if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
+                        castSkill(shared.CurrentFruit, skill)
+                        repeat task.wait(0.03) until not isSkillReady(skill) -- Đợi dùng xong
                     end
                 end
-
-                -- Cast tất cả chiêu đã hồi song song
-                for _, skill in ipairs(readySkills) do
-                    if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
-                    task.spawn(function()
-                        castSkill(shared.CurrentFruit, skill)
-                    end)
-                    task.wait(0.03) -- delay nhẹ tránh overload server
-                end
-
-                task.wait(0.1) -- nghỉ 1 chút giữa các lượt
+                task.wait(0.1)
             else
                 task.wait(0.3)
             end
