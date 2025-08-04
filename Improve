@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -568,10 +568,49 @@ local specialServerFruits = {
 }
 
 local specialArgsSkills = {
-    ["Elastic Lasso"] = true, -- Chiêu 2 Dough v2
-    -- ["Another Special Skill"] = true
+    ["Elastic Lasso"] = true,
 }
 
+-- ✅ Kiểm tra nhân vật có đang "bận" không (animation hoặc stuck hiệu ứng)
+local function isBusy()
+    local char = game.Players.LocalPlayer.Character
+    if not char then return false end
+
+    -- Kiểm tra animation
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local animator = humanoid and humanoid:FindFirstChild("Animator")
+    if animator then
+        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+            if track.IsPlaying then
+                return true
+            end
+        end
+    end
+
+    -- Kiểm tra hiệu ứng stuck
+    if char:FindFirstChild("SkillEffect") then
+        return true
+    end
+
+    return false
+end
+
+local skillLock = false
+
+-- ✅ Cast skill an toàn (chỉ 1 chiêu mỗi lần, chờ cooldown)
+function castSkillSafe(fruitName, skillName)
+    if skillLock or isBusy() then return end
+    skillLock = true
+
+    castSkill(fruitName, skillName)
+
+    -- Delay nhỏ trước khi cho cast tiếp (có thể tinh chỉnh)
+    task.delay(1.2, function()
+        skillLock = false
+    end)
+end
+
+-- 🌀 Gọi chiêu chính
 function castSkill(fruitName, skillName)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Players = game:GetService("Players")
@@ -582,27 +621,24 @@ function castSkill(fruitName, skillName)
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-    -- 🌀 Chiêu biến hình thì kiểm tra điều kiện Rage
     if transformSkills[skillName] then
         if isTransformed() or not isRageAbove(40) then
             return
         end
     end
 
-    -- 🧠 Nếu là chiêu đặc biệt cần Target thì cast kiểu khác
-	if specialArgsSkills[skillName] then
-	    task.spawn(function()
-	        Loader.Server(fruitName, skillName, {
-	            Target = Loader.Main:GetMouseTarget({
-	                Dist = 40,
-	                RayDist = 200
-	            })
-	        })
-	    end)
-	    return
-	end
+    if specialArgsSkills[skillName] then
+        task.spawn(function()
+            Loader.Server(fruitName, skillName, {
+                Target = Loader.Main:GetMouseTarget({
+                    Dist = 40,
+                    RayDist = 200
+                })
+            })
+        end)
+        return
+    end
 
-    -- 🧠 Còn lại thì cast bình thường
     local args = {
         MouseRay = MouseRay,
         RootCF = RootPart.CFrame
@@ -621,6 +657,7 @@ function castSkill(fruitName, skillName)
     end
 end
 
+-- 🔁 Vòng lặp spam chiêu
 local skillLoopRunning = false
 local function startSkillLoop()
     if skillLoopRunning then return end
@@ -643,23 +680,24 @@ local function startSkillLoop()
                 local fruitSkills = skills[shared.CurrentFruit]
                 local readySkills = {}
 
-                -- Ưu tiên chiêu đã hồi
                 for _, skill in ipairs(fruitSkills) do
                     if isSkillReady(skill) then
                         table.insert(readySkills, skill)
                     end
                 end
 
-                -- Cast tất cả chiêu đã hồi song song
+                -- ✅ Cast lần lượt, đảm bảo không bị chồng chiêu
                 for _, skill in ipairs(readySkills) do
                     if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
-                    task.spawn(function()
-                        castSkill(shared.CurrentFruit, skill)
-                    end)
-                    task.wait(0.03) -- delay nhẹ tránh overload server
+                    if not isBusy() then
+                        task.spawn(function()
+                            castSkillSafe(shared.CurrentFruit, skill)
+                        end)
+                    end
+                    task.wait(0.03)
                 end
 
-                task.wait(0.1) -- nghỉ 1 chút giữa các lượt
+                task.wait(0.1)
             else
                 task.wait(0.3)
             end
