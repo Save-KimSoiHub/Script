@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -599,9 +599,11 @@ function castSkill(fruitName, skillName)
                 })
             })
 
-            -- ✅ RemoveInput theo tên chiêu
-            pcall(function()
-                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
+            -- ✅ Delay trước khi RemoveInput để tránh hủy sớm
+            task.delay(0.2, function()
+                pcall(function()
+                    Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
+                end)
             end)
         end)
         return
@@ -613,25 +615,25 @@ function castSkill(fruitName, skillName)
         RootCF = RootPart.CFrame
     }
 
+    local function delayedRemove()
+        task.delay(0.2, function()
+            pcall(function()
+                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
+            end)
+        end)
+    end
+
     if specialServerFruits[fruitName] then
         task.spawn(function()
             Loader.Server(fruitName, skillName, {
                 Raycast = MouseRay
             })
-
-            -- ✅ RemoveInput theo tên chiêu
-            pcall(function()
-                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
-            end)
+            delayedRemove()
         end)
     else
         task.spawn(function()
             Loader.ServerEvent(fruitName, skillName, args)
-
-            -- ✅ RemoveInput theo tên chiêu
-            pcall(function()
-                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
-            end)
+            delayedRemove()
         end)
     end
 end
