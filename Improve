@@ -548,83 +548,63 @@ local function fastTeleport()
 end
 
 local specialServerFruits = {
-    LightV2 = true,
-    Chop = true,
-    Sand = true,
-    Barrier = true,
-    Flame = true,
-    Rubber = true,
-    Light = true,
-    Love = true,
-    Soul = true,
-    Bomb = true,
-    Ash = true,
-    MagmaV2 = true,
-    Magma = true,
-    Quake = true,
-    Darkness = true,
-    DarkXQuake = true,
-    Okuchi = true,
+    LightV2 = true, Chop = true, Sand = true, Barrier = true,
+    Flame = true, Rubber = true, Light = true, Love = true,
+    Soul = true, Bomb = true, Ash = true, MagmaV2 = true,
+    Magma = true, Quake = true, Darkness = true,
+    DarkXQuake = true, Okuchi = true,
 }
 
 local specialArgsSkills = {
-    ["Elastic Lasso"] = true,
+    ["Elastic Lasso"] = true, -- Chiêu đặc biệt cần target
 }
 
--- ✅ Kiểm tra nhân vật có đang "bận" không (animation hoặc stuck hiệu ứng)
+local skillLock = false
+
+-- Kiểm tra hiệu ứng còn tồn tại
 local function isBusy()
     local char = game.Players.LocalPlayer.Character
-    if not char then return false end
+    if not char then return true end
 
-    -- Kiểm tra animation
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    local animator = humanoid and humanoid:FindFirstChild("Animator")
-    if animator then
-        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-            if track.IsPlaying then
+    local effects = char:FindFirstChild("Effects")
+    if not effects then return false end
+
+    for _, v in pairs(effects:GetChildren()) do
+        if v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            if v.Enabled or (v:IsA("Trail") and v.Lifetime > 0) then
                 return true
             end
         end
     end
-
-    -- Kiểm tra hiệu ứng stuck
-    if char:FindFirstChild("SkillEffect") then
-        return true
-    end
-
     return false
 end
 
-local skillLock = false
-
--- ✅ Cast skill an toàn (chỉ 1 chiêu mỗi lần, chờ cooldown)
-function castSkillSafe(fruitName, skillName)
+-- Dùng skill an toàn (1 lần 1 chiêu)
+local function castSkillSafe(fruit, skill)
     if skillLock or isBusy() then return end
+
     skillLock = true
+    castSkill(fruit, skill)
 
-    castSkill(fruitName, skillName)
-
-    -- Delay nhỏ trước khi cho cast tiếp (có thể tinh chỉnh)
+    -- Auto mở khoá sau tối đa 1.2 giây
     task.delay(1.2, function()
         skillLock = false
     end)
 end
 
--- 🌀 Gọi chiêu chính
+-- Hàm cast skill gốc
 function castSkill(fruitName, skillName)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
     local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
+
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-    if transformSkills[skillName] then
-        if isTransformed() or not isRageAbove(40) then
-            return
-        end
+    if transformSkills and transformSkills[skillName] then
+        if isTransformed() or not isRageAbove(40) then return end
     end
 
     if specialArgsSkills[skillName] then
@@ -657,7 +637,7 @@ function castSkill(fruitName, skillName)
     end
 end
 
--- 🔁 Vòng lặp spam chiêu
+-- Vòng lặp auto farm
 local skillLoopRunning = false
 local function startSkillLoop()
     if skillLoopRunning then return end
@@ -678,26 +658,13 @@ local function startSkillLoop()
 
             if _isInGame and characterReady and shared.CurrentFruit and skills[shared.CurrentFruit] and (shared.bienCaoCap or isTeleported) then
                 local fruitSkills = skills[shared.CurrentFruit]
-                local readySkills = {}
-
                 for _, skill in ipairs(fruitSkills) do
                     if isSkillReady(skill) then
-                        table.insert(readySkills, skill)
+                        castSkillSafe(shared.CurrentFruit, skill)
+                        break -- ❗️Chỉ dùng 1 skill mỗi lần
                     end
                 end
-
-                -- ✅ Cast lần lượt, đảm bảo không bị chồng chiêu
-                for _, skill in ipairs(readySkills) do
-                    if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
-                    if not isBusy() then
-                        task.spawn(function()
-                            castSkillSafe(shared.CurrentFruit, skill)
-                        end)
-                    end
-                    task.wait(0.03)
-                end
-
-                task.wait(0.1)
+                task.wait(0.15)
             else
                 task.wait(0.3)
             end
