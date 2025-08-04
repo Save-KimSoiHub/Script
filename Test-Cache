@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -590,17 +590,22 @@ function castSkill(fruitName, skillName)
     end
 
     -- 🧠 Nếu là chiêu đặc biệt cần Target thì cast kiểu khác
-	if specialArgsSkills[skillName] then
-	    task.spawn(function()
-	        Loader.Server(fruitName, skillName, {
-	            Target = Loader.Main:GetMouseTarget({
-	                Dist = 40,
-	                RayDist = 200
-	            })
-	        })
-	    end)
-	    return
-	end
+    if specialArgsSkills[skillName] then
+        task.spawn(function()
+            Loader.Server(fruitName, skillName, {
+                Target = Loader.Main:GetMouseTarget({
+                    Dist = 40,
+                    RayDist = 200
+                })
+            })
+
+            -- ✅ RemoveInput theo tên chiêu
+            pcall(function()
+                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
+            end)
+        end)
+        return
+    end
 
     -- 🧠 Còn lại thì cast bình thường
     local args = {
@@ -613,10 +618,20 @@ function castSkill(fruitName, skillName)
             Loader.Server(fruitName, skillName, {
                 Raycast = MouseRay
             })
+
+            -- ✅ RemoveInput theo tên chiêu
+            pcall(function()
+                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
+            end)
         end)
     else
         task.spawn(function()
             Loader.ServerEvent(fruitName, skillName, args)
+
+            -- ✅ RemoveInput theo tên chiêu
+            pcall(function()
+                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
+            end)
         end)
     end
 end
