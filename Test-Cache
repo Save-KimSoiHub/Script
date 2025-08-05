@@ -582,59 +582,40 @@ function castSkill(fruitName, skillName)
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-    -- 🌀 Chiêu biến hình thì kiểm tra điều kiện Rage
+    -- Luôn remove trước khi cast (nếu còn tồn tại)
+    pcall(function()
+        Loader.Main.InputManager:RemoveInput("MouseDown", "Skill")
+    end)
+
+    -- 🌀 Chiêu biến hình
     if transformSkills[skillName] then
         if isTransformed() or not isRageAbove(40) then
             return
         end
     end
 
-    -- 🧠 Nếu là chiêu đặc biệt cần Target thì cast kiểu khác
+    -- 🎯 Chiêu target đặc biệt
     if specialArgsSkills[skillName] then
-        task.spawn(function()
-            Loader.Server(fruitName, skillName, {
-                Target = Loader.Main:GetMouseTarget({
-                    Dist = 40,
-                    RayDist = 200
-                })
+        Loader.Server(fruitName, skillName, {
+            Target = Loader.Main:GetMouseTarget({
+                Dist = 40,
+                RayDist = 200
             })
-
-            -- ✅ Delay trước khi RemoveInput để tránh hủy sớm
-            task.delay(0.2, function()
-                pcall(function()
-                    Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
-                end)
-            end)
-        end)
+        })
         return
     end
 
-    -- 🧠 Còn lại thì cast bình thường
     local args = {
         MouseRay = MouseRay,
         RootCF = RootPart.CFrame
     }
 
-    local function delayedRemove()
-        task.delay(0.2, function()
-            pcall(function()
-                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
-            end)
-        end)
-    end
-
     if specialServerFruits[fruitName] then
-        task.spawn(function()
-            Loader.Server(fruitName, skillName, {
-                Raycast = MouseRay
-            })
-            delayedRemove()
-        end)
+        Loader.Server(fruitName, skillName, {
+            Raycast = MouseRay
+        })
     else
-        task.spawn(function()
-            Loader.ServerEvent(fruitName, skillName, args)
-            delayedRemove()
-        end)
+        Loader.ServerEvent(fruitName, skillName, args)
     end
 end
 
