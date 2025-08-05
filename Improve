@@ -582,14 +582,19 @@ function castSkill(fruitName, skillName)
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-    -- Nếu là chiêu biến hình thì kiểm tra
+    -- Luôn remove trước khi cast (nếu còn tồn tại)
+    pcall(function()
+        Loader.Main.InputManager:RemoveInput("MouseDown", "Skill")
+    end)
+
+    -- 🌀 Chiêu biến hình
     if transformSkills[skillName] then
         if isTransformed() or not isRageAbove(40) then
             return
         end
     end
 
-    -- Nếu là chiêu đặc biệt cần Target
+    -- 🎯 Chiêu target đặc biệt
     if specialArgsSkills[skillName] then
         Loader.Server(fruitName, skillName, {
             Target = Loader.Main:GetMouseTarget({
@@ -600,7 +605,6 @@ function castSkill(fruitName, skillName)
         return
     end
 
-    -- Gọi skill với Raycast hoặc vị trí
     local args = {
         MouseRay = MouseRay,
         RootCF = RootPart.CFrame
