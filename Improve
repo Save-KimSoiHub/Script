@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -582,57 +582,36 @@ function castSkill(fruitName, skillName)
     local MouseRay = Loader.Main:GetMouseRay(300)
     local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-    -- 🌀 Chiêu biến hình thì kiểm tra điều kiện Rage
+    -- Nếu là chiêu biến hình thì kiểm tra
     if transformSkills[skillName] then
         if isTransformed() or not isRageAbove(40) then
             return
         end
     end
 
-    -- 🧠 Nếu là chiêu đặc biệt cần Target thì cast kiểu khác
+    -- Nếu là chiêu đặc biệt cần Target
     if specialArgsSkills[skillName] then
-        task.spawn(function()
-            Loader.Server(fruitName, skillName, {
-                Target = Loader.Main:GetMouseTarget({
-                    Dist = 40,
-                    RayDist = 200
-                })
+        Loader.Server(fruitName, skillName, {
+            Target = Loader.Main:GetMouseTarget({
+                Dist = 40,
+                RayDist = 200
             })
-
-            -- ✅ RemoveInput theo tên chiêu
-            pcall(function()
-                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
-            end)
-        end)
+        })
         return
     end
 
-    -- 🧠 Còn lại thì cast bình thường
+    -- Gọi skill với Raycast hoặc vị trí
     local args = {
         MouseRay = MouseRay,
         RootCF = RootPart.CFrame
     }
 
     if specialServerFruits[fruitName] then
-        task.spawn(function()
-            Loader.Server(fruitName, skillName, {
-                Raycast = MouseRay
-            })
-
-            -- ✅ RemoveInput theo tên chiêu
-            pcall(function()
-                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
-            end)
-        end)
+        Loader.Server(fruitName, skillName, {
+            Raycast = MouseRay
+        })
     else
-        task.spawn(function()
-            Loader.ServerEvent(fruitName, skillName, args)
-
-            -- ✅ RemoveInput theo tên chiêu
-            pcall(function()
-                Loader.Main.InputManager:RemoveInput("MouseDown", skillName)
-            end)
-        end)
+        Loader.ServerEvent(fruitName, skillName, args)
     end
 end
 
