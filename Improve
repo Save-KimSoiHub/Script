@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -422,7 +422,7 @@ local skills = {
     Ash = {"ThousandCrows", "Obelisk", "CrowCascade", "CrowCoffin"},
     Light = {"LightKick", "MirrorKick", "BlindingCombo", "Guzan", "JewelsOfLight"},
     Flame = {"FireFist", "FireGun", "Pillar", "Beam", "Enkai"},
-    Magma = {"MajorEruption", "MeteorVolcano", "Plume", "EruptiveSurge", "HellHound"},
+    Magma = {"MajorEruption", "Meteor Volcano", "Plume", "EruptiveSurge", "HellHound"},
     Paw = {"PressureCannon", "SonicStomp", "SumoThrustBarrage", "Torture", "UrsusShock"},
     String = {"Fullbright", "OverheatWhip", "StringKnight", "SixteenBullets"},
     Love = {"CupidsArrows", "BouquetOfPain", "Heartthrob", "Heartstrings", "BlossomWind"},
