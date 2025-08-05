@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -547,78 +547,41 @@ local function fastTeleport()
     isTeleported = true
 end
 
-local specialServerFruits = {
-    LightV2 = true,
-    Chop = true,
-    Sand = true,
-    Barrier = true,
-    Flame = true,
-    Rubber = true,
-    Light = true,
-    Love = true,
-    Soul = true,
-    Bomb = true,
-    Ash = true,
-    MagmaV2 = true,
-    Magma = true,
-    Quake = true,
-    Darkness = true,
-    DarkXQuake = true,
-    Okuchi = true,
-}
-
-local specialArgsSkills = {
-    ["Elastic Lasso"] = true, -- Chiêu 2 Dough v2
-    -- ["Another Special Skill"] = true
-}
-
 function castSkill(fruitName, skillName)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local Backpack = LocalPlayer:WaitForChild("Backpack")
 
     local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
-    local MouseRay = Loader.Main:GetMouseRay(300)
-    local RootPart = Character:WaitForChild("HumanoidRootPart")
+    if Loader.IsTyping or not _isInGame or not characterReady then return end
 
-    -- Luôn remove trước khi cast (nếu còn tồn tại)
-    pcall(function()
-        Loader.Main.InputManager:RemoveInput("MouseDown", "Skill")
+    -- ✅ Tìm tool tương ứng với skill
+    local tool = Backpack:FindFirstChild(skillName) or Character:FindFirstChild(skillName)
+    if not tool then return end
+
+    -- ✅ Tìm handler của tool (script con)
+    local handler = tool:FindFirstChildWhichIsA("LocalScript")
+    if not handler then return end
+
+    -- ✅ Equip tool để handler chạy (giống như người chơi)
+    task.spawn(function()
+        -- Luôn remove input trước nếu handler gắn sai
+        pcall(function()
+            require(ReplicatedStorage.Loader).Main.InputManager:RemoveInput("MouseDown", "Skill")
+        end)
+
+        -- Equip
+        tool.Parent = Character
+        task.wait(0.1) -- Cho handler xử lý sự kiện Equipped
+
+        -- Auto Unequip
+        tool.Parent = Backpack
     end)
-
-    -- 🌀 Chiêu biến hình
-    if transformSkills[skillName] then
-        if isTransformed() or not isRageAbove(40) then
-            return
-        end
-    end
-
-    -- 🎯 Chiêu target đặc biệt
-    if specialArgsSkills[skillName] then
-        Loader.Server(fruitName, skillName, {
-            Target = Loader.Main:GetMouseTarget({
-                Dist = 40,
-                RayDist = 200
-            })
-        })
-        return
-    end
-
-    local args = {
-        MouseRay = MouseRay,
-        RootCF = RootPart.CFrame
-    }
-
-    if specialServerFruits[fruitName] then
-        Loader.Server(fruitName, skillName, {
-            Raycast = MouseRay
-        })
-    else
-        Loader.ServerEvent(fruitName, skillName, args)
-    end
 end
 
+-- 🌀 Vòng lặp gọi skill
 local skillLoopRunning = false
 local function startSkillLoop()
     if skillLoopRunning then return end
@@ -641,14 +604,12 @@ local function startSkillLoop()
                 local fruitSkills = skills[shared.CurrentFruit]
                 local readySkills = {}
 
-                -- Ưu tiên chiêu đã hồi
                 for _, skill in ipairs(fruitSkills) do
                     if isSkillReady(skill) then
                         table.insert(readySkills, skill)
                     end
                 end
 
-                -- Cast tất cả chiêu đã hồi song song
                 for _, skill in ipairs(readySkills) do
                     if not (shared.autoFarm and _isInGame and characterReady and (shared.bienCaoCap or isTeleported)) then break end
                     task.spawn(function()
@@ -657,7 +618,7 @@ local function startSkillLoop()
                     task.wait(0.03) -- delay nhẹ tránh overload server
                 end
 
-                task.wait(0.1) -- nghỉ 1 chút giữa các lượt
+                task.wait(0.1)
             else
                 task.wait(0.3)
             end
