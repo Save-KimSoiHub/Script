@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -422,7 +422,7 @@ local skills = {
     Ash = {"ThousandCrows", "Obelisk", "CrowCascade", "CrowCoffin"},
     Light = {"LightKick", "MirrorKick", "BlindingCombo", "Guzan", "JewelsOfLight"},
     Flame = {"FireFist", "FireGun", "Pillar", "Beam", "Enkai"},
-    Magma = {"MajorEruption", "MeteorVolcano", "Plume", "EruptiveSurge", "HellHound"},
+    Magma = {"MajorEruption", "Meteor Volcano", "Plume", "EruptiveSurge", "HellHound"},
     Paw = {"PressureCannon", "SonicStomp", "SumoThrustBarrage", "Torture", "UrsusShock"},
     String = {"Fullbright", "OverheatWhip", "StringKnight", "SixteenBullets"},
     Love = {"CupidsArrows", "BouquetOfPain", "Heartthrob", "Heartstrings", "BlossomWind"},
@@ -772,7 +772,7 @@ startSkillLoop()
         end
     end
 })
-PremiumToggleRef3 = Tabs.Main:AddToggle("PremiumToggleRef3", {
+PremiumToggleRef3 = Tabs.Main:AddToggle("PremiumToggleRef13", {
     Title = "Auto Boss (Premium Only)",
     Default = false,
     Callback = function(state)
@@ -1250,7 +1250,7 @@ Tabs.Webhook:AddInput("TimeToSend", {
 })
 
 -- ✅ Toggle gửi webhook
-PremiumToggleRef2 = Tabs.Main:AddToggle("PremiumToggleRef2", {
+PremiumToggleRef2 = Tabs.Main:AddToggle("PremiumToggleRef12", {
     Title = "Send Stats To Discord (Premium Only)",
     Default = false,
     Callback = function(state)
@@ -1648,7 +1648,7 @@ Tabs.Main:AddDropdown("Select Boss", {
 -- Auto Find Boss
 local autoBossToggleRef = nil
 
-shared.autoBossToggleRef = Tabs.Main:AddToggle("Auto Find Boss", {
+shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoFindBoss", {
     Title = "Auto Find Boss " .. shared.BossName .. " (Premium Only)",
     Default = false,
     Callback = function(value)
@@ -1668,7 +1668,7 @@ shared.autoBossToggleRef = Tabs.Main:AddToggle("Auto Find Boss", {
 if game.PlaceId == 16190471004 then
 local autoKatakuriToggleRef = nil
 
-shared.autoKatakuriToggleRef = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
+shared.autoKatakuriToggleRef = Tabs.Main:AddToggle("AutoFindBossKatakuri", {
     Title = "Auto Find Boss Katakuri (Premium Only !)",
     Default = false,
     Callback = function(value)
@@ -1921,7 +1921,7 @@ Players.PlayerAdded:Connect(function(player)
 	createESP(player)
 end)
 
-PremiumToggleRef4 = Tabs.Main:AddToggle("PremiumToggleRef4", {
+PremiumToggleRef4 = Tabs.Main:AddToggle("PremiumToggleRef14", {
     Title = "Show ESP Players(Premium Only)",
     Default = false,
     Callback = function(state)
