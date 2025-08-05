@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -548,37 +548,42 @@ local function fastTeleport()
 end
 
 function castSkill(fruitName, skillName)
-    local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local Backpack = LocalPlayer:WaitForChild("Backpack")
 
     local Loader = require(ReplicatedStorage:WaitForChild("Loader"))
-    if Loader.IsTyping or not _isInGame or not characterReady then return end
+    local charData = Loader.Main:GetCharacter()
 
-    -- ✅ Tìm tool tương ứng với skill
-    local tool = Backpack:FindFirstChild(skillName) or Character:FindFirstChild(skillName)
-    if not tool then return end
+    if Loader.IsTyping then return end
+    if Loader.MainFunctions:CheckStuns(charData, { "CantAttack", "Stunned" }) then return end
+    if Loader.MainFunctions:CheckStuns(LocalPlayer, { skillName, skillName .. "CD" }) then return end
 
-    -- ✅ Tìm handler của tool (script con)
-    local handler = tool:FindFirstChildWhichIsA("LocalScript")
-    if not handler then return end
+    -- Tìm tool để kiểm tra level yêu cầu
+    local tool = LocalPlayer.Backpack:FindFirstChild(skillName) or Character:FindFirstChild(skillName)
+    if tool and not Loader.MainFunctions:CheckLevel(LocalPlayer, tool:GetAttribute("Level")) then
+        return
+    end
 
-    -- ✅ Equip tool để handler chạy (giống như người chơi)
-    task.spawn(function()
-        -- Luôn remove input trước nếu handler gắn sai
-        pcall(function()
-            require(ReplicatedStorage.Loader).Main.InputManager:RemoveInput("MouseDown", "Skill")
-        end)
-
-        -- Equip
-        tool.Parent = Character
-        task.wait(0.1) -- Cho handler xử lý sự kiện Equipped
-
-        -- Auto Unequip
-        tool.Parent = Backpack
+    -- Remove input tồn tại nếu có
+    pcall(function()
+        Loader.Main.InputManager:RemoveInput("MouseDown", "Skill")
     end)
+
+    -- Cast skill bằng Server hoặc ServerEvent
+    local args = {
+        MouseRay = Loader.Main:GetMouseRay(300),
+        RootCF = Character:WaitForChild("HumanoidRootPart").CFrame
+    }
+
+    -- Nếu trái yêu cầu Server (đa số các trái)
+    local useServerEvent = not specialServerFruits[fruitName]
+    if useServerEvent then
+        Loader.ServerEvent(fruitName, skillName, args)
+    else
+        Loader.Server(fruitName, skillName, { Raycast = args.MouseRay })
+    end
 end
 
 -- 🌀 Vòng lặp gọi skill
