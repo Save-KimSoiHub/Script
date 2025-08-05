@@ -1,4 +1,4 @@
---Main !
+--Main !!!
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -772,17 +772,16 @@ startSkillLoop()
         end
     end
 })
--- Auto Boss
 PremiumToggleRef3 = Tabs.Main:AddToggle("PremiumToggleRef3", {
     Title = "Auto Boss (Premium Only)",
     Default = false,
     Callback = function(state)
-	Fluent:Notify({
-	    Title = "Premium Only !",
-	    Content = "Buy Key With 1 Dollar In Discord !",
-	    Duration = 5
-	})
-        PremiumFarmToggleRef3:SetValue(false)
+        Fluent:Notify({
+            Title = "Premium Only !",
+            Content = "Buy Key With 1 Dollar In Discord !",
+            Duration = 5
+        })
+        PremiumToggleRef3:SetValue(false)
     end
 })
 
@@ -1251,16 +1250,16 @@ Tabs.Webhook:AddInput("TimeToSend", {
 })
 
 -- ✅ Toggle gửi webhook
-PremiumToggleRef2 = Tabs.Webhook:AddToggle("SendWebhookToggle", {
-    Title = "Send Stats To Webhook With Minutes Entered !",
+PremiumToggleRef2 = Tabs.Main:AddToggle("PremiumToggleRef2", {
+    Title = "Send Stats To Discord (Premium Only)",
     Default = false,
     Callback = function(state)
-	Fluent:Notify({
-	    Title = "Premium Only !",
-	    Content = "Buy Key With 1 Dollar In Discord !",
-	    Duration = 5
-	})
-        PremiumFarmToggleRef2:SetValue(false)
+        Fluent:Notify({
+            Title = "Premium Only !",
+            Content = "Buy Key With 1 Dollar In Discord !",
+            Duration = 5
+        })
+        PremiumToggleRef2:SetValue(false)
     end
 })
 
@@ -1273,7 +1272,7 @@ PremiumToggleRef1 = Tabs.Webhook:AddToggle("SendRareFruitToggle", {
 	Content = "Buy Key With 1 Dollar In Discord !",
 	Duration = 5
 	})
-        PremiumFarmToggleRef1:SetValue(false)
+        PremiumToggleRef1:SetValue(false)
     end
 })
 
@@ -1615,77 +1614,6 @@ Tabs.Main:AddParagraph({
 })
 end
 if shared.allowedPlaceIds[game.PlaceId] then
---Auto Play
-shared.AutoFindBoss = shared.AutoFindBoss or false
-shared.AutoFindKatakuri = shared.AutoFindKatakuri or false
-
-_G.AutoPressPlay_Find = _G.AutoPressPlay_Find or function()
-	if _G._pressingPlay_Find then return end
-	_G._pressingPlay_Find = true
-
-	local Players = game:GetService("Players")
-	local GuiService = game:GetService("GuiService")
-	local VirtualInputManager = game:GetService("VirtualInputManager")
-	local player = Players.LocalPlayer
-
-	local function findRankedButton()
-		for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-			if guiObj:IsA("ScreenGui") then
-				for _, obj in ipairs(guiObj:GetDescendants()) do
-					if obj:IsA("GuiButton") and obj.Visible and obj.Name == "Ranked" then
-						return obj
-					end
-				end
-			end
-		end
-		return nil
-	end
-
-	local function findPlayButton()
-		for _, guiObj in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-			if guiObj:IsA("ScreenGui") then
-				local btn = guiObj:FindFirstChild("Play", true)
-				if btn and btn:IsA("GuiButton") and btn.Visible then
-					return btn
-				end
-			end
-		end
-		return nil
-	end
-
-	local function pressPlay(playBtn)
-		if playBtn and playBtn:IsA("GuiButton") and playBtn.Visible then
-			GuiService.SelectedObject = playBtn
-			task.wait(0.1)
-			for i = 1, 2 do
-				VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-				task.wait(0.05)
-				VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
-				task.wait(0.05)
-			end
-			return true
-		end
-		return false
-	end
-
-	task.spawn(function()
-		while shared.AutoFindBoss or shared.AutoFindKatakuri do
-			if not player.Character then
-				local ranked = findRankedButton()
-				local playBtn = findPlayButton()
-
-				if ranked and playBtn then
-					task.wait(2)
-					if pressPlay(playBtn) then
-						print("▶️ Đã nhấn Play")
-					end
-				end
-			end
-			task.wait(5)
-		end
-		_G._pressingPlay_Find = false
-	end)
-end
 --Nhập Time
 shared.timeToWait = 20
 Tabs.Main:AddInput("TimeToWaitInput", {
@@ -1716,7 +1644,6 @@ Tabs.Main:AddDropdown("Select Boss", {
         shared.SelectedBoss = selected
     end
 })
-
 
 -- Auto Find Boss
 local autoBossToggleRef = nil
@@ -1994,17 +1921,16 @@ Players.PlayerAdded:Connect(function(player)
 	createESP(player)
 end)
 
--- 🟢 Toggle bật tắt bằng UI
-Tabs.Player:AddToggle("ESPPlayerToggle", {
-    Title = "Show ESP Player",
+PremiumToggleRef4 = Tabs.Main:AddToggle("PremiumToggleRef4", {
+    Title = "Show ESP Players(Premium Only)",
     Default = false,
-    Callback = function(value)
-        shared.enableESP = value
-        for _, data in pairs(espList) do
-            if data.gui then
-                data.gui.Enabled = value
-            end
-        end
+    Callback = function(state)
+        Fluent:Notify({
+            Title = "Premium Only !",
+            Content = "Buy Key With 1 Dollar In Discord !",
+            Duration = 5
+        })
+        PremiumToggleRef4:SetValue(false)
     end
 })
 
