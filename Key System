@@ -25,7 +25,7 @@ end
 local i = h.Body:lower()
 
 if i:find("Đúng") then
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Test"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Save-KimSoiHub/Script/refs/heads/main/Improve"))()
 elseif i:find("key") then
     d:Kick("Invalid Key !")
 elseif i:find("hwid") then
