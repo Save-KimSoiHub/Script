@@ -1,4 +1,4 @@
---Main !!!
+--Main !
 repeat wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 game.StarterGui:SetCore("SendNotification", {
@@ -836,159 +836,18 @@ startSkillLoop()
         end
     end
 })
--- Auto Boss
-Tabs.Main:AddToggle("AutoBossToggle", {
-    Title = "Auto Boss (Turn On With Auto Farm)",
+-- Auto Boss (Premium Only)
+shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoBossToggle", {
+    Title = "Auto Boss(Premium Only)",
     Default = false,
     Callback = function(value)
-        autoBossEnabled = value
-        shared.autoBoss = value
         if value then
-            local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local placeId = game.PlaceId
-
-shared.autoBoss = shared.autoBoss or false
-
--- Hàm đi theo boss
-local function followBoss(bossModel)
-    local hrp = bossModel:FindFirstChild("HumanoidRootPart")
-    local humanoid = bossModel:FindFirstChild("Humanoid")
-    if not hrp or not humanoid then return end
-
-    print("[Boss] Bắt đầu follow...")
-
-    local bossDied = false
-
-    while shared.autoBoss and humanoid.Parent and bossModel:IsDescendantOf(workspace) and humanoid.Health > 0 do
-        local character = LocalPlayer.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0, 5, 0)
-        end
-        task.wait(0.1)
-    end
-
-    -- Boss thực sự chết
-    if humanoid and humanoid.Health <= 0 then
-        bossDied = true
-    end
-
-    print("[Boss] Kết thúc follow. BossDied =", bossDied)
-
-    -- ✅ Chỉ teleport nếu boss chết
-    if bossDied then
-	if shared.SelectedBoss == "None" then print("Blocked Turn On Auto Find Boss !") end
-	if shared.SelectedBoss == shared.BossName then
-	    shared.autoBossToggleRef:SetValue(true)
-	elseif shared.SelectedBoss == "Katakuri" then
-	    shared.autoKatakuriToggleRef:SetValue(true)
-	elseif shared.SelectedBoss == ("Katakuri + " .. shared.BossName) then
-	    shared.autoBossToggleRef:SetValue(true)
-	    task.wait(1)
-	    shared.autoKatakuriToggleRef:SetValue(true)
-	end
-	task.wait(1)
-	if shared.autoFarm then
-        shared.forceUnlock = false
-        isTeleported = false
-        shared.bienCaoCap = false
-        task.wait(1)
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-        if not shared.myPos then return end
-        repeat
-            character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            hrp = character:FindFirstChild("HumanoidRootPart")
-            if not hrp or not hrp.Parent then break end
-            hrp.CFrame = CFrame.new(shared.myPos)
-            task.wait()
-        until (hrp.Position - shared.myPos).Magnitude < 5
-        shared.autoFarmToggleRef:SetValue(false)
-        task.wait(1)
-        shared.autoFarmToggleRef:SetValue(true)
-	end
-    else
-        print("Không teleport vì boss chưa chết")
-    end
-end
-
--- Vòng lặp kiểm tra boss
-task.spawn(function()
-    while true do
-        if not shared.autoBoss then
-            task.wait(1)
-            continue
-        end
-
-        local npcsFolder = workspace:FindFirstChild("Characters") and workspace.Characters:FindFirstChild("NPCs")
-        if not npcsFolder then
-            task.wait(1)
-            continue
-        end
-
-        if placeId == 9224601490 then
-            local marco = npcsFolder:FindFirstChild("Marco")
-            if marco then
-                print("[Marco] Đã xuất hiện")
-                shared.forceUnlock = true
-                task.wait(1)
-                shared.bienCaoCap = true
-                task.wait(1)
-                followBoss(marco)
-                repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Marco") or not shared.autoBoss
-            else
-                print("[Marco] Chưa xuất hiện")
-            end
-
-        elseif placeId == 16190471004 then
-            local cakeQueen = npcsFolder:FindFirstChild("Cake Queen")
-            if cakeQueen then
-                print("[Cake Queen] Đã xuất hiện")
-                shared.forceUnlock = true
-                task.wait(1)
-                shared.bienCaoCap = true
-                task.wait(1)
-                followBoss(cakeQueen)
-                repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Cake Queen") or not shared.autoBoss
-            else
-                print("[Cake Queen] Chưa xuất hiện")
-            end
-
-            local katakuri = npcsFolder:FindFirstChild("Katakuri")
-            if katakuri then
-                print("[Katakuri] Đã xuất hiện")
-                shared.forceUnlock = true
-                task.wait(1)
-                shared.bienCaoCap = true
-                task.wait(1)
-                followBoss(katakuri)
-                repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Katakuri") or not shared.autoBoss
-            else
-                print("[Katakuri] Chưa xuất hiện")
-            end
-
-        elseif placeId == 12413901502 then
-            local kaido = npcsFolder:FindFirstChild("Kaido")
-            if kaido then
-                print("[Kaido] Đã xuất hiện")
-                shared.forceUnlock = true
-                task.wait(1)
-                shared.bienCaoCap = true
-                task.wait(1)
-                followBoss(kaido)
-                repeat task.wait(0.5) until not npcsFolder:FindFirstChild("Kaido") or not shared.autoBoss
-            else
-                print("[Kaido] Chưa xuất hiện")
-            end
-
-        else
-            warn("Không hỗ trợ map này. PlaceId:", placeId)
-            break
-        end
-
-        task.wait(1)
-    end
-end)
+            Fluent:Notify({
+                Title = "Premium Only !",
+                Content = "Buy Key With 1 Dollar In Discord !",
+                Duration = 5
+            })
+            shared.autoBossToggleRef:SetValue(false)
         end
     end
 })
@@ -1457,30 +1316,33 @@ Tabs.Webhook:AddInput("TimeToSend", {
     end
 })
 
--- ✅ Toggle gửi webhook
-PremiumToggleRef2 = Tabs.Webhook:AddToggle("SendWebhookToggle", {
-    Title = "Send Stats To Webhook With Minutes Entered !",
+shared.autoBossToggleRef1 = Tabs.Main:AddToggle("AutoFindBossToggle1", {
+    Title = "Send Stats To Webhook With Minutes Entered (Premium Only)",
     Default = false,
-    Callback = function(state)
-	Fluent:Notify({
-	    Title = "Premium Only !",
-	    Content = "Buy Key With 2 Dollars In Discord !",
-	    Duration = 5
-	})
-        PremiumToggleRef2:SetValue(false)
+    Callback = function(value)
+        if value then
+            Fluent:Notify({
+                Title = "Premium Only !",
+                Content = "Buy Key With 1 Dollar In Discord !",
+                Duration = 5
+            })
+            shared.autoBossToggleRef1:SetValue(false)
+        end
     end
 })
 
-PremiumToggleRef1 = Tabs.Webhook:AddToggle("SendRareFruitToggle", {
-    Title = "Send To Webhook When Auto Spin Got Good Fruit",
+shared.autoBossToggleRef2 = Tabs.Main:AddToggle("AutoFindBossToggle2", {
+    Title = "Send To Webhook When Auto Spin Got Good Fruit(Premium Only)",
     Default = false,
-    Callback = function(state)
-	Fluent:Notify({
-	Title = "Premium Only !",
-	Content = "Buy Key With 2 Dollars In Discord !",
-	Duration = 5
-	})
-        PremiumToggleRef1:SetValue(false)
+    Callback = function(value)
+        if value then
+            Fluent:Notify({
+                Title = "Premium Only !",
+                Content = "Buy Key With 1 Dollar In Discord !",
+                Duration = 5
+            })
+            shared.autoBossToggleRef2:SetValue(false)
+        end
     end
 })
 
@@ -1924,26 +1786,21 @@ Tabs.Main:AddDropdown("Select Boss", {
     end
 })
 
-
--- Auto Find Boss
-local autoBossToggleRef = nil
-
-shared.autoBossToggleRef = Tabs.Main:AddToggle("Auto Find Boss", {
+--Auto Find Boss
+shared.autoBossToggleRef = Tabs.Main:AddToggle("AutoFindBossToggle", {
     Title = "Auto Find Boss " .. shared.BossName .. " (Premium Only)",
     Default = false,
     Callback = function(value)
-        shared.AutoFindBoss = value
-
         if value then
-	Fluent:Notify({
-	Title = "Premium Only !",
-	Content = "Buy Key With 2 Dollars In Discord !",
-	Duration = 5
-	})
-        shared.autoBossToggleRef:SetValue(false)
+            Fluent:Notify({
+                Title = "Premium Only !",
+                Content = "Buy Key With 1 Dollar In Discord !",
+                Duration = 5
+            })
+            shared.autoBossToggleRef:SetValue(false)
         end
     end
-})
+}
 function AutoFindBossFunction()
     _G.AutoPressPlay_Find()
 
@@ -2029,23 +1886,20 @@ function AutoFindBossFunction()
 end
 -- Auto Find Katakuri
 if game.PlaceId == 16190471004 then
-local autoKatakuriToggleRef = nil
-
-shared.autoKatakuriToggleRef = Tabs.Main:AddToggle("Auto Find Boss Katakuri", {
-    Title = "Auto Find Boss Katakuri (Premium Only !)",
+shared.autoBossToggleRef4 = Tabs.Main:AddToggle("AutoFindBossToggle4", {
+    Title = "Auto Find Boss " .. shared.BossName .. " (Premium Only)",
     Default = false,
     Callback = function(value)
-        shared.AutoFindKatakuri = value
         if value then
-	Fluent:Notify({
-	Title = "Premium Only !",
-	Content = "Buy Key With 2 Dollars In Discord !",
-	Duration = 5
-	})
-        shared.autoKatakuriToggleRef:SetValue(false)
+            Fluent:Notify({
+                Title = "Premium Only !",
+                Content = "Buy Key With 1 Dollar In Discord !",
+                Duration = 5
+            })
+            shared.autoBossToggleRef4:SetValue(false)
         end
     end
-})
+}
 
 function AutoFindKatakuriFunction()
     _G.AutoPressPlay_Find()
@@ -2395,6 +2249,21 @@ Tabs.Player:AddToggle("ESPPlayerToggle", {
         end
     end
 })
+
+shared.autoBossToggleRef5 = Tabs.Main:AddToggle("AutoFindBossToggle5", {
+    Title = "Show ESP Player (Premium Only)",
+    Default = false,
+    Callback = function(value)
+        if value then
+            Fluent:Notify({
+                Title = "Premium Only !",
+                Content = "Buy Key With 1 Dollar In Discord !",
+                Duration = 5
+            })
+            shared.autoBossToggleRef5:SetValue(false)
+        end
+    end
+}
 
 -- Hàm teleport
 local function teleportToPlayer(playerName)
